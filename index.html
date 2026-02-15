@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>ระบบรับสมัครนักเรียนออนไลน์ - โรงเรียนกระดุมทองวิทยา</title>
+    <link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --primary-dark: #0f2942;
+            --accent: #d69e2e;
+            --accent-light: #ecc94b;
+            --accent-dark: #b7791f;
+            --bg: #f7fafc;
+            --bg-secondary: #edf2f7;
+            --card-bg: #ffffff;
+            --overlay-bg: rgba(0, 0, 0, 0.6);
+            --text: #2d3748;
+            --text-light: #718096;
+            --text-lighter: #a0aec0;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
+            --success: #38a169;
+            --success-light: #48bb78;
+            --danger: #e53e3e;
+            --danger-light: #fc8181;
+            --warning: #ed8936;
+            --info: #3182ce;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            --font-body: 'Sarabun', sans-serif;
+            --font-heading: 'Prompt', sans-serif;
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            --touch-target: 44px;
+            --button-height: 48px;
+            --input-height: 48px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-light);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: var(--space-md) var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .logo-section img {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-full);
+            border: 3px solid var(--accent);
+            background: white;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+
+        .logo-text h1 {
+            font-size: clamp(1rem, 4vw, 1.25rem);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+        }
+
+        .logo-text p {
+            font-size: clamp(0.75rem, 3vw, 0.875rem);
+            opacity: 0.95;
+            margin-top: 2px;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: clamp(1rem, 3vw, 2rem);
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: clamp(1rem, 3vw, 2rem);
+            align-items: start;
+        }
+
+        .form-section {
+            background: var(--card-bg);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 4vw, 2rem);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .form-header-icon {
+            width: clamp(40px, 10vw, 48px);
+            height: clamp(40px, 10vw, 48px);
+            background: var(--accent);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.25rem, 5vw, 1.5rem);
+            flex-shrink: 0;
+        }
+
+        .form-header h2 {
+            font-size: clamp(1rem, 4vw, 1.25rem);
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .form-header p {
+            font-size: clamp(0.8rem, 3vw, 0.875rem);
+            opacity: 0.95;
+            margin-top: 2px;
+        }
+
+        .form-body {
+            padding: clamp(1rem, 4vw, 2rem);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: var(--space-sm);
+            color: var(--text);
+            font-size: var(--text-base);
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+
+        .form-group label span {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: clamp(0.75rem, 3vw, 1rem);
+            min-height: var(--input-height);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--text);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-lighter);
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+            padding-right: 2.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-sm);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: background 0.2s ease;
+            min-height: var(--touch-target);
+        }
+
+        .checkbox-item:hover {
+            background: var(--bg);
+        }
+
+        .checkbox-item input[type="checkbox"],
+        .checkbox-item input[type="radio"] {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            min-height: 22px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: var(--text-base);
+            line-height: 1.5;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+            padding-top: var(--space-lg);
+            border-top: 2px solid var(--border);
+        }
+
+        .btn {
+            padding: clamp(0.875rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+            min-height: var(--button-height);
+            border-radius: var(--radius-lg);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            border: none;
+            white-space: nowrap;
+            text-align: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: var(--text-sm);
+            border-radius: var(--radius-md);
+            min-height: 36px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-light);
+        }
+
+        .history-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            height: fit-content;
+            animation: fadeIn 0.5s ease 0.1s both;
+        }
+
+        .history-header {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: var(--primary);
+            padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .history-header h3 {
+            font-size: clamp(1rem, 3.5vw, 1.1rem);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .history-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .history-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: var(--space-md) clamp(1rem, 3vw, 1.5rem);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: var(--bg);
+        }
+
+        .history-item:active {
+            background: var(--bg-secondary);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+            gap: var(--space-sm);
+        }
+
+        .history-item-type {
+            font-size: var(--text-xs);
+            padding: 0.25rem 0.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .history-item-date {
+            font-size: var(--text-xs);
+            color: var(--text-light);
+            text-align: right;
+        }
+
+        .history-item-name {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--space-xs);
+            font-size: var(--text-base);
+        }
+
+        .history-item-detail {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+        }
+
+        .history-item-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
+        .empty-history {
+            padding: var(--space-2xl) var(--space-lg);
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .empty-history svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay-bg);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--space-md);
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-2xl);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: clamp(1rem, 3vw, 1.5rem);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .modal-header h3 {
+            font-size: clamp(1.1rem, 4vw, 1.25rem);
+            flex: 1;
+        }
+
+        .modal-close {
+            width: clamp(36px, 10vw, 40px);
+            height: clamp(36px, 10vw, 40px);
+            min-width: var(--touch-target);
+            min-height: var(--touch-target);
+            border: none;
+            background: var(--bg);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: clamp(1.25rem, 4vw, 1.5rem);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(0.5rem, 2vw, 1rem);
+            background: var(--bg-secondary);
+        }
+
+        .modal-footer {
+            padding: clamp(1rem, 3vw, 1.5rem);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        #previewArea {
+            background: white;
+            min-height: 200px;
+        }
+
+        #previewArea .print-document {
+            margin: 0 auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--success);
+            color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+            font-size: var(--text-base);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        .print-document {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 8mm 10mm;
+            font-family: var(--font-body);
+            font-size: 15px;
+            line-height: 1.5;
+            color: black;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .print-document .doc-code {
+            text-align: right;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .print-document .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .print-document .doc-logo-section {
+            text-align: center;
+            flex: 1;
+        }
+
+        .print-document .doc-logo {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+        }
+
+        .print-document .doc-title-section {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .print-document .doc-school-info {
+            position: absolute;
+            right: 0;
+            top: 0;
+            text-align: right;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .print-document .doc-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .print-document .doc-content {
+            margin-bottom: 5px;
+        }
+
+        .print-document .doc-content p {
+            margin-bottom: 4px;
+        }
+
+        .print-document .field-line {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin: 3px 0;
+            line-height: 1.6;
+        }
+
+        .print-document .field-label {
+            font-size: 14px;
+        }
+
+        .print-document .field-value {
+            font-weight: 600;
+            border-bottom: 1px dotted #333;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .print-document .checkbox-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            margin: 2px 0 2px 25px;
+            line-height: 1.4;
+        }
+
+        .print-document .doc-checkbox {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            min-width: 13px;
+            min-height: 13px;
+            border: 1.5px solid #333;
+            background: white;
+            position: relative;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .print-document .doc-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1;
+        }
+
+        .print-document .signature-section {
+            margin-top: 15px;
+            text-align: right;
+            padding-right: 20px;
+        }
+
+        .print-document .signature-section p {
+            margin: 2px 0;
+        }
+
+        .print-document .approval-section {
+            margin-top: 15px;
+            border-top: 1px solid #666;
+            padding-top: 10px;
+        }
+
+        .print-document .approval-box {
+            border: 1px solid #666;
+            padding: 8px 10px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .print-document .approval-box-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .print-document .approval-box p {
+            margin: 2px 0;
+        }
+
+        .print-document .id-boxes {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .print-document .id-box {
+            width: 18px;
+            height: 22px;
+            border: 1.5px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .print-document .id-dash {
+            width: 8px;
+            height: 2px;
+            background: #333;
+            margin: 0 1px;
+        }
+
+        #printArea {
+            display: none;
+        }
+
+        @media print {
+            *, *::before, *::after {
+                background: transparent !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+            
+            html, body {
+                width: 210mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            body > * {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            #printArea {
+                display: block !important;
+                visibility: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            #printArea * {
+                visibility: visible !important;
+            }
+            
+            .print-document {
+                display: block !important;
+                visibility: visible !important;
+                width: 100% !important;
+                min-height: auto !important;
+                padding: 5mm 10mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                font-size: 14px !important;
+                page-break-inside: avoid !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            .print-document .approval-box {
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            
+            .print-document,
+            .print-document * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            .print-document .approval-box {
+                border: 1px solid #666 !important;
+            }
+            
+            .print-document .doc-checkbox {
+                border: 1.5px solid #333 !important;
+                background: white !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+            .form-section {
+                order: 1;
+                width: 100%;
+            }
+            .history-panel {
+                order: 2;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            .modal-footer {
+                flex-direction: column;
+            }
+            .modal-footer .btn {
+                width: 100%;
+            }
+            .print-document {
+                width: 100%;
+                padding: 5mm;
+                font-size: 11px;
+            }
+            .toast {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .form-actions, .modal-footer {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+            .history-panel {
+                position: sticky;
+                top: 100px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="โลโก้โรงเรียน">
+                <div class="logo-text">
+                    <h1>ระบบรับสมัครนักเรียนออนไลน์</h1>
+                    <p>โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-header">
+                <div class="form-header-icon">📝</div>
+                <div>
+                    <h2>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</h2>
+                    <p>วก.กทว.202</p>
+                </div>
+            </div>
+            <div class="form-body">
+                <form id="admissionForm">
+                    <!-- ข้อมูลส่วนตัว -->
+                    <h3 style="color: var(--primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                        📋 ข้อมูลส่วนตัวผู้สมัคร
+                    </h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>วันที่ยื่นใบสมัคร <span class="required">*</span></label>
+                            <input type="date" class="form-control" name="applicationDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ปีการศึกษา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="academicYear" required placeholder="เช่น 2567">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>คำนำหน้า <span class="required">*</span></label>
+                            <select class="form-control" name="prefix" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="เด็กชาย">เด็กชาย</option>
+                                <option value="เด็กหญิง">เด็กหญิง</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อ-นามสกุล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="fullName" required placeholder="กรอกชื่อ-นามสกุล">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ชื่อเล่น</label>
+                        <input type="text" class="form-control" name="nickname" placeholder="ชื่อเล่น">
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>วันเกิด <span class="required">*</span></label>
+                            <input type="date" class="form-control" name="birthDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>อายุ (ปี) <span class="required">*</span></label>
+                            <input type="number" class="form-control" name="age" required placeholder="อายุ">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่เลือด</label>
+                            <select class="form-control" name="bloodType">
+                                <option value="">-- เลือก --</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="O">O</option>
+                                <option value="AB">AB</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ส่วนสูง (ซม.)</label>
+                            <input type="number" class="form-control" name="height" placeholder="ส่วนสูง">
+                        </div>
+                        <div class="form-group">
+                            <label>น้ำหนัก (กก.)</label>
+                            <input type="number" class="form-control" name="weight" placeholder="น้ำหนัก">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>เลขประจำตัวประชาชน (13 หลัก) <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="nationalId" required maxlength="13" placeholder="x-xxxx-xxxxx-xx-x">
+                    </div>
+
+                    <!-- ข้อมูลบิดา-มารดา -->
+                    <h3 style="color: var(--primary); margin: var(--space-xl) 0 var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                        👨‍👩‍👦 ข้อมูลบิดา-มารดา
+                    </h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ชื่อ-สกุลบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="fatherName" required placeholder="นาย...">
+                        </div>
+                        <div class="form-group">
+                            <label>อายุบิดา</label>
+                            <input type="number" class="form-control" name="fatherAge" placeholder="อายุ">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>อาชีพบิดา</label>
+                        <input type="text" class="form-control" name="fatherOccupation" placeholder="อาชีพ">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ชื่อ-สกุลมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="motherName" required placeholder="นาง...">
+                        </div>
+                        <div class="form-group">
+                            <label>อายุมารดา</label>
+                            <input type="number" class="form-control" name="motherAge" placeholder="อายุ">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>อาชีพมารดา</label>
+                        <input type="text" class="form-control" name="motherOccupation" placeholder="อาชีพ">
+                    </div>
+
+                    <!-- ที่อยู่ปัจจุบัน -->
+                    <h3 style="color: var(--primary); margin: var(--space-xl) 0 var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                        🏠 ที่อยู่ปัจจุบัน
+                    </h3>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>บ้านเลขที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="houseNumber" required placeholder="บ้านเลขที่">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่ที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="moo" required placeholder="หมู่ที่">
+                        </div>
+                        <div class="form-group">
+                            <label>ถนน</label>
+                            <input type="text" class="form-control" name="road" placeholder="ถนน">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ซอย</label>
+                            <input type="text" class="form-control" name="soi" placeholder="ซอย">
+                        </div>
+                        <div class="form-group">
+                            <label>บ้าน/หมู่บ้าน</label>
+                            <input type="text" class="form-control" name="village" placeholder="บ้าน/หมู่บ้าน">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ตำบล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="subdistrict" required placeholder="ตำบล">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="district" required placeholder="อำเภอ">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>จังหวัด <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="province" required placeholder="จังหวัด">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสไปรษณีย์ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="postalCode" required maxlength="5" placeholder="รหัสไปรษณีย์">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>หมายเลขโทรศัพท์</label>
+                            <input type="tel" class="form-control" name="phone" placeholder="0xx-xxx-xxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>อีเมล</label>
+                            <input type="email" class="form-control" name="email" placeholder="example@email.com">
+                        </div>
+                    </div>
+
+                    <!-- โรงเรียนเดิม -->
+                    <h3 style="color: var(--primary); margin: var(--space-xl) 0 var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                        🏫 โรงเรียนเดิม
+                    </h3>
+
+                    <div class="form-group">
+                        <label>จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="previousSchool" required placeholder="ชื่อโรงเรียน">
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>ตำบล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="schoolSubdistrict" required placeholder="ตำบล">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="schoolDistrict" required placeholder="อำเภอ">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="schoolProvince" required placeholder="จังหวัด">
+                        </div>
+                    </div>
+
+                    <!-- ความสามารถพิเศษ -->
+                    <h3 style="color: var(--primary); margin: var(--space-xl) 0 var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                        ⭐ ความสามารถพิเศษ
+                    </h3>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="talent" value="sports">
+                            <span>เป็นนักกีฬา (ระบุประเภท)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="sportsTypeGroup" style="display: none; margin-left: 2rem;">
+                        <input type="text" class="form-control" name="sportsType" placeholder="ระบุประเภทกีฬา">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="talent" value="music">
+                            <span>เป็นนักดนตรีหรือศิลปะ (ระบุประเภท)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="musicTypeGroup" style="display: none; margin-left: 2rem;">
+                        <input type="text" class="form-control" name="musicType" placeholder="ระบุประเภทดนตรี/ศิลปะ">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="talent" value="other">
+                            <span>อื่นๆ (ระบุ)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="otherTalentGroup" style="display: none; margin-left: 2rem;">
+                        <input type="text" class="form-control" name="otherTalent" placeholder="ระบุความสามารถพิเศษอื่นๆ">
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="previewDocument()">
+                            👁️ ดูตัวอย่างเอกสาร
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveDocument()">
+                            💾 บันทึกเอกสาร
+                        </button>
+                        <button type="reset" class="btn btn-outline">
+                            🔄 ล้างข้อมูล
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <aside class="history-panel">
+            <div class="history-header">
+                <h3>
+                    📚 ประวัติการสมัคร
+                    <span class="history-count" id="historyCount">0</span>
+                </h3>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-history">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p>ยังไม่มีประวัติการสมัคร</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📄 ตัวอย่างเอกสารใบสมัคร</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="previewArea"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">ปิด</button>
+                <button class="btn btn-success" onclick="printDocument()">🖨️ พิมพ์เอกสาร</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Area -->
+    <div id="printArea"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastMessage">บันทึกข้อมูลสำเร็จ</span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY",
+            authDomain: "recruitstudents2026.firebaseapp.com",
+            projectId: "recruitstudents2026",
+            storageBucket: "recruitstudents2026.firebasestorage.app",
+            messagingSenderId: "312157707609",
+            appId: "1:312157707609:web:fc760de66073810d990048"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp };
+
+        console.log('Firebase initialized successfully!');
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            setDefaultDate();
+        });
+
+        function setupEventListeners() {
+            const talentCheckboxes = document.querySelectorAll('input[name="talent"]');
+            talentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.value === 'sports') {
+                        document.getElementById('sportsTypeGroup').style.display = this.checked ? 'block' : 'none';
+                    } else if (this.value === 'music') {
+                        document.getElementById('musicTypeGroup').style.display = this.checked ? 'block' : 'none';
+                    } else if (this.value === 'other') {
+                        document.getElementById('otherTalentGroup').style.display = this.checked ? 'block' : 'none';
+                    }
+                });
+            });
+
+            document.getElementById('previewModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        }
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="applicationDate"]').value = today;
+            
+            const currentYear = new Date().getFullYear() + 543;
+            document.querySelector('input[name="academicYear"]').value = currentYear;
+        }
+
+        function getFormData() {
+            const form = document.getElementById('admissionForm');
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key === 'talent') {
+                    if (!data[key]) data[key] = [];
+                    data[key].push(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            return data;
+        }
+
+        function validateForm() {
+            const form = document.getElementById('admissionForm');
+            return form.checkValidity();
+        }
+
+        function formatThaiDate(dateString) {
+            if (!dateString) return '....................';
+            const date = new Date(dateString);
+            const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                               'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            const day = date.getDate();
+            const month = thaiMonths[date.getMonth()];
+            const year = date.getFullYear() + 543;
+            return `${day} ${month} ${year}`;
+        }
+
+        function formatIdBoxes(id) {
+            if (!id || id.length !== 13) {
+                const boxes = [];
+                for (let i = 0; i < 13; i++) {
+                    if (i === 1 || i === 5 || i === 10 || i === 12) {
+                        boxes.push('<span class="id-dash"></span>');
+                    }
+                    boxes.push('<span class="id-box"></span>');
+                }
+                return boxes.join('');
+            }
+            
+            const digits = id.split('');
+            const boxes = [];
+            digits.forEach((digit, i) => {
+                if (i === 1 || i === 5 || i === 10 || i === 12) {
+                    boxes.push('<span class="id-dash"></span>');
+                }
+                boxes.push(`<span class="id-box">${digit}</span>`);
+            });
+            return boxes.join('');
+        }
+
+        function checkbox(isChecked) {
+            return `<span class="doc-checkbox${isChecked ? ' checked' : ''}"></span>`;
+        }
+
+        function generateDocumentHTML(data) {
+            const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+            const talents = data.talent || [];
+            
+            return `
+                <div class="print-document">
+                    <div class="doc-code">วก.กทว.202</div>
+                    
+                    <div class="doc-header">
+                        <div class="doc-logo-section">
+                            <img src="${logoUrl}" class="doc-logo" alt="โลโก้โรงเรียน">
+                        </div>
+                        <div class="doc-school-info">
+                            วันที่ ${formatThaiDate(data.applicationDate)}
+                        </div>
+                    </div>
+
+                    <div class="doc-title-section">
+                        <div class="doc-title">ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1 ปีการศึกษา ${data.academicYear || '.........................'}</div>
+                        <div style="text-align: center; font-size: 14px; margin: 4px 0;">
+                            โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>
+                            สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ
+                        </div>
+                    </div>
+
+                    <div class="doc-content">
+                        <div class="field-line" style="margin-top: 8px;">
+                            <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span>
+                            <span class="field-value">${data.prefix || ''}${data.fullName || '..........................................'}</span>
+                            <span class="field-label">ชื่อเล่น</span>
+                            <span class="field-value">${data.nickname || '..............'}</span>
+                            <span class="field-label">เกิดวันที่</span>
+                            <span class="field-value">${formatThaiDate(data.birthDate)}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${data.age || '............'}</span>
+                            <span class="field-label">ปี ส่วนสูง</span>
+                            <span class="field-value">${data.height || '..................'}</span>
+                            <span class="field-label">เซนติเมตร น้ำหนัก</span>
+                            <span class="field-value">${data.weight || '....................'}</span>
+                            <span class="field-label">กิโลกรัม หมู่เลือด</span>
+                            <span class="field-value">${data.bloodType || '.................................'}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">เลขประจำตัวประชาชน</span>
+                            <div class="id-boxes" style="display: inline-flex; gap: 2px; align-items: center;">
+                                ${formatIdBoxes(data.nationalId)}
+                            </div>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">ชื่อ-สกุลบิดา</span>
+                            <span class="field-value">${data.fatherName || '.....................................................................'}</span>
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${data.fatherAge || '........................'}</span>
+                            <span class="field-label">อาชีพ</span>
+                            <span class="field-value">${data.fatherOccupation || '.....................................'}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">ชื่อ-สกุลมารดา</span>
+                            <span class="field-value">${data.motherName || '.....................................................................'}</span>
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${data.motherAge || '........................'}</span>
+                            <span class="field-label">อาชีพ</span>
+                            <span class="field-value">${data.motherOccupation || '.....................................'}</span>
+                        </div>
+
+                        <div class="field-line" style="margin-top: 6px;">
+                            <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span>
+                            <span class="field-value">${data.houseNumber || '……………'}</span>
+                            <span class="field-label">หมู่ที่</span>
+                            <span class="field-value">${data.moo || '………'}</span>
+                            <span class="field-label">ถนน</span>
+                            <span class="field-value">${data.road || '…........……………………'}</span>
+                            <span class="field-label">ซอย</span>
+                            <span class="field-value">${data.soi || '......................'}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">บ้าน</span>
+                            <span class="field-value">${data.village || '..................................'}</span>
+                            <span class="field-label">ตำบล</span>
+                            <span class="field-value">${data.subdistrict || '…………………'}</span>
+                            <span class="field-label">อำเภอ</span>
+                            <span class="field-value">${data.district || '……………………..'}</span>
+                            <span class="field-label">จังหวัด</span>
+                            <span class="field-value">${data.province || '…………….....………….'}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">รหัสไปรษณีย์</span>
+                            <span class="field-value">${data.postalCode || '……............……………'}</span>
+                            <span class="field-label">โทรศัพท์</span>
+                            <span class="field-value">${data.phone || '.…..………...........................................…....'}</span>
+                            <span class="field-label">E-mail</span>
+                            <span class="field-value">${data.email || '………………….………………………………………'}</span>
+                        </div>
+
+                        <div class="field-line" style="margin-top: 6px;">
+                            <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
+                            <span class="field-value">${data.previousSchool || '……………………………………………………………………………..………..'}</span>
+                        </div>
+
+                        <div class="field-line">
+                            <span class="field-label">ตำบล</span>
+                            <span class="field-value">${data.schoolSubdistrict || '……………………….'}</span>
+                            <span class="field-label">อำเภอ</span>
+                            <span class="field-value">${data.schoolDistrict || '…...…………………………..'}</span>
+                            <span class="field-label">จังหวัด</span>
+                            <span class="field-value">${data.schoolProvince || '…………………………………….'}</span>
+                        </div>
+
+                        <p style="margin-top: 8px; font-weight: 600;">4. ความสามารถพิเศษ</p>
+                        
+                        <div class="checkbox-line">
+                            ${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <strong>${talents.includes('sports') ? (data.sportsType || '') : '................................................................................'}</strong>
+                        </div>
+                        
+                        <div class="checkbox-line">
+                            ${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${talents.includes('music') ? (data.musicType || '') : '.............................................................'}</strong>
+                        </div>
+                        
+                        <div class="checkbox-line">
+                            ${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <strong>${talents.includes('other') ? (data.otherTalent || '') : '........................................................................................................'}</strong>
+                        </div>
+                    </div>
+
+                    <div class="signature-section" style="text-align: right; margin-top: 12px;">
+                        <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
+                        <p>(.......................................................................)</p>
+                        <p>วันที่.................เดือน...............................พ.ศ................</p>
+                    </div>
+
+                    <div class="approval-section">
+                        <p style="font-weight: 600; margin-bottom: 6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} ใบสมัครพร้อมรูปถ่าย 2 แผ่น
+                            </div>
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} ระเบียนแสดงผลการเรียน(ปพ.1)หรือใบรับรอง
+                            </div>
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} สำเนาทะเบียนบ้านของนร/บิดา/มารดา
+                            </div>
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} สำเนาบัตรประชาชนของนร/บิดา/มารดา
+                            </div>
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} สำเนาสูติบัตรของนักเรียน
+                            </div>
+                            <div class="checkbox-line" style="margin: 2px 0;">
+                                ${checkbox(false)} หลักฐานอื่นๆ……………….
+                            </div>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 12px;">
+                            <p>ลงชื่อ.............................................................กรรมการรับสมัคร</p>
+                            <p>(.......................................................)</p>
+                            <p>วันที่.................เดือน..............................พ.ศ...............</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function previewDocument() {
+            if (!validateForm()) {
+                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                document.getElementById('admissionForm').reportValidity();
+                return;
+            }
+
+            const data = getFormData();
+            const html = generateDocumentHTML(data);
+            
+            document.getElementById('previewArea').innerHTML = html;
+            document.getElementById('printArea').innerHTML = html;
+            document.getElementById('previewModal').classList.add('active');
+        }
+
+        async function saveDocument() {
+            if (!validateForm()) {
+                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                document.getElementById('admissionForm').reportValidity();
+                return;
+            }
+
+            const data = getFormData();
+            await saveToFirestore(data);
+            
+            const html = generateDocumentHTML(data);
+            document.getElementById('previewArea').innerHTML = html;
+            document.getElementById('printArea').innerHTML = html;
+            document.getElementById('previewModal').classList.add('active');
+        }
+
+        async function saveToFirestore(data) {
+            try {
+                showLoading(true);
+
+                const record = {
+                    formType: 'ใบสมัครเข้าเรียน ม.1',
+                    formCode: 'วก.กทว.202',
+                    studentName: `${data.prefix}${data.fullName}`,
+                    academicYear: data.academicYear,
+                    data: data,
+                    createdAt: window.firestore.serverTimestamp(),
+                    updatedAt: window.firestore.serverTimestamp()
+                };
+
+                const docRef = await window.firestore.addDoc(
+                    window.firestore.collection(window.db, 'admissions'),
+                    record
+                );
+
+                console.log('Document written with ID:', docRef.id);
+                showToast('บันทึกข้อมูลสำเร็จ');
+                await loadHistory();
+
+            } catch (error) {
+                console.error('Error adding document:', error);
+                showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                showLoading(true);
+
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'admissions'),
+                    window.firestore.orderBy('createdAt', 'desc'),
+                    window.firestore.limit(50)
+                );
+
+                const querySnapshot = await window.firestore.getDocs(q);
+                const history = [];
+
+                querySnapshot.forEach((doc) => {
+                    history.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                const historyList = document.getElementById('historyList');
+                const historyCount = document.getElementById('historyCount');
+                
+                historyCount.textContent = history.length;
+
+                if (history.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="empty-history">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p>ยังไม่มีประวัติการสมัคร</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = history.map(record => {
+                    let dateStr = '-';
+                    if (record.createdAt) {
+                        const date = record.createdAt.toDate();
+                        dateStr = date.toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+
+                    return `
+                        <div class="history-item">
+                            <div class="history-item-header">
+                                <span class="history-item-type">${record.formCode}</span>
+                                <span class="history-item-date">${dateStr}</span>
+                            </div>
+                            <div class="history-item-name">${record.studentName || '-'}</div>
+                            <div class="history-item-detail">ปีการศึกษา ${record.academicYear || '-'}</div>
+                            <div class="history-item-actions">
+                                <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">
+                                    👁️ ดู
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteHistoryRecord('${record.id}')">
+                                    🗑️ ลบ
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading history:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดประวัติ: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function viewHistoryRecord(id) {
+            try {
+                showLoading(true);
+                const docRef = window.firestore.doc(window.db, 'admissions', id);
+                const docSnap = await window.firestore.getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const record = docSnap.data();
+                    const html = generateDocumentHTML(record.data);
+                    
+                    document.getElementById('previewArea').innerHTML = html;
+                    document.getElementById('printArea').innerHTML = html;
+                    document.getElementById('previewModal').classList.add('active');
+                } else {
+                    showToast('ไม่พบข้อมูล', 'error');
+                }
+            } catch (error) {
+                console.error('Error viewing record:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function deleteHistoryRecord(id) {
+            if (!confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
+                return;
+            }
+
+            try {
+                showLoading(true);
+                await window.firestore.deleteDoc(window.firestore.doc(window.db, 'admissions', id));
+                showToast('ลบรายการสำเร็จ');
+                await loadHistory();
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                showToast('เกิดข้อผิดพลาดในการลบ: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
+
+        function printDocument() {
+            closeModal();
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast show' + (type === 'error' ? ' error' : '');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

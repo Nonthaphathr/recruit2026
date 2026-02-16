@@ -8,36 +8,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #C2185B;
-            --primary-light: #E91E63;
-            --primary-dark: #880E4F;
-            --accent: #F06292;
-            --accent-light: #F8BBD0;
-            --accent-dark: #AD1457;
-            --bg: #FCE4EC;
-            --bg-secondary: #F8BBD0;
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --primary-dark: #0f2942;
+            --accent: #d69e2e;
+            --accent-light: #ecc94b;
+            --accent-dark: #b7791f;
+            --bg: #f7fafc;
+            --bg-secondary: #edf2f7;
             --card-bg: #ffffff;
             --overlay-bg: rgba(0, 0, 0, 0.6);
             --text: #2d3748;
             --text-light: #718096;
             --text-lighter: #a0aec0;
-            --border: #F8BBD0;
-            --border-light: #FCE4EC;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
             --success: #38a169;
             --success-light: #48bb78;
             --danger: #e53e3e;
             --danger-light: #fc8181;
             --warning: #ed8936;
             --info: #3182ce;
-            --shadow-sm: 0 1px 2px 0 rgba(194, 24, 91, 0.05);
-            --shadow: 0 4px 6px -1px rgba(194, 24, 91, 0.1), 0 2px 4px -1px rgba(194, 24, 91, 0.06);
-            --shadow-md: 0 10px 15px -3px rgba(194, 24, 91, 0.1), 0 4px 6px -2px rgba(194, 24, 91, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(194, 24, 91, 0.1), 0 10px 10px -5px rgba(194, 24, 91, 0.04);
-            --shadow-xl: 0 25px 50px -12px rgba(194, 24, 91, 0.25);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             --space-xs: 0.25rem;
             --space-sm: 0.5rem;
             --space-md: 1rem;
@@ -96,12 +94,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
+            background: var(--border);
             border-radius: var(--radius-full);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
+            background: var(--text-light);
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -110,138 +108,6 @@
             line-height: 1.3;
         }
 
-        /* Landing Page */
-        .landing-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, #EC407A 0%, #F48FB1 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            overflow-y: auto;
-            padding: var(--space-xl) var(--space-md);
-        }
-
-        .landing-page.hidden {
-            display: none;
-        }
-
-        .landing-container {
-            max-width: 1000px;
-            width: 100%;
-            animation: fadeInUp 0.8s ease;
-        }
-
-        .landing-header {
-            text-align: center;
-            margin-bottom: var(--space-2xl);
-            color: white;
-        }
-
-        .landing-logo {
-            width: clamp(100px, 20vw, 140px);
-            height: clamp(100px, 20vw, 140px);
-            margin: 0 auto var(--space-lg);
-            background: white;
-            border-radius: var(--radius-full);
-            padding: 15px;
-            box-shadow: var(--shadow-xl);
-        }
-
-        .landing-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .landing-header h1 {
-            font-size: clamp(1.75rem, 5vw, 2.75rem);
-            font-weight: 700;
-            margin-bottom: var(--space-sm);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .landing-header p {
-            font-size: clamp(1rem, 3vw, 1.25rem);
-            opacity: 0.95;
-        }
-
-        .landing-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: clamp(1.5rem, 4vw, 2rem);
-        }
-
-        .landing-card {
-            background: white;
-            border-radius: var(--radius-2xl);
-            padding: clamp(2rem, 5vw, 3rem);
-            box-shadow: var(--shadow-xl);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .landing-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-        }
-
-        .landing-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 35px 70px -15px rgba(194, 24, 91, 0.4);
-        }
-
-        .landing-card-icon {
-            width: clamp(80px, 18vw, 100px);
-            height: clamp(80px, 18vw, 100px);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: var(--radius-2xl);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(2.5rem, 7vw, 3.5rem);
-            margin: 0 auto var(--space-lg);
-            box-shadow: var(--shadow-md);
-        }
-
-        .landing-card h2 {
-            font-size: clamp(1.5rem, 5vw, 1.75rem);
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: var(--space-md);
-            text-align: center;
-        }
-
-        .landing-card p {
-            text-align: center;
-            color: var(--text-light);
-            font-size: clamp(0.95rem, 3vw, 1.05rem);
-            line-height: 1.6;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
@@ -257,7 +123,7 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: var(--space-md);
             flex-wrap: wrap;
         }
@@ -272,7 +138,7 @@
             width: 60px;
             height: 60px;
             border-radius: var(--radius-full);
-            border: 3px solid var(--accent-light);
+            border: 3px solid var(--accent);
             background: white;
             padding: 2px;
             flex-shrink: 0;
@@ -289,74 +155,6 @@
             font-size: clamp(0.75rem, 3vw, 0.875rem);
             opacity: 0.95;
             margin-top: 2px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: var(--space-sm);
-            align-items: center;
-        }
-
-        .admin-btn {
-            width: 44px;
-            height: 44px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.25rem;
-        }
-
-        .admin-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg);
-        }
-
-        /* Developer Credit */
-        .developer-credit {
-            background: rgba(255, 255, 255, 0.15);
-            padding: var(--space-xs) var(--space-md);
-            border-radius: var(--radius-lg);
-            font-size: var(--text-xs);
-            opacity: 0.9;
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-        }
-
-        /* Announcement Banner */
-        .announcement-banner {
-            background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
-            border-left: 4px solid var(--warning);
-            padding: var(--space-md) var(--space-lg);
-            margin: var(--space-md) auto;
-            max-width: 1400px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            display: none;
-        }
-
-        .announcement-banner.active {
-            display: block;
-        }
-
-        .announcement-banner h3 {
-            color: #F57F17;
-            font-size: var(--text-lg);
-            margin-bottom: var(--space-xs);
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-
-        .announcement-banner p {
-            color: #827717;
-            font-size: var(--text-base);
-            line-height: 1.6;
         }
 
         .main-container {
@@ -389,14 +187,13 @@
         .form-header-icon {
             width: clamp(40px, 10vw, 48px);
             height: clamp(40px, 10vw, 48px);
-            background: var(--accent-light);
+            background: var(--accent);
             border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: clamp(1.25rem, 5vw, 1.5rem);
             flex-shrink: 0;
-            color: var(--primary);
         }
 
         .form-header h2 {
@@ -432,6 +229,12 @@
             margin-left: 2px;
         }
 
+        .form-group label span {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
         .form-control {
             width: 100%;
             padding: clamp(0.75rem, 3vw, 1rem);
@@ -443,16 +246,22 @@
             transition: all 0.3s ease;
             background: white;
             color: var(--text);
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(194, 24, 91, 0.1);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-lighter);
         }
 
         select.form-control {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C2185B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 1rem center;
             background-size: 12px;
@@ -493,11 +302,22 @@
             background: var(--bg);
         }
 
-        .checkbox-item input[type="checkbox"] {
+        .checkbox-item input[type="checkbox"],
+        .checkbox-item input[type="radio"] {
             width: 22px;
             height: 22px;
+            min-width: 22px;
+            min-height: 22px;
             accent-color: var(--primary);
             cursor: pointer;
+            margin: 0;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: var(--text-base);
+            line-height: 1.5;
         }
 
         .form-actions {
@@ -525,6 +345,8 @@
             border: none;
             white-space: nowrap;
             text-align: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .btn:active {
@@ -580,15 +402,6 @@
             background: var(--danger-light);
         }
 
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #dd6b20;
-        }
-
         .history-panel {
             background: var(--card-bg);
             border-radius: var(--radius-2xl);
@@ -598,29 +411,9 @@
             animation: fadeIn 0.5s ease 0.1s both;
         }
 
-        .history-panel.locked {
-            pointer-events: none;
-            opacity: 0.6;
-            position: relative;
-        }
-
-        .history-panel.locked::after {
-            content: '🔒 ล็อกโดยแอดมิน';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            z-index: 10;
-        }
-
         .history-header {
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-            color: var(--primary-dark);
+            color: var(--primary);
             padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 3vw, 1.5rem);
         }
 
@@ -631,6 +424,7 @@
             align-items: center;
             justify-content: space-between;
             gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
         }
 
         .history-count {
@@ -658,6 +452,10 @@
             background: var(--bg);
         }
 
+        .history-item:active {
+            background: var(--bg-secondary);
+        }
+
         .history-item-header {
             display: flex;
             justify-content: space-between;
@@ -673,6 +471,7 @@
             color: white;
             border-radius: var(--radius-sm);
             font-weight: 500;
+            white-space: nowrap;
         }
 
         .history-item-date {
@@ -685,6 +484,7 @@
             font-weight: 600;
             color: var(--text);
             margin-bottom: var(--space-xs);
+            font-size: var(--text-base);
         }
 
         .history-item-detail {
@@ -703,6 +503,13 @@
             padding: var(--space-2xl) var(--space-lg);
             text-align: center;
             color: var(--text-light);
+        }
+
+        .empty-history svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
         }
 
         .modal-overlay {
@@ -738,10 +545,6 @@
             animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .modal-content.small {
-            max-width: 500px;
-        }
-
         @keyframes modalSlideIn {
             from {
                 opacity: 0;
@@ -770,6 +573,8 @@
         .modal-close {
             width: clamp(36px, 10vw, 40px);
             height: clamp(36px, 10vw, 40px);
+            min-width: var(--touch-target);
+            min-height: var(--touch-target);
             border: none;
             background: var(--bg);
             border-radius: var(--radius-full);
@@ -780,6 +585,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .modal-close:hover {
@@ -791,6 +597,7 @@
             flex: 1;
             overflow-y: auto;
             padding: clamp(0.5rem, 2vw, 1rem);
+            background: var(--bg-secondary);
         }
 
         .modal-footer {
@@ -801,62 +608,14 @@
             gap: var(--space-md);
         }
 
-        /* Admin Panel */
-        .admin-panel {
-            padding: var(--space-xl);
-        }
-
-        .admin-section {
-            margin-bottom: var(--space-2xl);
-            padding-bottom: var(--space-xl);
-            border-bottom: 2px solid var(--border);
-        }
-
-        .admin-section:last-child {
-            border-bottom: none;
-        }
-
-        .admin-section h4 {
-            color: var(--primary);
-            margin-bottom: var(--space-lg);
-            font-size: var(--text-xl);
-        }
-
-        .admin-toggle {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            margin-bottom: var(--space-md);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: var(--border);
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .toggle-switch.active {
-            background: var(--primary);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
+        #previewArea {
             background: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            min-height: 200px;
         }
 
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
+        #previewArea .print-document {
+            margin: 0 auto;
+            box-shadow: var(--shadow-lg);
         }
 
         .loading {
@@ -902,6 +661,7 @@
             opacity: 0;
             transition: all 0.3s ease;
             z-index: 2000;
+            font-size: var(--text-base);
         }
 
         .toast.show {
@@ -924,6 +684,8 @@
             color: black;
             margin: 0 auto;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
         }
 
         .print-document .doc-code {
@@ -938,6 +700,7 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 10px;
+            position: relative;
         }
 
         .print-document .doc-logo-section {
@@ -949,6 +712,11 @@
             width: 110px;
             height: 110px;
             margin: 0 auto;
+        }
+
+        .print-document .doc-title-section {
+            text-align: center;
+            margin-top: 8px;
         }
 
         .print-document .doc-school-info {
@@ -967,12 +735,24 @@
             margin: 5px 0;
         }
 
+        .print-document .doc-content {
+            margin-bottom: 5px;
+        }
+
+        .print-document .doc-content p {
+            margin-bottom: 4px;
+        }
+
         .print-document .field-line {
             display: flex;
             align-items: baseline;
             gap: 4px;
             margin: 3px 0;
             line-height: 1.6;
+        }
+
+        .print-document .field-label {
+            font-size: 14px;
         }
 
         .print-document .field-value {
@@ -994,6 +774,8 @@
             display: inline-block;
             width: 13px;
             height: 13px;
+            min-width: 13px;
+            min-height: 13px;
             border: 1.5px solid #333;
             background: white;
             position: relative;
@@ -1009,6 +791,41 @@
             transform: translate(-50%, -50%);
             font-size: 11px;
             font-weight: bold;
+            color: #333;
+            line-height: 1;
+        }
+
+        .print-document .signature-section {
+            margin-top: 15px;
+            text-align: right;
+            padding-right: 20px;
+        }
+
+        .print-document .signature-section p {
+            margin: 2px 0;
+        }
+
+        .print-document .approval-section {
+            margin-top: 15px;
+            border-top: 1px solid #666;
+            padding-top: 10px;
+        }
+
+        .print-document .approval-box {
+            border: 1px solid #666;
+            padding: 8px 10px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .print-document .approval-box-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .print-document .approval-box p {
+            margin: 2px 0;
         }
 
         .print-document .id-boxes {
@@ -1040,34 +857,97 @@
         }
 
         @media print {
+            *, *::before, *::after {
+                background: transparent !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+            
+            html, body {
+                width: 210mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
             body > * {
                 display: none !important;
+                visibility: hidden !important;
             }
             
             #printArea {
                 display: block !important;
+                visibility: visible !important;
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            #printArea * {
+                visibility: visible !important;
             }
             
             .print-document {
+                display: block !important;
+                visibility: visible !important;
+                width: 100% !important;
+                min-height: auto !important;
+                padding: 5mm 10mm !important;
+                margin: 0 !important;
                 box-shadow: none !important;
+                font-size: 14px !important;
                 page-break-inside: avoid !important;
+                background: white !important;
+                background-color: white !important;
+            }
+            
+            .print-document .approval-box {
+                background: white !important;
+                background-color: white !important;
             }
             
             @page {
                 size: A4 portrait;
                 margin: 10mm;
             }
+            
+            .print-document,
+            .print-document * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            .print-document .approval-box {
+                border: 1px solid #666 !important;
+            }
+            
+            .print-document .doc-checkbox {
+                border: 1.5px solid #333 !important;
+                background: white !important;
+            }
         }
 
         @media (max-width: 1024px) {
             .main-container {
                 grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
             }
-            .developer-credit {
-                font-size: 0.7rem;
+            .form-section {
+                order: 1;
+                width: 100%;
+            }
+            .history-panel {
+                order: 2;
+                width: 100%;
             }
         }
 
@@ -1075,8 +955,21 @@
             .form-row, .form-row-3 {
                 grid-template-columns: 1fr;
             }
-            .landing-cards {
-                grid-template-columns: 1fr;
+            .modal-footer {
+                flex-direction: column;
+            }
+            .modal-footer .btn {
+                width: 100%;
+            }
+            .print-document {
+                width: 100%;
+                padding: 5mm;
+                font-size: 11px;
+            }
+            .toast {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
             }
         }
 
@@ -1098,53 +991,6 @@
     </style>
 </head>
 <body>
-    <!-- Welcome Alert Modal -->
-    <div class="modal-overlay active" id="welcomeModal">
-        <div class="modal-content small">
-            <div class="modal-header">
-                <h3>📢 ประกาศ</h3>
-            </div>
-            <div class="modal-body" style="padding: 2rem; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🎓</div>
-                <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.5rem;">ยินดีต้อนรับสู่ระบบรับสมัครนักเรียน</h2>
-                <p id="welcomeMessage" style="color: var(--text); line-height: 1.8; margin-bottom: 1.5rem;">
-                    โรงเรียนกระดุมทองวิทยา เปิดรับสมัครนักเรียนชั้น ม.1 และ ม.4<br>
-                    กรุณาเลือกประเภทการสมัครที่ต้องการ
-                </p>
-            </div>
-            <div class="modal-footer" style="flex-direction: row;">
-                <button class="btn btn-primary" onclick="closeWelcomeModal()" style="width: 100%;">
-                    เข้าสู่ระบบ
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Landing Page -->
-    <div class="landing-page hidden" id="landingPage">
-        <div class="landing-container">
-            <div class="landing-header">
-                <div class="landing-logo">
-                    <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="โลโก้โรงเรียน">
-                </div>
-                <h1>ระบบรับสมัครนักเรียนออนไลน์</h1>
-                <p>โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</p>
-            </div>
-            <div class="landing-cards">
-                <div class="landing-card" onclick="selectAdmissionType('m1')">
-                    <div class="landing-card-icon">📚</div>
-                    <h2>สมัครเข้าเรียน ม.1</h2>
-                    <p>สำหรับนักเรียนที่กำลังจบชั้นประถมศึกษาปีที่ 6 ที่ต้องการสมัครเข้าเรียนต่อชั้นมัธยมศึกษาปีที่ 1</p>
-                </div>
-                <div class="landing-card" onclick="selectAdmissionType('m4')">
-                    <div class="landing-card-icon">🎓</div>
-                    <h2>สมัครเข้าเรียน ม.4</h2>
-                    <p>สำหรับนักเรียนที่กำลังจบชั้นมัธยมศึกษาปีที่ 3 ที่ต้องการสมัครเข้าเรียนต่อชั้นมัธยมศึกษาปีที่ 4</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Loading Spinner -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
@@ -1157,23 +1003,11 @@
                 <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="โลโก้โรงเรียน">
                 <div class="logo-text">
                     <h1>ระบบรับสมัครนักเรียนออนไลน์</h1>
-                    <p>โรงเรียนกระดุมทองวิทยา</p>
+                    <p>โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</p>
                 </div>
-            </div>
-            <div class="header-actions">
-                <div class="developer-credit">
-                    👨‍💻 พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง<br>งานทะเบียนและเทียบโอนผลการเรียน
-                </div>
-                <button class="admin-btn" onclick="openAdminPanel()" title="ระบบแอดมิน">⚙️</button>
             </div>
         </div>
     </header>
-
-    <!-- Announcement Banner -->
-    <div class="announcement-banner" id="announcementBanner">
-        <h3>📢 ประกาศ</h3>
-        <p id="announcementText"></p>
-    </div>
 
     <!-- Main Content -->
     <main class="main-container">
@@ -1182,24 +1016,14 @@
             <div class="form-header">
                 <div class="form-header-icon">📝</div>
                 <div>
-                    <h2>ใบสมัครเข้าเรียน</h2>
+                    <h2>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</h2>
                     <p>วก.กทว.202</p>
                 </div>
             </div>
             <div class="form-body">
                 <form id="admissionForm">
-                    <!-- เลือกประเภทใบสมัคร -->
-                    <div class="form-group">
-                        <label>ประเภทใบสมัคร <span class="required">*</span></label>
-                        <select class="form-control" name="admissionType" id="admissionType" required onchange="updateFormLabels()">
-                            <option value="">-- เลือกประเภทใบสมัคร --</option>
-                            <option value="m1">สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</option>
-                            <option value="m4">สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 4</option>
-                        </select>
-                    </div>
-
                     <!-- ข้อมูลส่วนตัว -->
-                    <h3 style="color: var(--primary); margin: var(--space-lg) 0; padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
+                    <h3 style="color: var(--primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
                         📋 ข้อมูลส่วนตัวผู้สมัคร
                     </h3>
 
@@ -1210,7 +1034,7 @@
                         </div>
                         <div class="form-group">
                             <label>ปีการศึกษา <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="academicYear" id="academicYear" required>
+                            <input type="text" class="form-control" name="academicYear" required placeholder="เช่น 2567">
                         </div>
                     </div>
 
@@ -1281,7 +1105,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>ชื่อ-สกุลบิดา <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="fatherName" id="fatherName" required>
+                            <input type="text" class="form-control" name="fatherName" required placeholder="นาย...">
                         </div>
                         <div class="form-group">
                             <label>อายุบิดา</label>
@@ -1291,13 +1115,13 @@
 
                     <div class="form-group">
                         <label>อาชีพบิดา</label>
-                        <input type="text" class="form-control" name="fatherOccupation" id="fatherOccupation">
+                        <input type="text" class="form-control" name="fatherOccupation" placeholder="อาชีพ">
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>ชื่อ-สกุลมารดา <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="motherName" id="motherName" required>
+                            <input type="text" class="form-control" name="motherName" required placeholder="นาง...">
                         </div>
                         <div class="form-group">
                             <label>อายุมารดา</label>
@@ -1307,7 +1131,7 @@
 
                     <div class="form-group">
                         <label>อาชีพมารดา</label>
-                        <input type="text" class="form-control" name="motherOccupation" id="motherOccupation">
+                        <input type="text" class="form-control" name="motherOccupation" placeholder="อาชีพ">
                     </div>
 
                     <!-- ที่อยู่ปัจจุบัน -->
@@ -1344,22 +1168,22 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>ตำบล <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="subdistrict" id="subdistrict" required>
+                            <input type="text" class="form-control" name="subdistrict" required placeholder="ตำบล">
                         </div>
                         <div class="form-group">
                             <label>อำเภอ <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="district" id="district" required>
+                            <input type="text" class="form-control" name="district" required placeholder="อำเภอ">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>จังหวัด <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="province" id="province" required>
+                            <input type="text" class="form-control" name="province" required placeholder="จังหวัด">
                         </div>
                         <div class="form-group">
                             <label>รหัสไปรษณีย์ <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="postalCode" id="postalCode" required maxlength="5">
+                            <input type="text" class="form-control" name="postalCode" required maxlength="5" placeholder="รหัสไปรษณีย์">
                         </div>
                     </div>
 
@@ -1376,26 +1200,26 @@
 
                     <!-- โรงเรียนเดิม -->
                     <h3 style="color: var(--primary); margin: var(--space-xl) 0 var(--space-lg); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--border);">
-                        🏫 <span id="previousSchoolLabel">โรงเรียนเดิม</span>
+                        🏫 โรงเรียนเดิม
                     </h3>
 
                     <div class="form-group">
-                        <label id="previousSchoolInputLabel">จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="previousSchool" id="previousSchool" required>
+                        <label>จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="previousSchool" required placeholder="ชื่อโรงเรียน">
                     </div>
 
                     <div class="form-row-3">
                         <div class="form-group">
                             <label>ตำบล <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="schoolSubdistrict" id="schoolSubdistrict" required>
+                            <input type="text" class="form-control" name="schoolSubdistrict" required placeholder="ตำบล">
                         </div>
                         <div class="form-group">
                             <label>อำเภอ <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="schoolDistrict" id="schoolDistrict" required>
+                            <input type="text" class="form-control" name="schoolDistrict" required placeholder="อำเภอ">
                         </div>
                         <div class="form-group">
                             <label>จังหวัด <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="schoolProvince" id="schoolProvince" required>
+                            <input type="text" class="form-control" name="schoolProvince" required placeholder="จังหวัด">
                         </div>
                     </div>
 
@@ -1451,7 +1275,7 @@
         </div>
 
         <!-- History Panel -->
-        <aside class="history-panel" id="historyPanel">
+        <aside class="history-panel">
             <div class="history-header">
                 <h3>
                     📚 ประวัติการสมัคร
@@ -1474,162 +1298,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>📄 ตัวอย่างเอกสารใบสมัคร</h3>
-                <button class="modal-close" onclick="closeModal('previewModal')">&times;</button>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="modal-body" style="background: var(--bg-secondary);">
+            <div class="modal-body">
                 <div id="previewArea"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('previewModal')">ปิด</button>
+                <button class="btn btn-outline" onclick="closeModal()">ปิด</button>
                 <button class="btn btn-success" onclick="printDocument()">🖨️ พิมพ์เอกสาร</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Password Modal -->
-    <div class="modal-overlay" id="adminPasswordModal">
-        <div class="modal-content small">
-            <div class="modal-header">
-                <h3>🔒 ยืนยันรหัสผ่าน</h3>
-                <button class="modal-close" onclick="closeModal('adminPasswordModal')">&times;</button>
-            </div>
-            <div class="modal-body" style="padding: 2rem;">
-                <div class="form-group">
-                    <label>กรุณากรอกรหัสผ่าน</label>
-                    <input type="password" class="form-control" id="adminPassword" placeholder="รหัสผ่าน" onkeypress="if(event.key === 'Enter') checkAdminPassword()">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('adminPasswordModal')">ยกเลิก</button>
-                <button class="btn btn-primary" onclick="checkAdminPassword()">ยืนยัน</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Modal -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h3>⚙️ ระบบแอดมิน</h3>
-                <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="admin-panel">
-                    <!-- Welcome Alert -->
-                    <div class="admin-section">
-                        <h4>🎯 ตั้งค่า Alert ต้อนรับ</h4>
-                        <div class="admin-toggle">
-                            <div class="toggle-switch" id="welcomeAlertToggle" onclick="toggleWelcomeAlert()">
-                                <div class="toggle-slider"></div>
-                            </div>
-                            <label>เปิด/ปิด Alert ต้อนรับเมื่อเข้าเว็บ</label>
-                        </div>
-                        <div class="form-group">
-                            <label>ข้อความ Alert ต้อนรับ</label>
-                            <textarea class="form-control" id="welcomeAlertTextInput" rows="4" placeholder="กรอกข้อความต้อนรับ..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- ประกาศ Banner -->
-                    <div class="admin-section">
-                        <h4>📢 ตั้งค่าประกาศหน้าเว็บ (Banner)</h4>
-                        <div class="admin-toggle">
-                            <div class="toggle-switch" id="announcementToggle" onclick="toggleAnnouncement()">
-                                <div class="toggle-slider"></div>
-                            </div>
-                            <label>เปิด/ปิดประกาศ Banner</label>
-                        </div>
-                        <div class="form-group">
-                            <label>ข้อความประกาศ</label>
-                            <textarea class="form-control" id="announcementTextInput" rows="3" placeholder="กรอกข้อความประกาศ..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- ส่งออก Excel -->
-                    <div class="admin-section">
-                        <h4>📊 ส่งออกข้อมูล Excel</h4>
-                        <p style="color: var(--text-light); margin-bottom: var(--space-md);">ดาวน์โหลดข้อมูลการสมัครทั้งหมดเป็นไฟล์ Excel</p>
-                        <button class="btn btn-warning" onclick="exportToExcel()">
-                            📥 ส่งออก Excel
-                        </button>
-                    </div>
-
-                    <!-- ค่าเริ่มต้นฟอร์ม -->
-                    <div class="admin-section">
-                        <h4>📝 ตั้งค่าค่าเริ่มต้นของฟอร์ม</h4>
-                        <div class="form-group">
-                            <label>ปีการศึกษา</label>
-                            <input type="text" class="form-control" id="defaultAcademicYear" placeholder="เช่น 2567">
-                        </div>
-                        <div class="form-group">
-                            <label>ชื่อบิดา</label>
-                            <input type="text" class="form-control" id="defaultFatherName" placeholder="เช่น นาย...">
-                        </div>
-                        <div class="form-group">
-                            <label>อาชีพบิดา</label>
-                            <input type="text" class="form-control" id="defaultFatherOccupation" placeholder="เช่น เกษตรกร">
-                        </div>
-                        <div class="form-group">
-                            <label>ชื่อมารดา</label>
-                            <input type="text" class="form-control" id="defaultMotherName" placeholder="เช่น นาง...">
-                        </div>
-                        <div class="form-group">
-                            <label>อาชีพมารดา</label>
-                            <input type="text" class="form-control" id="defaultMotherOccupation" placeholder="เช่น เกษตรกร">
-                        </div>
-                        <div class="form-group">
-                            <label>ตำบล</label>
-                            <input type="text" class="form-control" id="defaultSubdistrict" placeholder="เช่น หนองหัวช้าง">
-                        </div>
-                        <div class="form-group">
-                            <label>อำเภอ</label>
-                            <input type="text" class="form-control" id="defaultDistrict" placeholder="เช่น กันทรารมย์">
-                        </div>
-                        <div class="form-group">
-                            <label>จังหวัด</label>
-                            <input type="text" class="form-control" id="defaultProvince" placeholder="เช่น ศรีสะเกษ">
-                        </div>
-                        <div class="form-group">
-                            <label>รหัสไปรษณีย์</label>
-                            <input type="text" class="form-control" id="defaultPostalCode" placeholder="เช่น 33130" maxlength="5">
-                        </div>
-                        <div class="form-group">
-                            <label>ตำบล (โรงเรียนเดิม)</label>
-                            <input type="text" class="form-control" id="defaultSchoolSubdistrict" placeholder="เช่น หนองหัวช้าง">
-                        </div>
-                        <div class="form-group">
-                            <label>อำเภอ (โรงเรียนเดิม)</label>
-                            <input type="text" class="form-control" id="defaultSchoolDistrict" placeholder="เช่น กันทรารมย์">
-                        </div>
-                        <div class="form-group">
-                            <label>จังหวัด (โรงเรียนเดิม)</label>
-                            <input type="text" class="form-control" id="defaultSchoolProvince" placeholder="เช่น ศรีสะเกษ">
-                        </div>
-                        <div class="form-group">
-                            <label>ชื่อโรงเรียนเดิม (ม.1)</label>
-                            <input type="text" class="form-control" id="defaultPreviousSchoolM1" placeholder="เช่น โรงเรียนบ้าน...">
-                        </div>
-                        <div class="form-group">
-                            <label>ชื่อโรงเรียนเดิม (ม.4)</label>
-                            <input type="text" class="form-control" id="defaultPreviousSchoolM4" placeholder="เช่น โรงเรียน...">
-                        </div>
-                    </div>
-
-                    <!-- ล็อกประวัติ -->
-                    <div class="admin-section">
-                        <h4>🔒 ล็อกส่วนดูประวัติเอกสาร</h4>
-                        <div class="admin-toggle">
-                            <div class="toggle-switch" id="historyLockToggle" onclick="toggleHistoryLock()">
-                                <div class="toggle-slider"></div>
-                            </div>
-                            <label>ล็อก/ปลดล็อกประวัติ</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('adminModal')">ยกเลิก</button>
-                <button class="btn btn-success" onclick="saveAdminSettings()">💾 บันทึกการตั้งค่า</button>
             </div>
         </div>
     </div>
@@ -1645,8 +1321,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // Firebase Configuration - อัปเดตแล้ว
         const firebaseConfig = {
             apiKey: "AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY",
             authDomain: "recruitstudents2026.firebaseapp.com",
@@ -1660,47 +1337,16 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp, setDoc };
+        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp };
 
         console.log('Firebase initialized successfully!');
         
         window.addEventListener('DOMContentLoaded', () => {
-            loadAdminSettings();
             loadHistory();
         });
     </script>
 
     <script>
-        const ADMIN_PASSWORD = "1111";
-
-        let adminSettings = {
-            welcomeAlert: {
-                enabled: false,
-                text: 'โรงเรียนกระดุมทองวิทยา เปิดรับสมัครนักเรียนชั้น ม.1 และ ม.4\nกรุณาเลือกประเภทการสมัครที่ต้องการ'
-            },
-            announcement: {
-                enabled: false,
-                text: ''
-            },
-            defaults: {
-                academicYear: '',
-                fatherName: '',
-                fatherOccupation: '',
-                motherName: '',
-                motherOccupation: '',
-                subdistrict: '',
-                district: '',
-                province: '',
-                postalCode: '',
-                schoolSubdistrict: '',
-                schoolDistrict: '',
-                schoolProvince: '',
-                previousSchoolM1: '',
-                previousSchoolM4: ''
-            },
-            historyLocked: false
-        };
-
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             setDefaultDate();
@@ -1720,21 +1366,15 @@
                 });
             });
 
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this && this.id !== 'welcomeModal') {
-                        this.classList.remove('active');
-                    }
-                });
+            document.getElementById('previewModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
             });
 
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal-overlay').forEach(modal => {
-                        if (modal.id !== 'welcomeModal') {
-                            modal.classList.remove('active');
-                        }
-                    });
+                    closeModal();
                 }
             });
         }
@@ -1742,364 +1382,9 @@
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="applicationDate"]').value = today;
-        }
-
-        function closeWelcomeModal() {
-            document.getElementById('welcomeModal').classList.remove('active');
-            document.getElementById('landingPage').classList.remove('hidden');
-        }
-
-        function selectAdmissionType(type) {
-            document.getElementById('landingPage').classList.add('hidden');
-            document.getElementById('admissionType').value = type;
-            updateFormLabels();
-        }
-
-        function updateFormLabels() {
-            const type = document.getElementById('admissionType').value;
             
-            if (type === 'm1') {
-                document.getElementById('previousSchoolLabel').textContent = 'โรงเรียนเดิม';
-                document.getElementById('previousSchoolInputLabel').innerHTML = 'จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span>';
-                
-                if (adminSettings.defaults.previousSchoolM1) {
-                    document.getElementById('previousSchool').placeholder = adminSettings.defaults.previousSchoolM1;
-                }
-            } else if (type === 'm4') {
-                document.getElementById('previousSchoolLabel').textContent = 'โรงเรียนเดิม';
-                document.getElementById('previousSchoolInputLabel').innerHTML = 'จบชั้นมัธยมศึกษาปีที่ 3 จากโรงเรียน <span class="required">*</span>';
-                
-                if (adminSettings.defaults.previousSchoolM4) {
-                    document.getElementById('previousSchool').placeholder = adminSettings.defaults.previousSchoolM4;
-                }
-            }
-
-            applyDefaultValues();
-        }
-
-        function applyDefaultValues() {
-            const defaults = adminSettings.defaults;
-            
-            if (defaults.academicYear) document.getElementById('academicYear').value = defaults.academicYear;
-            if (defaults.fatherName) document.getElementById('fatherName').placeholder = defaults.fatherName;
-            if (defaults.fatherOccupation) document.getElementById('fatherOccupation').placeholder = defaults.fatherOccupation;
-            if (defaults.motherName) document.getElementById('motherName').placeholder = defaults.motherName;
-            if (defaults.motherOccupation) document.getElementById('motherOccupation').placeholder = defaults.motherOccupation;
-            if (defaults.subdistrict) document.getElementById('subdistrict').placeholder = defaults.subdistrict;
-            if (defaults.district) document.getElementById('district').placeholder = defaults.district;
-            if (defaults.province) document.getElementById('province').placeholder = defaults.province;
-            if (defaults.postalCode) document.getElementById('postalCode').placeholder = defaults.postalCode;
-            if (defaults.schoolSubdistrict) document.getElementById('schoolSubdistrict').placeholder = defaults.schoolSubdistrict;
-            if (defaults.schoolDistrict) document.getElementById('schoolDistrict').placeholder = defaults.schoolDistrict;
-            if (defaults.schoolProvince) document.getElementById('schoolProvince').placeholder = defaults.schoolProvince;
-        }
-
-        function openAdminPanel() {
-            document.getElementById('adminPasswordModal').classList.add('active');
-            document.getElementById('adminPassword').value = '';
-            setTimeout(() => {
-                document.getElementById('adminPassword').focus();
-            }, 300);
-        }
-
-        function checkAdminPassword() {
-            const password = document.getElementById('adminPassword').value;
-            
-            if (password === ADMIN_PASSWORD) {
-                closeModal('adminPasswordModal');
-                showAdminPanel();
-            } else {
-                showToast('รหัสผ่านไม่ถูกต้อง', 'error');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
-            }
-        }
-
-        function showAdminPanel() {
-            // โหลดค่าปัจจุบันลง UI
-            document.getElementById('welcomeAlertTextInput').value = adminSettings.welcomeAlert.text;
-            document.getElementById('welcomeAlertToggle').classList.toggle('active', adminSettings.welcomeAlert.enabled);
-            
-            document.getElementById('announcementTextInput').value = adminSettings.announcement.text;
-            document.getElementById('announcementToggle').classList.toggle('active', adminSettings.announcement.enabled);
-            document.getElementById('historyLockToggle').classList.toggle('active', adminSettings.historyLocked);
-            
-            document.getElementById('defaultAcademicYear').value = adminSettings.defaults.academicYear;
-            document.getElementById('defaultFatherName').value = adminSettings.defaults.fatherName;
-            document.getElementById('defaultFatherOccupation').value = adminSettings.defaults.fatherOccupation;
-            document.getElementById('defaultMotherName').value = adminSettings.defaults.motherName;
-            document.getElementById('defaultMotherOccupation').value = adminSettings.defaults.motherOccupation;
-            document.getElementById('defaultSubdistrict').value = adminSettings.defaults.subdistrict;
-            document.getElementById('defaultDistrict').value = adminSettings.defaults.district;
-            document.getElementById('defaultProvince').value = adminSettings.defaults.province;
-            document.getElementById('defaultPostalCode').value = adminSettings.defaults.postalCode;
-            document.getElementById('defaultSchoolSubdistrict').value = adminSettings.defaults.schoolSubdistrict;
-            document.getElementById('defaultSchoolDistrict').value = adminSettings.defaults.schoolDistrict;
-            document.getElementById('defaultSchoolProvince').value = adminSettings.defaults.schoolProvince;
-            document.getElementById('defaultPreviousSchoolM1').value = adminSettings.defaults.previousSchoolM1;
-            document.getElementById('defaultPreviousSchoolM4').value = adminSettings.defaults.previousSchoolM4;
-            
-            document.getElementById('adminModal').classList.add('active');
-        }
-
-        function toggleWelcomeAlert() {
-            const toggle = document.getElementById('welcomeAlertToggle');
-            toggle.classList.toggle('active');
-        }
-
-        function toggleAnnouncement() {
-            const toggle = document.getElementById('announcementToggle');
-            toggle.classList.toggle('active');
-        }
-
-        function toggleHistoryLock() {
-            const toggle = document.getElementById('historyLockToggle');
-            toggle.classList.toggle('active');
-        }
-
-        async function exportToExcel() {
-            try {
-                showLoading(true);
-
-                // ดึงข้อมูลทั้งหมดจาก Firestore
-                const q = window.firestore.query(
-                    window.firestore.collection(window.db, 'admissions'),
-                    window.firestore.orderBy('createdAt', 'desc')
-                );
-
-                const querySnapshot = await window.firestore.getDocs(q);
-                const allData = [];
-
-                querySnapshot.forEach((doc) => {
-                    const record = doc.data();
-                    const data = record.data || {};
-                    const talents = data.talent || [];
-                    
-                    // จัดรูปแบบวันที่
-                    let dateStr = '-';
-                    if (record.createdAt) {
-                        const date = record.createdAt.toDate();
-                        dateStr = date.toLocaleDateString('th-TH', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-                    }
-
-                    allData.push({
-                        'วันที่บันทึก': dateStr,
-                        'ประเภท': record.formType || '-',
-                        'ปีการศึกษา': data.academicYear || '-',
-                        'คำนำหน้า': data.prefix || '-',
-                        'ชื่อ-นามสกุล': data.fullName || '-',
-                        'ชื่อเล่น': data.nickname || '-',
-                        'วันเกิด': data.birthDate || '-',
-                        'อายุ': data.age || '-',
-                        'หมู่เลือด': data.bloodType || '-',
-                        'ส่วนสูง': data.height || '-',
-                        'น้ำหนัก': data.weight || '-',
-                        'เลขบัตรประชาชน': data.nationalId || '-',
-                        'ชื่อบิดา': data.fatherName || '-',
-                        'อายุบิดา': data.fatherAge || '-',
-                        'อาชีพบิดา': data.fatherOccupation || '-',
-                        'ชื่อมารดา': data.motherName || '-',
-                        'อายุมารดา': data.motherAge || '-',
-                        'อาชีพมารดา': data.motherOccupation || '-',
-                        'บ้านเลขที่': data.houseNumber || '-',
-                        'หมู่ที่': data.moo || '-',
-                        'ถนน': data.road || '-',
-                        'ซอย': data.soi || '-',
-                        'บ้าน/หมู่บ้าน': data.village || '-',
-                        'ตำบล': data.subdistrict || '-',
-                        'อำเภอ': data.district || '-',
-                        'จังหวัด': data.province || '-',
-                        'รหัสไปรษณีย์': data.postalCode || '-',
-                        'โทรศัพท์': data.phone || '-',
-                        'อีเมล': data.email || '-',
-                        'โรงเรียนเดิม': data.previousSchool || '-',
-                        'ตำบล(โรงเรียน)': data.schoolSubdistrict || '-',
-                        'อำเภอ(โรงเรียน)': data.schoolDistrict || '-',
-                        'จังหวัด(โรงเรียน)': data.schoolProvince || '-',
-                        'นักกีฬา': talents.includes('sports') ? 'ใช่' : 'ไม่',
-                        'ประเภทกีฬา': data.sportsType || '-',
-                        'ดนตรี/ศิลปะ': talents.includes('music') ? 'ใช่' : 'ไม่',
-                        'ประเภทดนตรี': data.musicType || '-',
-                        'ความสามารถอื่นๆ': data.otherTalent || '-'
-                    });
-                });
-
-                if (allData.length === 0) {
-                    showToast('ไม่มีข้อมูลสำหรับส่งออก', 'error');
-                    return;
-                }
-
-                // สร้าง Workbook และ Worksheet
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.json_to_sheet(allData);
-
-                // ปรับความกว้างของ column
-                const wscols = [
-                    {wch: 18}, // วันที่บันทึก
-                    {wch: 20}, // ประเภท
-                    {wch: 12}, // ปีการศึกษา
-                    {wch: 10}, // คำนำหน้า
-                    {wch: 30}, // ชื่อ-นามสกุล
-                    {wch: 12}, // ชื่อเล่น
-                    {wch: 12}, // วันเกิด
-                    {wch: 8},  // อายุ
-                    {wch: 10}, // หมู่เลือด
-                    {wch: 10}, // ส่วนสูง
-                    {wch: 10}, // น้ำหนัก
-                    {wch: 18}, // เลขบัตรประชาชน
-                    {wch: 25}, // ชื่อบิดา
-                    {wch: 10}, // อายุบิดา
-                    {wch: 20}, // อาชีพบิดา
-                    {wch: 25}, // ชื่อมารดา
-                    {wch: 10}, // อายุมารดา
-                    {wch: 20}, // อาชีพมารดา
-                    {wch: 12}, // บ้านเลขที่
-                    {wch: 8},  // หมู่ที่
-                    {wch: 15}, // ถนน
-                    {wch: 15}, // ซอย
-                    {wch: 20}, // บ้าน/หมู่บ้าน
-                    {wch: 15}, // ตำบล
-                    {wch: 15}, // อำเภอ
-                    {wch: 15}, // จังหวัด
-                    {wch: 12}, // รหัสไปรษณีย์
-                    {wch: 15}, // โทรศัพท์
-                    {wch: 25}, // อีเมล
-                    {wch: 30}, // โรงเรียนเดิม
-                    {wch: 15}, // ตำบล(โรงเรียน)
-                    {wch: 15}, // อำเภอ(โรงเรียน)
-                    {wch: 15}, // จังหวัด(โรงเรียน)
-                    {wch: 10}, // นักกีฬา
-                    {wch: 20}, // ประเภทกีฬา
-                    {wch: 12}, // ดนตรี/ศิลปะ
-                    {wch: 20}, // ประเภทดนตรี
-                    {wch: 25}  // ความสามารถอื่นๆ
-                ];
-                ws['!cols'] = wscols;
-
-                // เพิ่ม Worksheet เข้า Workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'รายการสมัคร');
-
-                // สร้างชื่อไฟล์
-                const now = new Date();
-                const filename = `รายการสมัครนักเรียน_${now.getFullYear()}_${String(now.getMonth()+1).padStart(2,'0')}_${String(now.getDate()).padStart(2,'0')}.xlsx`;
-
-                // ดาวน์โหลดไฟล์
-                XLSX.writeFile(wb, filename);
-
-                showToast(`ส่งออกข้อมูล ${allData.length} รายการสำเร็จ`);
-
-            } catch (error) {
-                console.error('Error exporting to Excel:', error);
-                showToast('เกิดข้อผิดพลาดในการส่งออกข้อมูล: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function saveAdminSettings() {
-            try {
-                showLoading(true);
-
-                adminSettings.welcomeAlert.enabled = document.getElementById('welcomeAlertToggle').classList.contains('active');
-                adminSettings.welcomeAlert.text = document.getElementById('welcomeAlertTextInput').value;
-                
-                adminSettings.announcement.enabled = document.getElementById('announcementToggle').classList.contains('active');
-                adminSettings.announcement.text = document.getElementById('announcementTextInput').value;
-                adminSettings.historyLocked = document.getElementById('historyLockToggle').classList.contains('active');
-                
-                adminSettings.defaults.academicYear = document.getElementById('defaultAcademicYear').value;
-                adminSettings.defaults.fatherName = document.getElementById('defaultFatherName').value;
-                adminSettings.defaults.fatherOccupation = document.getElementById('defaultFatherOccupation').value;
-                adminSettings.defaults.motherName = document.getElementById('defaultMotherName').value;
-                adminSettings.defaults.motherOccupation = document.getElementById('defaultMotherOccupation').value;
-                adminSettings.defaults.subdistrict = document.getElementById('defaultSubdistrict').value;
-                adminSettings.defaults.district = document.getElementById('defaultDistrict').value;
-                adminSettings.defaults.province = document.getElementById('defaultProvince').value;
-                adminSettings.defaults.postalCode = document.getElementById('defaultPostalCode').value;
-                adminSettings.defaults.schoolSubdistrict = document.getElementById('defaultSchoolSubdistrict').value;
-                adminSettings.defaults.schoolDistrict = document.getElementById('defaultSchoolDistrict').value;
-                adminSettings.defaults.schoolProvince = document.getElementById('defaultSchoolProvince').value;
-                adminSettings.defaults.previousSchoolM1 = document.getElementById('defaultPreviousSchoolM1').value;
-                adminSettings.defaults.previousSchoolM4 = document.getElementById('defaultPreviousSchoolM4').value;
-
-                // บันทึกลง Firestore
-                const settingsRef = window.firestore.doc(window.db, 'settings', 'admin');
-                await window.firestore.setDoc(settingsRef, adminSettings);
-
-                // อัปเดต UI
-                updateWelcomeAlert();
-                updateAnnouncementBanner();
-                updateHistoryLock();
-                applyDefaultValues();
-
-                closeModal('adminModal');
-                showToast('บันทึกการตั้งค่าสำเร็จ');
-            } catch (error) {
-                console.error('Error saving admin settings:', error);
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function loadAdminSettings() {
-            try {
-                const settingsRef = window.firestore.doc(window.db, 'settings', 'admin');
-                const docSnap = await window.firestore.getDoc(settingsRef);
-                
-                if (docSnap.exists()) {
-                    adminSettings = docSnap.data();
-                }
-
-                updateWelcomeAlert();
-                updateAnnouncementBanner();
-                updateHistoryLock();
-                applyDefaultValues();
-            } catch (error) {
-                console.error('Error loading admin settings:', error);
-            }
-        }
-
-        function updateWelcomeAlert() {
-            const welcomeModal = document.getElementById('welcomeModal');
-            const welcomeMessage = document.getElementById('welcomeMessage');
-            
-            if (adminSettings.welcomeAlert && adminSettings.welcomeAlert.enabled) {
-                if (adminSettings.welcomeAlert.text) {
-                    welcomeMessage.innerHTML = adminSettings.welcomeAlert.text.replace(/\n/g, '<br>');
-                }
-                welcomeModal.classList.add('active');
-            } else {
-                welcomeModal.classList.remove('active');
-                document.getElementById('landingPage').classList.remove('hidden');
-            }
-        }
-
-        function updateAnnouncementBanner() {
-            const banner = document.getElementById('announcementBanner');
-            const text = document.getElementById('announcementText');
-            
-            if (adminSettings.announcement.enabled && adminSettings.announcement.text) {
-                text.textContent = adminSettings.announcement.text;
-                banner.classList.add('active');
-            } else {
-                banner.classList.remove('active');
-            }
-        }
-
-        function updateHistoryLock() {
-            const historyPanel = document.getElementById('historyPanel');
-            if (adminSettings.historyLocked) {
-                historyPanel.classList.add('locked');
-            } else {
-                historyPanel.classList.remove('locked');
-            }
+            const currentYear = new Date().getFullYear() + 543;
+            document.querySelector('input[name="academicYear"]').value = currentYear;
         }
 
         function getFormData() {
@@ -2165,8 +1450,6 @@
         function generateDocumentHTML(data) {
             const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
             const talents = data.talent || [];
-            const gradeText = data.admissionType === 'm1' ? 'ประถมศึกษาปีที่ 6' : 'มัธยมศึกษาปีที่ 3';
-            const targetGrade = data.admissionType === 'm1' ? 'มัธยมศึกษาปีที่ 1' : 'มัธยมศึกษาปีที่ 4';
             
             return `
                 <div class="print-document">
@@ -2182,7 +1465,7 @@
                     </div>
 
                     <div class="doc-title-section">
-                        <div class="doc-title">ใบสมัครเข้าเรียนชั้น${targetGrade} ปีการศึกษา ${data.academicYear || '.........................'}</div>
+                        <div class="doc-title">ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1 ปีการศึกษา ${data.academicYear || '.........................'}</div>
                         <div style="text-align: center; font-size: 14px; margin: 4px 0;">
                             โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>
                             สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ
@@ -2267,7 +1550,7 @@
                         </div>
 
                         <div class="field-line" style="margin-top: 6px;">
-                            <span class="field-label">3. ปัจจุบันกำลังจบชั้น${gradeText} จากโรงเรียน</span>
+                            <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
                             <span class="field-value">${data.previousSchool || '……………………………………………………………………………..………..'}</span>
                         </div>
 
@@ -2295,13 +1578,13 @@
                         </div>
                     </div>
 
-                    <div style="text-align: right; margin-top: 12px;">
+                    <div class="signature-section" style="text-align: right; margin-top: 12px;">
                         <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
                         <p>(.......................................................................)</p>
                         <p>วันที่.................เดือน...............................พ.ศ................</p>
                     </div>
 
-                    <div style="margin-top: 15px; border-top: 1px solid #666; padding-top: 10px;">
+                    <div class="approval-section">
                         <p style="font-weight: 600; margin-bottom: 6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
@@ -2370,13 +1653,11 @@
             try {
                 showLoading(true);
 
-                const gradeText = data.admissionType === 'm1' ? 'ม.1' : 'ม.4';
                 const record = {
-                    formType: `ใบสมัครเข้าเรียน ${gradeText}`,
+                    formType: 'ใบสมัครเข้าเรียน ม.1',
                     formCode: 'วก.กทว.202',
                     studentName: `${data.prefix}${data.fullName}`,
                     academicYear: data.academicYear,
-                    admissionType: data.admissionType,
                     data: data,
                     createdAt: window.firestore.serverTimestamp(),
                     updatedAt: window.firestore.serverTimestamp()
@@ -2456,7 +1737,7 @@
                                 <span class="history-item-date">${dateStr}</span>
                             </div>
                             <div class="history-item-name">${record.studentName || '-'}</div>
-                            <div class="history-item-detail">${record.formType} | ปีการศึกษา ${record.academicYear || '-'}</div>
+                            <div class="history-item-detail">ปีการศึกษา ${record.academicYear || '-'}</div>
                             <div class="history-item-actions">
                                 <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">
                                     👁️ ดู
@@ -2519,12 +1800,12 @@
             }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
         }
 
         function printDocument() {
-            closeModal('previewModal');
+            closeModal();
             setTimeout(() => {
                 window.print();
             }, 100);

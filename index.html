@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #C2185B;
@@ -314,6 +316,18 @@
             transform: rotate(90deg);
         }
 
+        /* Developer Credit */
+        .developer-credit {
+            background: rgba(255, 255, 255, 0.15);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius-lg);
+            font-size: var(--text-xs);
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
         /* Announcement Banner */
         .announcement-banner {
             background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
@@ -566,6 +580,15 @@
             background: var(--danger-light);
         }
 
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
         .history-panel {
             background: var(--card-bg);
             border-radius: var(--radius-2xl);
@@ -715,6 +738,10 @@
             animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .modal-content.small {
+            max-width: 500px;
+        }
+
         @keyframes modalSlideIn {
             from {
                 opacity: 0;
@@ -764,7 +791,6 @@
             flex: 1;
             overflow-y: auto;
             padding: clamp(0.5rem, 2vw, 1rem);
-            background: var(--bg-secondary);
         }
 
         .modal-footer {
@@ -1040,6 +1066,9 @@
             .main-container {
                 grid-template-columns: 1fr;
             }
+            .developer-credit {
+                font-size: 0.7rem;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1069,8 +1098,30 @@
     </style>
 </head>
 <body>
+    <!-- Welcome Alert Modal -->
+    <div class="modal-overlay active" id="welcomeModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h3>📢 ประกาศ</h3>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🎓</div>
+                <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.5rem;">ยินดีต้อนรับสู่ระบบรับสมัครนักเรียน</h2>
+                <p id="welcomeMessage" style="color: var(--text); line-height: 1.8; margin-bottom: 1.5rem;">
+                    โรงเรียนกระดุมทองวิทยา เปิดรับสมัครนักเรียนชั้น ม.1 และ ม.4<br>
+                    กรุณาเลือกประเภทการสมัครที่ต้องการ
+                </p>
+            </div>
+            <div class="modal-footer" style="flex-direction: row;">
+                <button class="btn btn-primary" onclick="closeWelcomeModal()" style="width: 100%;">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Landing Page -->
-    <div class="landing-page" id="landingPage">
+    <div class="landing-page hidden" id="landingPage">
         <div class="landing-container">
             <div class="landing-header">
                 <div class="landing-logo">
@@ -1110,6 +1161,9 @@
                 </div>
             </div>
             <div class="header-actions">
+                <div class="developer-credit">
+                    👨‍💻 พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง<br>งานทะเบียนและเทียบโอนผลการเรียน
+                </div>
                 <button class="admin-btn" onclick="openAdminPanel()" title="ระบบแอดมิน">⚙️</button>
             </div>
         </div>
@@ -1422,12 +1476,32 @@
                 <h3>📄 ตัวอย่างเอกสารใบสมัคร</h3>
                 <button class="modal-close" onclick="closeModal('previewModal')">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="background: var(--bg-secondary);">
                 <div id="previewArea"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('previewModal')">ปิด</button>
                 <button class="btn btn-success" onclick="printDocument()">🖨️ พิมพ์เอกสาร</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div class="modal-overlay" id="adminPasswordModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h3>🔒 ยืนยันรหัสผ่าน</h3>
+                <button class="modal-close" onclick="closeModal('adminPasswordModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div class="form-group">
+                    <label>กรุณากรอกรหัสผ่าน</label>
+                    <input type="password" class="form-control" id="adminPassword" placeholder="รหัสผ่าน" onkeypress="if(event.key === 'Enter') checkAdminPassword()">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('adminPasswordModal')">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="checkAdminPassword()">ยืนยัน</button>
             </div>
         </div>
     </div>
@@ -1441,19 +1515,43 @@
             </div>
             <div class="modal-body">
                 <div class="admin-panel">
-                    <!-- ประกาศ -->
+                    <!-- Welcome Alert -->
                     <div class="admin-section">
-                        <h4>📢 ตั้งค่าประกาศหน้าเว็บ</h4>
+                        <h4>🎯 ตั้งค่า Alert ต้อนรับ</h4>
+                        <div class="admin-toggle">
+                            <div class="toggle-switch" id="welcomeAlertToggle" onclick="toggleWelcomeAlert()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <label>เปิด/ปิด Alert ต้อนรับเมื่อเข้าเว็บ</label>
+                        </div>
+                        <div class="form-group">
+                            <label>ข้อความ Alert ต้อนรับ</label>
+                            <textarea class="form-control" id="welcomeAlertTextInput" rows="4" placeholder="กรอกข้อความต้อนรับ..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- ประกาศ Banner -->
+                    <div class="admin-section">
+                        <h4>📢 ตั้งค่าประกาศหน้าเว็บ (Banner)</h4>
                         <div class="admin-toggle">
                             <div class="toggle-switch" id="announcementToggle" onclick="toggleAnnouncement()">
                                 <div class="toggle-slider"></div>
                             </div>
-                            <label>เปิด/ปิดประกาศ</label>
+                            <label>เปิด/ปิดประกาศ Banner</label>
                         </div>
                         <div class="form-group">
                             <label>ข้อความประกาศ</label>
                             <textarea class="form-control" id="announcementTextInput" rows="3" placeholder="กรอกข้อความประกาศ..."></textarea>
                         </div>
+                    </div>
+
+                    <!-- ส่งออก Excel -->
+                    <div class="admin-section">
+                        <h4>📊 ส่งออกข้อมูล Excel</h4>
+                        <p style="color: var(--text-light); margin-bottom: var(--space-md);">ดาวน์โหลดข้อมูลการสมัครทั้งหมดเป็นไฟล์ Excel</p>
+                        <button class="btn btn-warning" onclick="exportToExcel()">
+                            📥 ส่งออก Excel
+                        </button>
                     </div>
 
                     <!-- ค่าเริ่มต้นฟอร์ม -->
@@ -1573,7 +1671,13 @@
     </script>
 
     <script>
+        const ADMIN_PASSWORD = "1111";
+
         let adminSettings = {
+            welcomeAlert: {
+                enabled: false,
+                text: 'โรงเรียนกระดุมทองวิทยา เปิดรับสมัครนักเรียนชั้น ม.1 และ ม.4\nกรุณาเลือกประเภทการสมัครที่ต้องการ'
+            },
             announcement: {
                 enabled: false,
                 text: ''
@@ -1618,7 +1722,7 @@
 
             document.querySelectorAll('.modal-overlay').forEach(modal => {
                 modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
+                    if (e.target === this && this.id !== 'welcomeModal') {
                         this.classList.remove('active');
                     }
                 });
@@ -1627,7 +1731,9 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     document.querySelectorAll('.modal-overlay').forEach(modal => {
-                        modal.classList.remove('active');
+                        if (modal.id !== 'welcomeModal') {
+                            modal.classList.remove('active');
+                        }
                     });
                 }
             });
@@ -1636,6 +1742,11 @@
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="applicationDate"]').value = today;
+        }
+
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').classList.remove('active');
+            document.getElementById('landingPage').classList.remove('hidden');
         }
 
         function selectAdmissionType(type) {
@@ -1651,7 +1762,6 @@
                 document.getElementById('previousSchoolLabel').textContent = 'โรงเรียนเดิม';
                 document.getElementById('previousSchoolInputLabel').innerHTML = 'จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span>';
                 
-                // ใส่ค่าเริ่มต้น
                 if (adminSettings.defaults.previousSchoolM1) {
                     document.getElementById('previousSchool').placeholder = adminSettings.defaults.previousSchoolM1;
                 }
@@ -1659,13 +1769,11 @@
                 document.getElementById('previousSchoolLabel').textContent = 'โรงเรียนเดิม';
                 document.getElementById('previousSchoolInputLabel').innerHTML = 'จบชั้นมัธยมศึกษาปีที่ 3 จากโรงเรียน <span class="required">*</span>';
                 
-                // ใส่ค่าเริ่มต้น
                 if (adminSettings.defaults.previousSchoolM4) {
                     document.getElementById('previousSchool').placeholder = adminSettings.defaults.previousSchoolM4;
                 }
             }
 
-            // ใส่ค่าเริ่มต้นอื่นๆ
             applyDefaultValues();
         }
 
@@ -1687,7 +1795,31 @@
         }
 
         function openAdminPanel() {
+            document.getElementById('adminPasswordModal').classList.add('active');
+            document.getElementById('adminPassword').value = '';
+            setTimeout(() => {
+                document.getElementById('adminPassword').focus();
+            }, 300);
+        }
+
+        function checkAdminPassword() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                closeModal('adminPasswordModal');
+                showAdminPanel();
+            } else {
+                showToast('รหัสผ่านไม่ถูกต้อง', 'error');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function showAdminPanel() {
             // โหลดค่าปัจจุบันลง UI
+            document.getElementById('welcomeAlertTextInput').value = adminSettings.welcomeAlert.text;
+            document.getElementById('welcomeAlertToggle').classList.toggle('active', adminSettings.welcomeAlert.enabled);
+            
             document.getElementById('announcementTextInput').value = adminSettings.announcement.text;
             document.getElementById('announcementToggle').classList.toggle('active', adminSettings.announcement.enabled);
             document.getElementById('historyLockToggle').classList.toggle('active', adminSettings.historyLocked);
@@ -1710,6 +1842,11 @@
             document.getElementById('adminModal').classList.add('active');
         }
 
+        function toggleWelcomeAlert() {
+            const toggle = document.getElementById('welcomeAlertToggle');
+            toggle.classList.toggle('active');
+        }
+
         function toggleAnnouncement() {
             const toggle = document.getElementById('announcementToggle');
             toggle.classList.toggle('active');
@@ -1720,10 +1857,158 @@
             toggle.classList.toggle('active');
         }
 
+        async function exportToExcel() {
+            try {
+                showLoading(true);
+
+                // ดึงข้อมูลทั้งหมดจาก Firestore
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'admissions'),
+                    window.firestore.orderBy('createdAt', 'desc')
+                );
+
+                const querySnapshot = await window.firestore.getDocs(q);
+                const allData = [];
+
+                querySnapshot.forEach((doc) => {
+                    const record = doc.data();
+                    const data = record.data || {};
+                    const talents = data.talent || [];
+                    
+                    // จัดรูปแบบวันที่
+                    let dateStr = '-';
+                    if (record.createdAt) {
+                        const date = record.createdAt.toDate();
+                        dateStr = date.toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+
+                    allData.push({
+                        'วันที่บันทึก': dateStr,
+                        'ประเภท': record.formType || '-',
+                        'ปีการศึกษา': data.academicYear || '-',
+                        'คำนำหน้า': data.prefix || '-',
+                        'ชื่อ-นามสกุล': data.fullName || '-',
+                        'ชื่อเล่น': data.nickname || '-',
+                        'วันเกิด': data.birthDate || '-',
+                        'อายุ': data.age || '-',
+                        'หมู่เลือด': data.bloodType || '-',
+                        'ส่วนสูง': data.height || '-',
+                        'น้ำหนัก': data.weight || '-',
+                        'เลขบัตรประชาชน': data.nationalId || '-',
+                        'ชื่อบิดา': data.fatherName || '-',
+                        'อายุบิดา': data.fatherAge || '-',
+                        'อาชีพบิดา': data.fatherOccupation || '-',
+                        'ชื่อมารดา': data.motherName || '-',
+                        'อายุมารดา': data.motherAge || '-',
+                        'อาชีพมารดา': data.motherOccupation || '-',
+                        'บ้านเลขที่': data.houseNumber || '-',
+                        'หมู่ที่': data.moo || '-',
+                        'ถนน': data.road || '-',
+                        'ซอย': data.soi || '-',
+                        'บ้าน/หมู่บ้าน': data.village || '-',
+                        'ตำบล': data.subdistrict || '-',
+                        'อำเภอ': data.district || '-',
+                        'จังหวัด': data.province || '-',
+                        'รหัสไปรษณีย์': data.postalCode || '-',
+                        'โทรศัพท์': data.phone || '-',
+                        'อีเมล': data.email || '-',
+                        'โรงเรียนเดิม': data.previousSchool || '-',
+                        'ตำบล(โรงเรียน)': data.schoolSubdistrict || '-',
+                        'อำเภอ(โรงเรียน)': data.schoolDistrict || '-',
+                        'จังหวัด(โรงเรียน)': data.schoolProvince || '-',
+                        'นักกีฬา': talents.includes('sports') ? 'ใช่' : 'ไม่',
+                        'ประเภทกีฬา': data.sportsType || '-',
+                        'ดนตรี/ศิลปะ': talents.includes('music') ? 'ใช่' : 'ไม่',
+                        'ประเภทดนตรี': data.musicType || '-',
+                        'ความสามารถอื่นๆ': data.otherTalent || '-'
+                    });
+                });
+
+                if (allData.length === 0) {
+                    showToast('ไม่มีข้อมูลสำหรับส่งออก', 'error');
+                    return;
+                }
+
+                // สร้าง Workbook และ Worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(allData);
+
+                // ปรับความกว้างของ column
+                const wscols = [
+                    {wch: 18}, // วันที่บันทึก
+                    {wch: 20}, // ประเภท
+                    {wch: 12}, // ปีการศึกษา
+                    {wch: 10}, // คำนำหน้า
+                    {wch: 30}, // ชื่อ-นามสกุล
+                    {wch: 12}, // ชื่อเล่น
+                    {wch: 12}, // วันเกิด
+                    {wch: 8},  // อายุ
+                    {wch: 10}, // หมู่เลือด
+                    {wch: 10}, // ส่วนสูง
+                    {wch: 10}, // น้ำหนัก
+                    {wch: 18}, // เลขบัตรประชาชน
+                    {wch: 25}, // ชื่อบิดา
+                    {wch: 10}, // อายุบิดา
+                    {wch: 20}, // อาชีพบิดา
+                    {wch: 25}, // ชื่อมารดา
+                    {wch: 10}, // อายุมารดา
+                    {wch: 20}, // อาชีพมารดา
+                    {wch: 12}, // บ้านเลขที่
+                    {wch: 8},  // หมู่ที่
+                    {wch: 15}, // ถนน
+                    {wch: 15}, // ซอย
+                    {wch: 20}, // บ้าน/หมู่บ้าน
+                    {wch: 15}, // ตำบล
+                    {wch: 15}, // อำเภอ
+                    {wch: 15}, // จังหวัด
+                    {wch: 12}, // รหัสไปรษณีย์
+                    {wch: 15}, // โทรศัพท์
+                    {wch: 25}, // อีเมล
+                    {wch: 30}, // โรงเรียนเดิม
+                    {wch: 15}, // ตำบล(โรงเรียน)
+                    {wch: 15}, // อำเภอ(โรงเรียน)
+                    {wch: 15}, // จังหวัด(โรงเรียน)
+                    {wch: 10}, // นักกีฬา
+                    {wch: 20}, // ประเภทกีฬา
+                    {wch: 12}, // ดนตรี/ศิลปะ
+                    {wch: 20}, // ประเภทดนตรี
+                    {wch: 25}  // ความสามารถอื่นๆ
+                ];
+                ws['!cols'] = wscols;
+
+                // เพิ่ม Worksheet เข้า Workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'รายการสมัคร');
+
+                // สร้างชื่อไฟล์
+                const now = new Date();
+                const filename = `รายการสมัครนักเรียน_${now.getFullYear()}_${String(now.getMonth()+1).padStart(2,'0')}_${String(now.getDate()).padStart(2,'0')}.xlsx`;
+
+                // ดาวน์โหลดไฟล์
+                XLSX.writeFile(wb, filename);
+
+                showToast(`ส่งออกข้อมูล ${allData.length} รายการสำเร็จ`);
+
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showToast('เกิดข้อผิดพลาดในการส่งออกข้อมูล: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
         async function saveAdminSettings() {
             try {
                 showLoading(true);
 
+                adminSettings.welcomeAlert.enabled = document.getElementById('welcomeAlertToggle').classList.contains('active');
+                adminSettings.welcomeAlert.text = document.getElementById('welcomeAlertTextInput').value;
+                
                 adminSettings.announcement.enabled = document.getElementById('announcementToggle').classList.contains('active');
                 adminSettings.announcement.text = document.getElementById('announcementTextInput').value;
                 adminSettings.historyLocked = document.getElementById('historyLockToggle').classList.contains('active');
@@ -1748,6 +2033,7 @@
                 await window.firestore.setDoc(settingsRef, adminSettings);
 
                 // อัปเดต UI
+                updateWelcomeAlert();
                 updateAnnouncementBanner();
                 updateHistoryLock();
                 applyDefaultValues();
@@ -1771,11 +2057,27 @@
                     adminSettings = docSnap.data();
                 }
 
+                updateWelcomeAlert();
                 updateAnnouncementBanner();
                 updateHistoryLock();
                 applyDefaultValues();
             } catch (error) {
                 console.error('Error loading admin settings:', error);
+            }
+        }
+
+        function updateWelcomeAlert() {
+            const welcomeModal = document.getElementById('welcomeModal');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            if (adminSettings.welcomeAlert && adminSettings.welcomeAlert.enabled) {
+                if (adminSettings.welcomeAlert.text) {
+                    welcomeMessage.innerHTML = adminSettings.welcomeAlert.text.replace(/\n/g, '<br>');
+                }
+                welcomeModal.classList.add('active');
+            } else {
+                welcomeModal.classList.remove('active');
+                document.getElementById('landingPage').classList.remove('hidden');
             }
         }
 

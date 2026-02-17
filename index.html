@@ -1071,6 +1071,28 @@
         .hidden {
             display: none !important;
         }
+
+        .history-locked-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--text-xs);
+            color: var(--danger);
+            background: #fff5f5;
+            border: 1px solid var(--danger-light);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+        }
+
+        .btn-edit {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2b6cb0;
+        }
     </style>
 </head>
 <body>
@@ -1311,7 +1333,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>ตำบล <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="subdistrict" required placeholder="เช่น กระดุมทอง">
+                            <input type="text" class="form-control" name="subdistrict" required placeholder="เช่น หนองหัวช้าง">
                         </div>
                         <div class="form-group">
                             <label>อำเภอ <span class="required">*</span></label>
@@ -1427,6 +1449,9 @@
                     📚 ประวัติการสมัคร
                     <span class="history-count" id="historyCount">0</span>
                 </h3>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                    <span class="history-locked-badge hidden" id="historyLockedBadge">🔒 ล็อครายการแล้ว</span>
+                </div>
             </div>
             <div class="history-list" id="historyList">
                 <div class="empty-history">
@@ -1480,6 +1505,19 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 1rem; color: var(--primary);">🔒 ล็อครายการประวัติการสมัคร</h4>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="historyLockToggle" onchange="toggleHistoryLock()" style="width: 20px; height: 20px;">
+                            <span>ล็อครายการ (ไม่ให้แก้ไข/ลบ)</span>
+                        </label>
+                        <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:6px;">
+                            เมื่อล็อค ปุ่มแก้ไขและลบจะถูกซ่อน ต้องปลดล็อคด้วยรหัสแอดมิน
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: var(--primary);">🧪 ระบบทดสอบ</h4>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -1516,6 +1554,72 @@
         </div>
     </div>
 
+    <!-- Edit Record Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>✏️ แก้ไขข้อมูล</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="background: white; padding: 1.5rem;">
+                <input type="hidden" id="editRecordId">
+                <div class="form-group">
+                    <label>ระดับชั้น <span class="required">*</span></label>
+                    <select class="form-control" id="editGradeLevel">
+                        <option value="m1">มัธยมศึกษาปีที่ 1</option>
+                        <option value="m4">มัธยมศึกษาปีที่ 4</option>
+                    </select>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>คำนำหน้า</label>
+                        <select class="form-control" id="editPrefix">
+                            <option value="เด็กชาย">เด็กชาย</option>
+                            <option value="เด็กหญิง">เด็กหญิง</option>
+                            <option value="นาย">นาย</option>
+                            <option value="นางสาว">นางสาว</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อ <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="editFirstName" placeholder="ชื่อ">
+                    </div>
+                    <div class="form-group">
+                        <label>นามสกุล <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="editLastName" placeholder="นามสกุล">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>โทรศัพท์</label>
+                        <input type="text" class="form-control" id="editPhone" placeholder="เช่น 081-234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label>โรงเรียนเดิม</label>
+                        <input type="text" class="form-control" id="editPreviousSchool" placeholder="ชื่อโรงเรียน">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>อำเภอ</label>
+                        <input type="text" class="form-control" id="editDistrict" placeholder="อำเภอ">
+                    </div>
+                    <div class="form-group">
+                        <label>จังหวัด</label>
+                        <input type="text" class="form-control" id="editProvince" placeholder="จังหวัด">
+                    </div>
+                </div>
+                <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:8px;">
+                    * สำหรับแก้ไขข้อมูลหลักเท่านั้น หากต้องการแก้ไขข้อมูลทั้งหมด กรุณาลบแล้วกรอกใหม่
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeEditModal()">ยกเลิก</button>
+                <button class="btn btn-success" onclick="saveEditRecord()">💾 บันทึกการแก้ไข</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Alert Modal -->
     <div class="modal-overlay" id="alertAnnouncementModal">
         <div class="modal-content" style="max-width: 600px;">
@@ -1540,9 +1644,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase Configuration - อัปเดตแล้ว
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY",
             authDomain: "recruitstudents2026.firebaseapp.com",
@@ -1556,7 +1660,7 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, orderBy, limit, serverTimestamp };
+        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, serverTimestamp };
 
         console.log('Firebase initialized successfully!');
     </script>
@@ -2049,6 +2153,8 @@
                     return;
                 }
 
+                const isLocked = localStorage.getItem('historyLocked') === 'true';
+
                 historyList.innerHTML = history.map(record => {
                     let dateStr = '-';
                     if (record.createdAt) {
@@ -2063,6 +2169,10 @@
                     }
 
                     const gradeLabel = record.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+                    const actionButtons = isLocked
+                        ? `<span style="font-size:var(--text-xs); color:var(--text-light);">🔒 ล็อครายการ</span>`
+                        : `<button class="btn btn-edit btn-sm" onclick="openEditRecord('${record.id}')">✏️ แก้ไข</button>
+                           <button class="btn btn-danger btn-sm" onclick="deleteHistoryRecord('${record.id}')">🗑️ ลบ</button>`;
 
                     return `
                         <div class="history-item">
@@ -2073,12 +2183,8 @@
                             <div class="history-item-name">${record.studentName || '-'}</div>
                             <div class="history-item-detail">ปีการศึกษา ${record.academicYear || '-'}</div>
                             <div class="history-item-actions">
-                                <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">
-                                    👁️ ดู
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteHistoryRecord('${record.id}')">
-                                    🗑️ ลบ
-                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">👁️ ดู</button>
+                                ${actionButtons}
                             </div>
                         </div>
                     `;
@@ -2117,9 +2223,20 @@
         }
 
         async function deleteHistoryRecord(id) {
-            if (!confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
+            // เช็คว่าล็อคอยู่ไหม
+            if (localStorage.getItem('historyLocked') === 'true') {
+                showToast('รายการถูกล็อค ไม่สามารถลบได้', 'error');
                 return;
             }
+
+            const password = prompt('กรุณาใส่รหัสผ่านเพื่อยืนยันการลบ:');
+            if (password === null) return;
+            if (password !== '1111') {
+                showToast('รหัสผ่านไม่ถูกต้อง', 'error');
+                return;
+            }
+
+            if (!confirm('ยืนยันการลบรายการนี้? ไม่สามารถกู้คืนได้')) return;
 
             try {
                 showLoading(true);
@@ -2136,6 +2253,126 @@
 
         function closeModal() {
             document.getElementById('previewModal').classList.remove('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function openEditRecord(id) {
+            if (localStorage.getItem('historyLocked') === 'true') {
+                showToast('รายการถูกล็อค ไม่สามารถแก้ไขได้', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const docRef = window.firestore.doc(window.db, 'admissions', id);
+                const docSnap = await window.firestore.getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    showToast('ไม่พบข้อมูล', 'error');
+                    return;
+                }
+
+                const record = docSnap.data();
+                const d = record.data || {};
+
+                // ใส่ข้อมูลลง modal
+                document.getElementById('editRecordId').value = id;
+                document.getElementById('editGradeLevel').value = record.gradeLevel || 'm1';
+                document.getElementById('editPrefix').value = d.prefix || 'เด็กชาย';
+                document.getElementById('editFirstName').value = d.firstName || '';
+                document.getElementById('editLastName').value = d.lastName || '';
+                document.getElementById('editPhone').value = d.phone || '';
+                document.getElementById('editPreviousSchool').value = d.previousSchool || '';
+                document.getElementById('editDistrict').value = d.district || '';
+                document.getElementById('editProvince').value = d.province || '';
+
+                document.getElementById('editModal').classList.add('active');
+
+            } catch (error) {
+                console.error('Error loading record:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function saveEditRecord() {
+            const id = document.getElementById('editRecordId').value;
+            const firstName = document.getElementById('editFirstName').value.trim();
+            const lastName = document.getElementById('editLastName').value.trim();
+
+            if (!firstName || !lastName) {
+                showToast('กรุณากรอกชื่อและนามสกุล', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+
+                const gradeLevel = document.getElementById('editGradeLevel').value;
+                const prefix = document.getElementById('editPrefix').value;
+                const fullName = firstName + ' ' + lastName;
+                const gradeText = gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+                const formCode = gradeLevel === 'm4' ? 'วก.กทว.203' : 'วก.กทว.202';
+
+                // โหลดข้อมูลเดิมมาก่อน
+                const docRef = window.firestore.doc(window.db, 'admissions', id);
+                const docSnap = await window.firestore.getDoc(docRef);
+                const oldData = docSnap.data();
+                const oldInnerData = oldData.data || {};
+
+                // merge ข้อมูลที่แก้ไข
+                const updatedInnerData = {
+                    ...oldInnerData,
+                    prefix,
+                    firstName,
+                    lastName,
+                    fullName,
+                    phone: document.getElementById('editPhone').value,
+                    previousSchool: document.getElementById('editPreviousSchool').value,
+                    district: document.getElementById('editDistrict').value,
+                    province: document.getElementById('editProvince').value,
+                    gradeLevel
+                };
+
+                await window.firestore.updateDoc(docRef, {
+                        gradeLevel,
+                        formType: `ใบสมัครเข้าเรียน ${gradeText}`,
+                        formCode,
+                        studentName: `${prefix}${fullName}`,
+                        data: updatedInnerData,
+                        updatedAt: window.firestore.serverTimestamp()
+                    });
+
+                showToast('แก้ไขข้อมูลสำเร็จ');
+                closeEditModal();
+                await loadHistory();
+
+            } catch (error) {
+                console.error('Error updating record:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function toggleHistoryLock() {
+            const locked = document.getElementById('historyLockToggle').checked;
+            localStorage.setItem('historyLocked', locked);
+            applyHistoryLockUI(locked);
+        }
+
+        function applyHistoryLockUI(locked) {
+            const badge = document.getElementById('historyLockedBadge');
+            if (locked) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            loadHistory(); // รีโหลดเพื่ออัปเดตปุ่ม
         }
 
         function printDocument() {
@@ -2182,21 +2419,20 @@
         }
 
         function loadAdminSettings() {
-            // โหลดการตั้งค่า alert
             const alertEnabled = localStorage.getItem('alertEnabled') === 'true';
             const alertMessage = localStorage.getItem('alertMessage') || '';
-            
             document.getElementById('alertToggle').checked = alertEnabled;
             document.getElementById('alertMessage').value = alertMessage;
 
-            // โหลดการตั้งค่าปีการศึกษา
             const defaultYear = localStorage.getItem('defaultAcademicYear') || '';
             document.getElementById('defaultAcademicYear').value = defaultYear;
 
-            // โหลดการตั้งค่าโหมดทดสอบ
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
             document.getElementById('testModeToggle').checked = testModeEnabled;
             toggleTestModeButton(testModeEnabled);
+
+            const historyLocked = localStorage.getItem('historyLocked') === 'true';
+            document.getElementById('historyLockToggle').checked = historyLocked;
         }
 
         function saveDefaultYear() {
@@ -2379,10 +2615,14 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadHistory();
             setTimeout(showAlertIfEnabled, 500);
-            
+
             // โหลดโหมดทดสอบ
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
             toggleTestModeButton(testModeEnabled);
+
+            // โหลดสถานะล็อค
+            const historyLocked = localStorage.getItem('historyLocked') === 'true';
+            applyHistoryLockUI(historyLocked);
         });
     </script>
 </body>

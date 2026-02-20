@@ -1043,16 +1043,117 @@
             align-items: center;
             justify-content: center;
             min-height: calc(100vh - 120px);
-            padding: var(--space-2xl);
+            padding: var(--space-2xl) var(--space-lg);
         }
 
         .landing-page h2 {
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-size: clamp(1.25rem, 4vw, 2rem);
             color: var(--primary);
             margin-bottom: var(--space-xl);
             text-align: center;
         }
 
+        /* ===== Step 1: 2 main cards ===== */
+        .doc-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 720px;
+            width: 100%;
+        }
+
+        .doc-type-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: 2rem 1.5rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-type-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .doc-type-card.admission { border-color: var(--primary); }
+        .doc-type-card.mobtua   { border-color: #7b3f9e; }
+
+        .doc-type-card .card-icon  { font-size: 3.5rem; margin-bottom: .75rem; }
+        .doc-type-card h3          { font-size: 1.4rem; margin-bottom: .5rem; }
+        .doc-type-card.admission h3{ color: var(--primary); }
+        .doc-type-card.mobtua   h3 { color: #7b3f9e; }
+        .doc-type-card p           { color: var(--text-light); font-size: var(--text-sm); line-height: 1.5; }
+        .doc-type-card .card-badge {
+            display: inline-block; font-size: 0.7rem; padding: 2px 8px;
+            border-radius: 999px; font-weight: 600; margin-bottom: .5rem;
+        }
+        .doc-type-card.admission .card-badge { background: var(--accent-light); color: var(--primary-dark); }
+        .doc-type-card.mobtua   .card-badge { background: #e9d5ff; color: #5b21b6; }
+
+        /* ===== Step 2: grade sub-selection ===== */
+        .grade-step {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 720px;
+            animation: fadeIn 0.3s ease;
+        }
+        .grade-step.active { display: flex; }
+
+        .step-back-btn {
+            align-self: flex-start;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-light); font-size: var(--text-base);
+            display: flex; align-items: center; gap: .5rem;
+            padding: .5rem .25rem; margin-bottom: 1rem;
+            transition: color .2s;
+        }
+        .step-back-btn:hover { color: var(--primary); }
+
+        .grade-step-title {
+            font-size: 1.1rem; color: var(--text-light);
+            margin-bottom: 1.25rem; text-align: center;
+        }
+        .grade-step-title strong { color: var(--text); }
+
+        .grade-sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .grade-sub-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 2rem 1rem;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            border: 3px solid transparent;
+        }
+        .grade-sub-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .grade-sub-card .sub-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+        .grade-sub-card h3  { font-size: 1.6rem; font-weight: 700; margin-bottom: .25rem; }
+        .grade-sub-card p   { color: var(--text-light); font-size: var(--text-sm); }
+
+        .grade-sub-card.m1 { border-color: var(--primary); }
+        .grade-sub-card.m1 h3 { color: var(--primary); }
+        .grade-sub-card.m4 { border-color: var(--accent-dark); }
+        .grade-sub-card.m4 h3 { color: var(--accent-dark); }
+        .grade-sub-card.mobtua-m1 { border-color: #7b3f9e; }
+        .grade-sub-card.mobtua-m1 h3 { color: #7b3f9e; }
+        .grade-sub-card.mobtua-m4 { border-color: #5b21b6; }
+        .grade-sub-card.mobtua-m4 h3 { color: #5b21b6; }
+
+        /* legacy selectors still used elsewhere */
         .grade-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1060,39 +1161,17 @@
             max-width: 800px;
             width: 100%;
         }
-
         .grade-card {
-            background: white;
-            border-radius: var(--radius-2xl);
-            padding: var(--space-2xl);
-            box-shadow: var(--shadow-lg);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            border: 3px solid transparent;
+            background: white; border-radius: var(--radius-2xl);
+            padding: var(--space-2xl); box-shadow: var(--shadow-lg);
+            cursor: pointer; transition: all 0.3s ease;
+            text-align: center; border: 3px solid transparent;
         }
+        .grade-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-xl); border-color: var(--primary); }
+        .grade-card-icon { font-size: 4rem; margin-bottom: var(--space-md); }
+        .grade-card h3   { font-size: 1.5rem; color: var(--primary); margin-bottom: var(--space-sm); }
+        .grade-card p    { color: var(--text-light); font-size: var(--text-base); }
 
-        .grade-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-            border-color: var(--primary);
-        }
-
-        .grade-card-icon {
-            font-size: 4rem;
-            margin-bottom: var(--space-md);
-        }
-
-        .grade-card h3 {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: var(--space-sm);
-        }
-
-        .grade-card p {
-            color: var(--text-light);
-            font-size: var(--text-base);
-        }
 
         .hidden {
             display: none !important;
@@ -1380,22 +1459,59 @@
 
     <!-- Landing Page -->
     <div class="landing-page" id="landingPage">
-        <h2>📝 เลือกประเภทเอกสาร</h2>
-        <div class="grade-selection" style="max-width: 1100px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
-            <div class="grade-card" onclick="selectGrade('m1')">
-                <div class="grade-card-icon">🎒</div>
-                <h3>ม.1</h3>
-                <p>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</p>
+        <h2>📝 ระบบรับสมัครนักเรียนออนไลน์</h2>
+
+        <!-- Step 1: เลือกประเภทเอกสาร -->
+        <div class="doc-type-grid" id="landingStep1">
+            <div class="doc-type-card admission" onclick="showLandingStep2('admission')">
+                <div class="card-icon">📝</div>
+                <span class="card-badge">วก.กทว.202 / 203</span>
+                <h3>ใบสมัครเข้าเรียน</h3>
+                <p>สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1 หรือ 4<br>โรงเรียนกระดุมทองวิทยา</p>
+                <div style="margin-top:1rem; color:var(--primary); font-size:0.85rem; font-weight:600;">คลิกเพื่อเลือกระดับชั้น →</div>
             </div>
-            <div class="grade-card" onclick="selectGrade('m4')">
-                <div class="grade-card-icon">🎓</div>
-                <h3>ม.4</h3>
-                <p>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 4</p>
+            <div class="doc-type-card mobtua" onclick="showLandingStep2('mobtua')">
+                <div class="card-icon">📋</div>
+                <span class="card-badge">วก.กทว.205</span>
+                <h3>ใบมอบตัวนักเรียน</h3>
+                <p>บันทึกข้อมูลนักเรียนและผู้ปกครอง<br>สำหรับมอบตัวเข้าเรียน</p>
+                <div style="margin-top:1rem; color:#7b3f9e; font-size:0.85rem; font-weight:600;">คลิกเพื่อเลือกระดับชั้น →</div>
             </div>
-            <div class="grade-card" onclick="openMobTuaForm()" style="border-color: #7b3f9e;">
-                <div class="grade-card-icon">📋</div>
-                <h3 style="color: #7b3f9e;">ใบมอบตัว</h3>
-                <p>ใบมอบตัวนักเรียน วก.กทว.205</p>
+        </div>
+
+        <!-- Step 2a: เลือกระดับชั้นสำหรับใบสมัคร -->
+        <div class="grade-step" id="landingStep2Admission">
+            <button class="step-back-btn" onclick="backToStep1()">← กลับ</button>
+            <p class="grade-step-title">📝 ใบสมัครเข้าเรียน — <strong>เลือกระดับชั้น</strong></p>
+            <div class="grade-sub-grid">
+                <div class="grade-sub-card m1" onclick="selectGrade('m1')">
+                    <div class="sub-icon">🎒</div>
+                    <h3>ม.1</h3>
+                    <p>มัธยมศึกษาปีที่ 1</p>
+                </div>
+                <div class="grade-sub-card m4" onclick="selectGrade('m4')">
+                    <div class="sub-icon">🎓</div>
+                    <h3>ม.4</h3>
+                    <p>มัธยมศึกษาปีที่ 4</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2b: เลือกระดับชั้นสำหรับใบมอบตัว -->
+        <div class="grade-step" id="landingStep2Mobtua">
+            <button class="step-back-btn" onclick="backToStep1()">← กลับ</button>
+            <p class="grade-step-title">📋 ใบมอบตัวนักเรียน — <strong>เลือกระดับชั้น</strong></p>
+            <div class="grade-sub-grid">
+                <div class="grade-sub-card mobtua-m1" onclick="openMobTuaForm('m1')">
+                    <div class="sub-icon">🎒</div>
+                    <h3>ม.1</h3>
+                    <p>มัธยมศึกษาปีที่ 1</p>
+                </div>
+                <div class="grade-sub-card mobtua-m4" onclick="openMobTuaForm('m4')">
+                    <div class="sub-icon">🎓</div>
+                    <h3>ม.4</h3>
+                    <p>มัธยมศึกษาปีที่ 4</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1738,6 +1854,9 @@
                         </button>
                         <button type="button" class="btn btn-warning hidden" id="testDataBtn" onclick="fillTestData()" style="background: #f59e0b; color: white;">
                             🧪 ทดสอบกรอกข้อมูล
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="backToLanding()">
+                            ← กลับหน้าหลัก
                         </button>
                     </div>
                 </form>
@@ -2844,9 +2963,32 @@
             }
         }
 
+        function backToLanding() {
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('hidden');
+            backToStep1();
+        }
+
+        function showLandingStep2(type) {
+            document.getElementById('landingStep1').style.display = 'none';
+            if (type === 'admission') {
+                document.getElementById('landingStep2Admission').classList.add('active');
+            } else {
+                document.getElementById('landingStep2Mobtua').classList.add('active');
+            }
+        }
+
+        function backToStep1() {
+            document.getElementById('landingStep1').style.display = '';
+            document.getElementById('landingStep2Admission').classList.remove('active');
+            document.getElementById('landingStep2Mobtua').classList.remove('active');
+        }
+
         function selectGrade(grade) {
             document.getElementById('landingPage').classList.add('hidden');
             document.getElementById('mainContainer').classList.remove('hidden');
+            // reset step for next time
+            backToStep1();
             
             const gradeSelect = document.getElementById('gradeLevel');
             gradeSelect.value = grade;
@@ -3848,14 +3990,29 @@
         }
 
         // ========== ระบบใบมอบตัวนักเรียน วก.กทว.205 ==========
-        function openMobTuaForm() {
+        function openMobTuaForm(grade) {
             document.getElementById('mobtuaModal').classList.add('active');
+            // reset landing step for next time
+            backToStep1();
+
             const defaultYear = localStorage.getItem('defaultAcademicYear');
-            if (defaultYear) {
-                document.getElementById('mt_academicYear').value = defaultYear;
-            } else {
-                document.getElementById('mt_academicYear').value = new Date().getFullYear() + 543;
+            const yearVal = defaultYear || (new Date().getFullYear() + 543).toString();
+            document.getElementById('mt_academicYear').value = yearVal;
+
+            // ตั้งค่าระดับชั้นเริ่มต้นใน classRoom field
+            if (grade) {
+                const classRoomEl = document.querySelector('[name="mt_classRoom"]');
+                if (classRoomEl && !classRoomEl.value) {
+                    classRoomEl.value = grade === 'm1' ? 'ม.1/' : 'ม.4/';
+                    classRoomEl.focus();
+                    // วาง cursor ไว้ท้ายสุด
+                    const len = classRoomEl.value.length;
+                    classRoomEl.setSelectionRange(len, len);
+                }
+                // เก็บ grade ไว้ใน data attribute ของ form เพื่อใช้ใน document
+                document.getElementById('mobtuaForm').dataset.grade = grade;
             }
+
             // โหลดประวัติและ sync lock badge
             loadMobtuaHistory();
             const isLocked = localStorage.getItem('historyLocked') === 'true';
@@ -3870,6 +4027,7 @@
 
         function closeMobtuaModal() {
             document.getElementById('mobtuaModal').classList.remove('active');
+            backToStep1();
         }
 
         function closeMobtuaPreviewModal() {

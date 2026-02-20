@@ -2679,8 +2679,88 @@
         </div>
     </div>
 
-    <!-- Hidden Print Area for มอบตัว -->
+    <!-- Hidden Print Area for ใบมอบตัว -->
     <div id="mobtuaPrintArea" style="display:none;"></div>
+
+    <!-- Hidden Print Area for ใบสมัคร -->
+    <div id="printArea" style="display:none;"></div>
+
+    <!-- Mobtua Edit Modal -->
+    <div class="modal-overlay" id="mobtuaEditModal" style="z-index: 1300;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7b3f9e, #9c4dcc); color: white;">
+                <h3>✏️ แก้ไขข้อมูลใบมอบตัว</h3>
+                <button class="modal-close" onclick="closeMobtuaEditModal()" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
+            </div>
+            <div class="modal-body" style="background: white; padding: 1.5rem;">
+                <input type="hidden" id="mobtuaEditId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ชั้น/ห้อง <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="mobtuaEditClassRoom" placeholder="เช่น ม.1/2">
+                    </div>
+                    <div class="form-group">
+                        <label>ปีการศึกษา</label>
+                        <input type="text" class="form-control" id="mobtuaEditAcademicYear" placeholder="เช่น 2568">
+                    </div>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>คำนำหน้านักเรียน</label>
+                        <select class="form-control" id="mobtuaEditStudentPrefix">
+                            <option value="เด็กชาย">เด็กชาย</option>
+                            <option value="เด็กหญิง">เด็กหญิง</option>
+                            <option value="นาย">นาย</option>
+                            <option value="นางสาว">นางสาว</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อนักเรียน <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="mobtuaEditStudentFirstName" placeholder="ชื่อ">
+                    </div>
+                    <div class="form-group">
+                        <label>นามสกุลนักเรียน <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="mobtuaEditStudentLastName" placeholder="นามสกุล">
+                    </div>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>คำนำหน้าผู้ปกครอง</label>
+                        <select class="form-control" id="mobtuaEditGuardianPrefix">
+                            <option value="นาย">นาย</option>
+                            <option value="นาง">นาง</option>
+                            <option value="นางสาว">นางสาว</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อผู้ปกครอง</label>
+                        <input type="text" class="form-control" id="mobtuaEditGuardianFirstName" placeholder="ชื่อ">
+                    </div>
+                    <div class="form-group">
+                        <label>นามสกุลผู้ปกครอง</label>
+                        <input type="text" class="form-control" id="mobtuaEditGuardianLastName" placeholder="นามสกุล">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>โทรมือถือผู้ปกครอง</label>
+                        <input type="text" class="form-control" id="mobtuaEditGuardianMobile" placeholder="เบอร์โทร">
+                    </div>
+                    <div class="form-group">
+                        <label>โรงเรียนเดิม</label>
+                        <input type="text" class="form-control" id="mobtuaEditPreviousSchool" placeholder="ชื่อโรงเรียน">
+                    </div>
+                </div>
+                <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:8px;">
+                    * แก้ไขข้อมูลหลักเท่านั้น หากต้องการแก้ไขทั้งหมด กรุณาลบแล้วกรอกใหม่
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeMobtuaEditModal()">ยกเลิก</button>
+                <button class="btn btn-success" onclick="saveMobtuaEditRecord()" style="background: linear-gradient(135deg,#7b3f9e,#9c4dcc);">💾 บันทึกการแก้ไข</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Admin Settings Modal -->
     <div class="modal-overlay" id="adminModal">
@@ -3285,34 +3365,50 @@
         }
 
         function previewDocument() {
-            if (!validateForm()) {
-                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
-                document.getElementById('admissionForm').reportValidity();
-                return;
+            try {
+                if (!validateForm()) {
+                    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                    document.getElementById('admissionForm').reportValidity();
+                    return;
+                }
+                const data = getFormData();
+                const html = generateDocumentHTML(data);
+                const previewArea = document.getElementById('previewArea');
+                const printArea   = document.getElementById('printArea');
+                const modal       = document.getElementById('previewModal');
+                if (!previewArea || !printArea || !modal) {
+                    showToast('ไม่พบองค์ประกอบของหน้าต่างแสดงผล กรุณารีโหลดหน้า', 'error');
+                    return;
+                }
+                previewArea.innerHTML = html;
+                printArea.innerHTML   = html;
+                modal.classList.add('active');
+            } catch (err) {
+                console.error('previewDocument error:', err);
+                showToast('เกิดข้อผิดพลาดในการแสดงตัวอย่าง: ' + err.message, 'error');
             }
-
-            const data = getFormData();
-            const html = generateDocumentHTML(data);
-            
-            document.getElementById('previewArea').innerHTML = html;
-            document.getElementById('printArea').innerHTML = html;
-            document.getElementById('previewModal').classList.add('active');
         }
 
         async function saveDocument() {
-            if (!validateForm()) {
-                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
-                document.getElementById('admissionForm').reportValidity();
-                return;
+            try {
+                if (!validateForm()) {
+                    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                    document.getElementById('admissionForm').reportValidity();
+                    return;
+                }
+                const data = getFormData();
+                await saveToFirestore(data);
+                const html = generateDocumentHTML(data);
+                const previewArea = document.getElementById('previewArea');
+                const printArea   = document.getElementById('printArea');
+                const modal       = document.getElementById('previewModal');
+                if (previewArea) previewArea.innerHTML = html;
+                if (printArea)   printArea.innerHTML   = html;
+                if (modal)       modal.classList.add('active');
+            } catch (err) {
+                console.error('saveDocument error:', err);
+                showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
             }
-
-            const data = getFormData();
-            await saveToFirestore(data);
-            
-            const html = generateDocumentHTML(data);
-            document.getElementById('previewArea').innerHTML = html;
-            document.getElementById('printArea').innerHTML = html;
-            document.getElementById('previewModal').classList.add('active');
         }
 
         async function saveToFirestore(data) {
@@ -3376,6 +3472,7 @@
 
                 const historyList = document.getElementById('historyList');
                 const historyCount = document.getElementById('historyCount');
+                if (!historyList || !historyCount) return;
                 
                 historyCount.textContent = history.length;
 
@@ -3444,11 +3541,14 @@
                 
                 if (docSnap.exists()) {
                     const record = docSnap.data();
-                    const html = generateDocumentHTML(record.data);
+                    const html = generateDocumentHTML(record.data || {});
                     
-                    document.getElementById('previewArea').innerHTML = html;
-                    document.getElementById('printArea').innerHTML = html;
-                    document.getElementById('previewModal').classList.add('active');
+                    const previewArea = document.getElementById('previewArea');
+                    const printArea   = document.getElementById('printArea');
+                    const modal       = document.getElementById('previewModal');
+                    if (previewArea) previewArea.innerHTML = html;
+                    if (printArea)   printArea.innerHTML   = html;
+                    if (modal)       modal.classList.add('active');
                 } else {
                     showToast('ไม่พบข้อมูล', 'error');
                 }
@@ -4358,7 +4458,8 @@
                     }
                     const actionBtns = isLocked
                         ? `<span style="font-size:var(--text-xs);color:var(--text-light);">🔒 ล็อครายการ</span>`
-                        : `<button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
+                        : `<button class="btn btn-edit btn-sm" onclick="openMobtuaEditRecord('${rec.id}')">✏️ แก้ไข</button>
+                           <button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
 
                     return `<div class="history-item" style="border-left: 3px solid #9c4dcc;">
                         <div class="history-item-header">
@@ -4406,6 +4507,107 @@
                 showLoading(true);
                 await window.firestore.deleteDoc(window.firestore.doc(window.db, 'mobtua', id));
                 showToast('ลบรายการสำเร็จ');
+                await loadMobtuaHistory();
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function openMobtuaEditRecord(id) {
+            if (localStorage.getItem('historyLocked') === 'true') {
+                showToast('รายการถูกล็อค ไม่สามารถแก้ไขได้', 'error'); return;
+            }
+            const pw = prompt('กรุณาใส่รหัสผ่านเพื่อแก้ไข:');
+            if (pw === null) return;
+            if (pw !== '1111') { showToast('รหัสผ่านไม่ถูกต้อง', 'error'); return; }
+
+            try {
+                showLoading(true);
+                const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
+                if (!snap.exists()) { showToast('ไม่พบข้อมูล', 'error'); return; }
+
+                const rec = snap.data();
+                const d = rec.data || {};
+
+                document.getElementById('mobtuaEditId').value = id;
+                document.getElementById('mobtuaEditClassRoom').value = rec.classRoom || d.mt_classRoom || '';
+                document.getElementById('mobtuaEditAcademicYear').value = rec.academicYear || d.mt_academicYear || '';
+                document.getElementById('mobtuaEditStudentPrefix').value = d.mt_studentPrefix || 'เด็กชาย';
+                document.getElementById('mobtuaEditStudentFirstName').value = d.mt_studentFirstName || '';
+                document.getElementById('mobtuaEditStudentLastName').value = d.mt_studentLastName || '';
+                document.getElementById('mobtuaEditGuardianPrefix').value = d.mt_guardianPrefix || 'นาย';
+                document.getElementById('mobtuaEditGuardianFirstName').value = d.mt_guardianFirstName || '';
+                document.getElementById('mobtuaEditGuardianLastName').value = d.mt_guardianLastName || '';
+                document.getElementById('mobtuaEditGuardianMobile').value = d.mt_guardianMobile || '';
+                document.getElementById('mobtuaEditPreviousSchool').value = d.mt_previousSchool || '';
+
+                document.getElementById('mobtuaEditModal').classList.add('active');
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function closeMobtuaEditModal() {
+            document.getElementById('mobtuaEditModal').classList.remove('active');
+        }
+
+        async function saveMobtuaEditRecord() {
+            const id = document.getElementById('mobtuaEditId').value;
+            const firstName = document.getElementById('mobtuaEditStudentFirstName').value.trim();
+            const lastName = document.getElementById('mobtuaEditStudentLastName').value.trim();
+            if (!firstName || !lastName) {
+                showToast('กรุณากรอกชื่อและนามสกุลนักเรียน', 'error'); return;
+            }
+
+            try {
+                showLoading(true);
+                const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
+                const oldData = snap.data();
+                const oldInner = oldData.data || {};
+
+                const studentPrefix = document.getElementById('mobtuaEditStudentPrefix').value;
+                const guardianPrefix = document.getElementById('mobtuaEditGuardianPrefix').value;
+                const guardianFirst = document.getElementById('mobtuaEditGuardianFirstName').value.trim();
+                const guardianLast = document.getElementById('mobtuaEditGuardianLastName').value.trim();
+                const classRoom = document.getElementById('mobtuaEditClassRoom').value.trim();
+                const academicYear = document.getElementById('mobtuaEditAcademicYear').value.trim();
+
+                const studentFullName = `${studentPrefix}${firstName} ${lastName}`;
+                const guardianName = `${guardianPrefix} ${guardianFirst} ${guardianLast}`.trim();
+
+                const updatedInner = {
+                    ...oldInner,
+                    mt_studentPrefix: studentPrefix,
+                    mt_studentFirstName: firstName,
+                    mt_studentLastName: lastName,
+                    mt_studentFullName: studentFullName,
+                    mt_guardianPrefix: guardianPrefix,
+                    mt_guardianFirstName: guardianFirst,
+                    mt_guardianLastName: guardianLast,
+                    mt_guardianName: guardianName,
+                    mt_guardianMobile: document.getElementById('mobtuaEditGuardianMobile').value,
+                    mt_previousSchool: document.getElementById('mobtuaEditPreviousSchool').value,
+                    mt_classRoom: classRoom,
+                    mt_academicYear: academicYear,
+                };
+
+                await window.firestore.updateDoc(
+                    window.firestore.doc(window.db, 'mobtua', id), {
+                        studentName: studentFullName,
+                        guardianName: guardianName,
+                        classRoom: classRoom,
+                        academicYear: academicYear,
+                        data: updatedInner,
+                        updatedAt: window.firestore.serverTimestamp()
+                    }
+                );
+
+                showToast('แก้ไขข้อมูลสำเร็จ');
+                closeMobtuaEditModal();
                 await loadMobtuaHistory();
             } catch(e) {
                 showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');

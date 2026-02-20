@@ -898,7 +898,8 @@
                 visibility: hidden !important;
             }
             
-            #printArea {
+            /* ใบสมัคร - แสดงเมื่อไม่ได้พิมพ์ใบมอบตัว */
+            body:not([data-print="mobtua"]) #printArea {
                 display: block !important;
                 visibility: visible !important;
                 position: absolute !important;
@@ -911,7 +912,24 @@
                 background-color: white !important;
             }
             
-            #printArea * {
+            body:not([data-print="mobtua"]) #printArea * {
+                visibility: visible !important;
+            }
+
+            /* ใบมอบตัว - แสดงเมื่อ data-print="mobtua" */
+            body[data-print="mobtua"] #mobtuaPrintArea {
+                display: block !important;
+                visibility: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+
+            body[data-print="mobtua"] #mobtuaPrintArea * {
                 visibility: visible !important;
             }
             
@@ -953,6 +971,14 @@
             .print-document .doc-checkbox {
                 border: 1.5px solid #333 !important;
                 background: white !important;
+            }
+
+            /* mobtua 2-page break */
+            .mobtua-page-1 {
+                page-break-after: always !important;
+            }
+            .mobtua-page-2 {
+                page-break-before: always !important;
             }
         }
 
@@ -1093,6 +1119,240 @@
         .btn-edit:hover {
             background: #2b6cb0;
         }
+
+
+        /* ===== ใบมอบตัว modal ===== */
+        .mobtua-modal {
+            z-index: 1050;
+        }
+        .mobtua-modal .modal-content {
+            max-width: 1100px;
+            width: 100%;
+            height: 92vh;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .mobtua-modal .modal-header {
+            flex-shrink: 0;
+        }
+        .mobtua-modal .modal-body {
+            background: white;
+            padding: 1.25rem 1.75rem;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            flex: 1 1 0;
+            min-height: 0;
+        }
+        .mobtua-modal .form-actions {
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 2px solid var(--border);
+            padding: 1rem 0 0.5rem;
+            margin-top: 1rem;
+            z-index: 10;
+        }
+        @media (max-width: 768px) {
+            .mobtua-modal .modal-body { padding: 1rem; }
+            .mobtua-modal .modal-content { height: 100vh; max-height: 100vh; border-radius: 0; }
+        }
+        /* form-row สำหรับ คำนำหน้า + ชื่อ + นามสกุล */
+        .form-row-prefix {
+            display: grid;
+            grid-template-columns: 140px 1fr 1fr;
+            gap: var(--space-md);
+        }
+        @media (max-width: 768px) {
+            .form-row-prefix {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-row-prefix .form-group:first-child {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .section-divider {
+            color: #7b3f9e;
+            margin: var(--space-xl) 0 var(--space-lg);
+            padding-bottom: var(--space-sm);
+            border-bottom: 2px solid #e9d5f9;
+            font-size: 1rem;
+        }
+
+        /* Print document for มอบตัว */
+        .mobtua-doc {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 8mm 12mm;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: black;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .mobtua-doc .mt-doc-header-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .mobtua-doc .mt-logo {
+            width: 90px;
+            height: 90px;
+            flex-shrink: 0;
+        }
+        .mobtua-doc .mt-title-center {
+            flex: 1;
+            text-align: center;
+            padding-top: 8px;
+        }
+        .mobtua-doc .mt-title-center h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Prompt', sans-serif;
+        }
+        .mobtua-doc .mt-title-center p {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 2px 0 0;
+            font-family: 'Prompt', sans-serif;
+        }
+        .mobtua-doc .mt-topright {
+            width: 120px;
+            border: 1.5px solid #333;
+            padding: 5px 8px;
+            font-size: 12px;
+            line-height: 1.8;
+            flex-shrink: 0;
+        }
+        .mobtua-doc .mt-field {
+            display: inline;
+        }
+        .mobtua-doc .mt-line {
+            border-bottom: 1px dotted #333;
+            display: inline-block;
+            min-width: 80px;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: bottom;
+        }
+        .mobtua-doc .mt-section-title {
+            font-weight: 700;
+            margin: 6px 0 2px;
+        }
+        .mobtua-doc .mt-para {
+            margin: 3px 0;
+            line-height: 1.6;
+        }
+        .mobtua-doc .mt-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 2px 0;
+        }
+        .mobtua-doc .mt-cb {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 10px;
+        }
+        .mobtua-doc .mt-box {
+            width: 13px;
+            height: 13px;
+            border: 1.5px solid #333;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        .mobtua-doc .mt-sig-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            gap: 20px;
+        }
+        .mobtua-doc .mt-sig-block {
+            text-align: center;
+            flex: 1;
+        }
+        .mobtua-doc .mt-doclist {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 16px;
+            font-size: 12.5px;
+            margin-top: 6px;
+        }
+        .mobtua-doc .mt-doclist-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .mobtua-doc .mt-divider {
+            border-top: 1px solid #555;
+            margin: 8px 0;
+        }
+        .mobtua-doc .mt-id-boxes {
+            display: inline-flex;
+            gap: 2px;
+            align-items: center;
+            vertical-align: middle;
+        }
+        .mobtua-doc .mt-id-box {
+            width: 16px;
+            height: 20px;
+            border: 1.5px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .mobtua-doc .mt-id-dash {
+            width: 6px;
+            height: 2px;
+            background: #333;
+        }
+        .mobtua-doc .mt-code {
+            text-align: right;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        .mobtua-doc .mt-nowrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobtua-doc .mobtua-page-1 {
+            padding-bottom: 10px;
+        }
+        .mobtua-doc .mobtua-page-2 {
+            border-top: 2px dashed #ccc;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        @media print {
+            .mobtua-doc {
+                width: 100% !important;
+                min-height: auto !important;
+                padding: 5mm 10mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                font-size: 13px !important;
+            }
+            .mobtua-doc .mobtua-page-2 {
+                border-top: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1120,17 +1380,22 @@
 
     <!-- Landing Page -->
     <div class="landing-page" id="landingPage">
-        <h2>📝 เลือกระดับชั้นที่ต้องการสมัคร</h2>
-        <div class="grade-selection">
+        <h2>📝 เลือกประเภทเอกสาร</h2>
+        <div class="grade-selection" style="max-width: 1100px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
             <div class="grade-card" onclick="selectGrade('m1')">
                 <div class="grade-card-icon">🎒</div>
                 <h3>ม.1</h3>
-                <p>สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</p>
+                <p>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</p>
             </div>
             <div class="grade-card" onclick="selectGrade('m4')">
                 <div class="grade-card-icon">🎓</div>
                 <h3>ม.4</h3>
-                <p>สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 4</p>
+                <p>ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 4</p>
+            </div>
+            <div class="grade-card" onclick="openMobTuaForm()" style="border-color: #7b3f9e;">
+                <div class="grade-card-icon">📋</div>
+                <h3 style="color: #7b3f9e;">ใบมอบตัว</h3>
+                <p>ใบมอบตัวนักเรียน วก.กทว.205</p>
             </div>
         </div>
     </div>
@@ -1141,9 +1406,10 @@
         <div class="form-section">
             <div class="form-header">
                 <div class="form-header-icon">📝</div>
-                <div>
+                <div style="flex:1;">
                     <h2 id="formTitle">ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1</h2>
                     <p id="formCode">วก.กทว.202</p>
+                    <span id="autosaveBadgeAdmission" style="font-size:0.75rem;opacity:0;transition:opacity 0.5s;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:999px;margin-top:4px;display:inline-block;"></span>
                 </div>
             </div>
             <div class="form-body">
@@ -1267,10 +1533,28 @@
                         👨‍👩‍👦 ข้อมูลบิดา-มารดา
                     </h3>
 
-                    <div class="form-row">
+                    <div class="form-row-prefix">
                         <div class="form-group">
-                            <label>ชื่อ-สกุลบิดา <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="fatherName" required placeholder="เช่น นายสมชาย ใจดี">
+                            <label>คำนำหน้าบิดา <span class="required">*</span></label>
+                            <select class="form-control" name="fatherPrefix" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="fatherFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="fatherLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="display:none;">
+                            <input type="hidden" name="fatherName" id="fatherNameHidden">
                         </div>
                         <div class="form-group">
                             <label>อายุบิดา</label>
@@ -1283,10 +1567,28 @@
                         <input type="text" class="form-control" name="fatherOccupation" placeholder="เช่น เกษตรกร">
                     </div>
 
-                    <div class="form-row">
+                    <div class="form-row-prefix">
                         <div class="form-group">
-                            <label>ชื่อ-สกุลมารดา <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="motherName" required placeholder="เช่น นางสมหญิง ใจดี">
+                            <label>คำนำหน้ามารดา <span class="required">*</span></label>
+                            <select class="form-control" name="motherPrefix" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                                <option value="นาย">นาย</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="motherFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="motherLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="display:none;">
+                            <input type="hidden" name="motherName" id="motherNameHidden">
                         </div>
                         <div class="form-group">
                             <label>อายุมารดา</label>
@@ -1431,7 +1733,7 @@
                         <button type="button" class="btn btn-success" onclick="saveDocument()">
                             💾 บันทึกเอกสาร
                         </button>
-                        <button type="reset" class="btn btn-outline">
+                        <button type="reset" class="btn btn-outline" onclick="clearAutosave(AUTOSAVE_KEY_ADMISSION)">
                             🔄 ล้างข้อมูล
                         </button>
                         <button type="button" class="btn btn-warning hidden" id="testDataBtn" onclick="fillTestData()" style="background: #f59e0b; color: white;">
@@ -1481,8 +1783,785 @@
         </div>
     </div>
 
-    <!-- Hidden Print Area -->
-    <div id="printArea"></div>
+    <!-- ===== ใบมอบตัวนักเรียน Modal ===== -->
+    <div class="modal-overlay mobtua-modal" id="mobtuaModal">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7b3f9e, #9c4dcc); color: white; flex-shrink: 0;">
+                <h3 style="flex:1;">
+                    📋 ใบมอบตัวนักเรียน วก.กทว.205
+                    <span id="autosaveBadgeMobtua" style="font-size:0.7rem;opacity:0;transition:opacity 0.5s;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;display:inline-block;"></span>
+                </h3>
+                <button class="modal-close" onclick="closeMobtuaModal()" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="mobtuaForm">
+                    <!-- ข้อมูลด้านบนขวา -->
+                    <h3 class="section-divider">🔢 ข้อมูลการเข้าเรียน (ด้านบนขวาของเอกสาร)</h3>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>เลขประจำตัวนักเรียน</label>
+                            <input type="text" class="form-control" name="mt_studentId" placeholder="เลขประจำตัว">
+                        </div>
+                        <div class="form-group">
+                            <label>เข้าเรียนชั้น / ห้อง</label>
+                            <input type="text" class="form-control" name="mt_classRoom" placeholder="เช่น ม.1/2">
+                        </div>
+                        <div class="form-group">
+                            <label>ปีการศึกษา</label>
+                            <input type="text" class="form-control" name="mt_academicYear" placeholder="เช่น 2568" id="mt_academicYear">
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลผู้ปกครอง -->
+                    <h3 class="section-divider">👤 ข้อมูลผู้ปกครอง</h3>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้าผู้ปกครอง <span class="required">*</span></label>
+                            <select class="form-control" name="mt_guardianPrefix" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อผู้ปกครอง <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลผู้ปกครอง <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เลขประจำตัวประชาชนผู้ปกครอง <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianNationalId" required maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="mt_guardianNationalIdInput">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อาชีพผู้ปกครอง</label>
+                            <input type="text" class="form-control" name="mt_guardianOccupation" placeholder="เช่น เกษตรกร">
+                        </div>
+                        <div class="form-group">
+                            <label>สถานที่ทำงาน</label>
+                            <input type="text" class="form-control" name="mt_guardianWorkplace" placeholder="เช่น บ้านหนองดุม">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>บ้านเลขที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianHouseNo" required placeholder="เช่น 2">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่ที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianMoo" required placeholder="เช่น 2">
+                        </div>
+                        <div class="form-group">
+                            <label>ตำบล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianSubdistrict" required placeholder="เช่น หนองหัวช้าง">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>อำเภอ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianDistrict" required placeholder="เช่น กันทรารมย์">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_guardianProvince" required placeholder="เช่น ศรีสะเกษ">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสไปรษณีย์</label>
+                            <input type="text" class="form-control" name="mt_guardianPostal" maxlength="5" placeholder="เช่น 33130">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>โทรศัพท์บ้าน</label>
+                            <input type="text" class="form-control" name="mt_guardianHomePhone" placeholder="-">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือ</label>
+                            <input type="text" class="form-control" name="mt_guardianMobile" placeholder="เช่น 081-234-5678">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เกี่ยวข้องกับนักเรียนเป็น <span class="required">*</span></label>
+                            <select class="form-control" name="mt_guardianRelation" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="บิดา">บิดา</option>
+                                <option value="มารดา">มารดา</option>
+                                <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="mt_guardianRelationOtherGroup" style="display:none;">
+                            <label>ระบุความสัมพันธ์</label>
+                            <input type="text" class="form-control" name="mt_guardianRelationOther" placeholder="เช่น ปู่ ย่า ตา ยาย">
+                        </div>
+                        <div class="form-group">
+                            <label>รายได้ต่อเดือน (บาท)</label>
+                            <input type="number" class="form-control" name="mt_guardianIncome" placeholder="เช่น 9000">
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลนักเรียน -->
+                    <h3 class="section-divider">🎒 ข้อมูลนักเรียน</h3>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้านักเรียน <span class="required">*</span></label>
+                            <select class="form-control" name="mt_studentPrefix" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="เด็กชาย">เด็กชาย</option>
+                                <option value="เด็กหญิง">เด็กหญิง</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อนักเรียน <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_studentFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลนักเรียน <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_studentLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ชื่อเล่น</label>
+                            <input type="text" class="form-control" name="mt_studentNickname" placeholder="เช่น เก่ง">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>วันเกิด (วัน)</label>
+                            <input type="number" class="form-control" name="mt_birthDay" min="1" max="31" placeholder="1-31" id="mt_birthDay">
+                        </div>
+                        <div class="form-group">
+                            <label>เดือนเกิด</label>
+                            <select class="form-control" name="mt_birthMonth" id="mt_birthMonth">
+                                <option value="">-- เลือก --</option>
+                                <option value="มกราคม">มกราคม</option>
+                                <option value="กุมภาพันธ์">กุมภาพันธ์</option>
+                                <option value="มีนาคม">มีนาคม</option>
+                                <option value="เมษายน">เมษายน</option>
+                                <option value="พฤษภาคม">พฤษภาคม</option>
+                                <option value="มิถุนายน">มิถุนายน</option>
+                                <option value="กรกฎาคม">กรกฎาคม</option>
+                                <option value="สิงหาคม">สิงหาคม</option>
+                                <option value="กันยายน">กันยายน</option>
+                                <option value="ตุลาคม">ตุลาคม</option>
+                                <option value="พฤศจิกายน">พฤศจิกายน</option>
+                                <option value="ธันวาคม">ธันวาคม</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ปีเกิด พ.ศ.</label>
+                            <input type="number" class="form-control" name="mt_birthYear" min="2500" max="2570" placeholder="เช่น 2555" id="mt_birthYear">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>สัญชาติ</label>
+                            <input type="text" class="form-control" name="mt_nationality" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>เชื้อชาติ</label>
+                            <input type="text" class="form-control" name="mt_ethnicity" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>ศาสนา</label>
+                            <input type="text" class="form-control" name="mt_religion" placeholder="พุทธ" value="พุทธ">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>ส่วนสูง (ซม.)</label>
+                            <input type="number" class="form-control" name="mt_height" placeholder="เช่น 155">
+                        </div>
+                        <div class="form-group">
+                            <label>น้ำหนัก (กก.)</label>
+                            <input type="number" class="form-control" name="mt_weight" placeholder="เช่น 45">
+                        </div>
+                        <div class="form-group">
+                            <label>โรคประจำตัว</label>
+                            <input type="text" class="form-control" name="mt_disease" placeholder="ถ้าไม่มีใส่ -">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="mt_studentNationalId" required maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="mt_studentNationalIdInput">
+                    </div>
+
+                    <!-- ที่อยู่นักเรียนตามทะเบียนบ้าน -->
+                    <h3 class="section-divider">🏠 ที่อยู่นักเรียน (ตามทะเบียนบ้าน)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>รหัสประจำบ้าน</label>
+                            <input type="text" class="form-control" name="mt_houseCode" placeholder="รหัสประจำบ้าน 11 หลัก">
+                        </div>
+                        <div class="form-group">
+                            <label>บ้านเลขที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_houseNo" required placeholder="เช่น 14">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>หมู่ที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_moo" required placeholder="เช่น 2">
+                        </div>
+                        <div class="form-group">
+                            <label>ตำบล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_subdistrict" required placeholder="เช่น หนองหัวช้าง">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_district" required placeholder="เช่น กันทรารมย์">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>จังหวัด <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_province" required placeholder="เช่น ศรีสะเกษ">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสไปรษณีย์</label>
+                            <input type="text" class="form-control" name="mt_postal" maxlength="5" placeholder="เช่น 33130">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือ</label>
+                            <input type="text" class="form-control" name="mt_mobile" placeholder="เช่น 069-789-8989">
+                        </div>
+                    </div>
+
+                    <!-- ที่อยู่ปัจจุบัน -->
+                    <h3 class="section-divider">📍 ที่อยู่นักเรียน (ปัจจุบัน)</h3>
+                    <div class="form-group" style="margin-bottom: var(--space-md);">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="mt_sameAddress" onchange="copyAddressToCurrentMT()" style="width: 20px; height: 20px;">
+                            <span>ที่อยู่ปัจจุบันเดียวกับทะเบียนบ้าน</span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>รหัสประจำบ้าน (ปัจจุบัน)</label>
+                            <input type="text" class="form-control" name="mt_curHouseCode" placeholder="รหัสประจำบ้าน 11 หลัก">
+                        </div>
+                        <div class="form-group">
+                            <label>บ้านเลขที่ (ปัจจุบัน) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_curHouseNo" required placeholder="เช่น 14">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>หมู่ที่ (ปัจจุบัน) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_curMoo" required placeholder="เช่น 2">
+                        </div>
+                        <div class="form-group">
+                            <label>ตำบล (ปัจจุบัน) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_curSubdistrict" required placeholder="เช่น หนองหัวช้าง">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ (ปัจจุบัน) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_curDistrict" required placeholder="เช่น กันทรารมย์">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>จังหวัด (ปัจจุบัน) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_curProvince" required placeholder="เช่น ศรีสะเกษ">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสไปรษณีย์ (ปัจจุบัน)</label>
+                            <input type="text" class="form-control" name="mt_curPostal" maxlength="5" placeholder="เช่น 33130">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือ (ปัจจุบัน)</label>
+                            <input type="text" class="form-control" name="mt_curMobile" placeholder="เช่น 069-789-8989">
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลเพิ่มเติมนักเรียน -->
+                    <h3 class="section-divider">ℹ️ ข้อมูลเพิ่มเติม</h3>
+                    <div class="form-group">
+                        <label>การพักนอนของนักเรียน <span class="required">*</span></label>
+                        <div class="checkbox-group" style="flex-direction: row; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem;">
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_sleeping" value="อาศัยอยู่กับญาติ" required>
+                                <span>อาศัยอยู่กับญาติ</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_sleeping" value="อาศัยอยู่กับบิดามารดา">
+                                <span>อาศัยอยู่กับบิดามารดา</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_sleeping" value="อื่นๆ">
+                                <span>อื่นๆ ระบุ</span>
+                            </label>
+                        </div>
+                        <input type="text" class="form-control" name="mt_sleepingOther" placeholder="ระบุ (กรณีเลือกอื่นๆ)" style="margin-top: 0.5rem;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ความด้อยโอกาส <span class="required">*</span></label>
+                            <div class="checkbox-group" style="flex-direction: row; gap: 1rem; margin-top: 0.5rem;">
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_disadvantaged" value="ด้อยโอกาส" required>
+                                    <span>ด้อยโอกาส</span>
+                                </label>
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_disadvantaged" value="ไม่ด้อยโอกาส">
+                                    <span>ไม่ด้อยโอกาส</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>การเดินทางมาโรงเรียน (เลือกได้หลายอย่าง)</label>
+                        <div class="checkbox-group" style="flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.5rem;">
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="checkbox" name="mt_transport" value="เดินเท้า">
+                                <span>เดินเท้า</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="checkbox" name="mt_transport" value="จักรยาน">
+                                <span>จักรยาน</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="checkbox" name="mt_transport" value="รถรับส่ง">
+                                <span>รถรับส่ง</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="checkbox" name="mt_transport" value="รถจักรยานยนต์">
+                                <span>รถจักรยานยนต์</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="checkbox" name="mt_transport" value="อื่นๆ">
+                                <span>อื่นๆ ระบุ</span>
+                            </label>
+                        </div>
+                        <input type="text" class="form-control" name="mt_transportOther" placeholder="ระบุ (กรณีเลือกอื่นๆ)" style="margin-top: 0.5rem;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เวลาเดินทาง (นาที)</label>
+                            <input type="number" class="form-control" name="mt_travelTime" placeholder="เช่น 10">
+                        </div>
+                        <div class="form-group">
+                            <label>ระยะทางจากบ้าน (กม./เมตร)</label>
+                            <input type="text" class="form-control" name="mt_travelDistance" placeholder="เช่น 5 กิโลเมตร">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>จำนวนพี่น้องทั้งหมด (คน รวมตัวเอง)</label>
+                            <input type="number" class="form-control" name="mt_siblings" placeholder="เช่น 4">
+                        </div>
+                        <div class="form-group">
+                            <label>นักเรียนเป็นบุตรคนที่</label>
+                            <input type="number" class="form-control" name="mt_birthOrder" placeholder="เช่น 3">
+                        </div>
+                        <div class="form-group">
+                            <label>พี่น้องกำลังศึกษาอยู่ (คน)</label>
+                            <input type="number" class="form-control" name="mt_siblingsStudying" placeholder="เช่น 2">
+                        </div>
+                    </div>
+                    <div class="form-row" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="form-group">
+                            <label>พี่ชาย (คน)</label>
+                            <input type="number" class="form-control" name="mt_olderBrothers" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>น้องชาย (คน)</label>
+                            <input type="number" class="form-control" name="mt_youngerBrothers" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>พี่สาว (คน)</label>
+                            <input type="number" class="form-control" name="mt_olderSisters" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>น้องสาว (คน)</label>
+                            <input type="number" class="form-control" name="mt_youngerSisters" placeholder="0">
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลบิดา -->
+                    <h3 class="section-divider">👨 ข้อมูลบิดา</h3>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้าบิดา</label>
+                            <select class="form-control" name="mt_fatherPrefix">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_fatherFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_fatherLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เลขประจำตัวประชาชนบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherNationalId" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="mt_fatherNationalIdInput">
+                        </div>
+                    </div>
+                    <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="form-group">
+                            <label>สัญชาติบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherNationality" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>เชื้อชาติบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherEthnicity" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>ศาสนาบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherReligion" placeholder="พุทธ" value="พุทธ">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>สถานะบิดา</label>
+                            <div class="checkbox-group" style="flex-direction: row; gap: 1rem; margin-top: 0.5rem;">
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_fatherAlive" value="มีชีวิตอยู่">
+                                    <span>มีชีวิตอยู่</span>
+                                </label>
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_fatherAlive" value="เสียชีวิต">
+                                    <span>เสียชีวิต</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>การศึกษาบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherEducation" placeholder="เช่น ม.6, ป.ตรี">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อาชีพบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherOccupation" placeholder="เช่น เกษตรกร">
+                        </div>
+                        <div class="form-group">
+                            <label>สถานที่ทำงานบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherWorkplace" placeholder="ที่ทำงาน">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>ตำบล (บิดา)</label>
+                            <input type="text" class="form-control" name="mt_fatherSubdistrict" placeholder="ตำบล">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ (บิดา)</label>
+                            <input type="text" class="form-control" name="mt_fatherDistrict" placeholder="อำเภอ">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด (บิดา)</label>
+                            <input type="text" class="form-control" name="mt_fatherProvince" placeholder="จังหวัด">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>รายได้ต่อเดือนบิดา (บาท)</label>
+                            <input type="number" class="form-control" name="mt_fatherIncome" placeholder="เช่น 9000">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือบิดา</label>
+                            <input type="text" class="form-control" name="mt_fatherMobile" placeholder="เช่น 069-789-8989">
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลมารดา -->
+                    <h3 class="section-divider">👩 ข้อมูลมารดา</h3>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้ามารดา</label>
+                            <select class="form-control" name="mt_motherPrefix">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                                <option value="นาย">นาย</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_motherFirstName" required placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="mt_motherLastName" required placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เลขประจำตัวประชาชนมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherNationalId" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="mt_motherNationalIdInput">
+                        </div>
+                    </div>
+                    <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="form-group">
+                            <label>สัญชาติมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherNationality" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>เชื้อชาติมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherEthnicity" placeholder="ไทย" value="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>ศาสนามารดา</label>
+                            <input type="text" class="form-control" name="mt_motherReligion" placeholder="พุทธ" value="พุทธ">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>สถานะมารดา</label>
+                            <div class="checkbox-group" style="flex-direction: row; gap: 1rem; margin-top: 0.5rem;">
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_motherAlive" value="มีชีวิตอยู่">
+                                    <span>มีชีวิตอยู่</span>
+                                </label>
+                                <label class="checkbox-item" style="min-height: auto;">
+                                    <input type="radio" name="mt_motherAlive" value="เสียชีวิต">
+                                    <span>เสียชีวิต</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>การศึกษามารดา</label>
+                            <input type="text" class="form-control" name="mt_motherEducation" placeholder="เช่น ม.6, ป.ตรี">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อาชีพมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherOccupation" placeholder="เช่น เกษตรกร">
+                        </div>
+                        <div class="form-group">
+                            <label>สถานที่ทำงานมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherWorkplace" placeholder="ที่ทำงาน">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>ตำบล (มารดา)</label>
+                            <input type="text" class="form-control" name="mt_motherSubdistrict" placeholder="ตำบล">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ (มารดา)</label>
+                            <input type="text" class="form-control" name="mt_motherDistrict" placeholder="อำเภอ">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด (มารดา)</label>
+                            <input type="text" class="form-control" name="mt_motherProvince" placeholder="จังหวัด">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>รายได้ต่อเดือนมารดา (บาท)</label>
+                            <input type="number" class="form-control" name="mt_motherIncome" placeholder="เช่น 9000">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือมารดา</label>
+                            <input type="text" class="form-control" name="mt_motherMobile" placeholder="เช่น 088-234-5678">
+                        </div>
+                    </div>
+
+                    <!-- สถานภาพบิดา-มารดา -->
+                    <h3 class="section-divider">👨‍👩‍👦 สถานภาพบิดา-มารดา</h3>
+                    <div class="form-group">
+                        <div class="checkbox-group" style="flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 0.5rem;">
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="อยู่ร่วมกัน">
+                                <span>อยู่ร่วมกัน</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="แยกกันอยู่">
+                                <span>แยกกันอยู่</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="อย่าร้าง">
+                                <span>อย่าร้าง</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="บิดาเสียชีวิต">
+                                <span>บิดาเสียชีวิต</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="มารดาเสียชีวิต">
+                                <span>มารดาเสียชีวิต</span>
+                            </label>
+                            <label class="checkbox-item" style="min-height: auto;">
+                                <input type="radio" name="mt_parentStatus" value="อื่นๆ">
+                                <span>อื่นๆ</span>
+                            </label>
+                        </div>
+                        <input type="text" class="form-control" name="mt_parentStatusOther" placeholder="ระบุ (กรณีเลือกอื่นๆ)" style="margin-top: 0.5rem;">
+                    </div>
+
+                    <!-- ข้อมูลผู้ปกครองที่ไม่ใช่บิดา/มารดา -->
+                    <h3 class="section-divider">👥 ข้อมูลผู้ปกครอง (กรณีไม่ได้อยู่กับบิดา/มารดา)</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-light); margin-bottom: 1rem;">กรอกเฉพาะกรณีนักเรียนไม่ได้อยู่กับบิดา/มารดา</p>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้า</label>
+                            <select class="form-control" name="mt_altGuardianPrefix">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อผู้ปกครอง (ถ้ามี)</label>
+                            <input type="text" class="form-control" name="mt_altGuardianFirstName" placeholder="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุล</label>
+                            <input type="text" class="form-control" name="mt_altGuardianLastName" placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>เกี่ยวข้องกับนักเรียนเป็น</label>
+                            <input type="text" class="form-control" name="mt_altGuardianRelation" placeholder="เช่น ปู่ ย่า ตา ยาย ลุง ป้า">
+                        </div>
+                    </div>
+                    <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="form-group">
+                            <label>สัญชาติ</label>
+                            <input type="text" class="form-control" name="mt_altGuardianNationality" placeholder="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>เชื้อชาติ</label>
+                            <input type="text" class="form-control" name="mt_altGuardianEthnicity" placeholder="ไทย">
+                        </div>
+                        <div class="form-group">
+                            <label>ศาสนา</label>
+                            <input type="text" class="form-control" name="mt_altGuardianReligion" placeholder="พุทธ">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อาชีพ</label>
+                            <input type="text" class="form-control" name="mt_altGuardianOccupation" placeholder="อาชีพ">
+                        </div>
+                        <div class="form-group">
+                            <label>รายได้ต่อเดือน (บาท)</label>
+                            <input type="number" class="form-control" name="mt_altGuardianIncome" placeholder="เช่น 8000">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>บ้านเลขที่</label>
+                            <input type="text" class="form-control" name="mt_altGuardianHouseNo" placeholder="เลขที่">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่ที่</label>
+                            <input type="text" class="form-control" name="mt_altGuardianMoo" placeholder="หมู่">
+                        </div>
+                        <div class="form-group">
+                            <label>ถนน</label>
+                            <input type="text" class="form-control" name="mt_altGuardianRoad" placeholder="ถนน">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>ตำบล</label>
+                            <input type="text" class="form-control" name="mt_altGuardianSubdistrict" placeholder="ตำบล">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ</label>
+                            <input type="text" class="form-control" name="mt_altGuardianDistrict" placeholder="อำเภอ">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด</label>
+                            <input type="text" class="form-control" name="mt_altGuardianProvince" placeholder="จังหวัด">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>สถานที่ทำงาน</label>
+                            <input type="text" class="form-control" name="mt_altGuardianWorkplace" placeholder="สถานที่ทำงาน">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์มือถือ</label>
+                            <input type="text" class="form-control" name="mt_altGuardianMobile" placeholder="เบอร์โทร">
+                        </div>
+                    </div>
+
+                    <!-- ปุ่ม action -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="previewMobtuaDocument()" style="background: linear-gradient(135deg, #7b3f9e, #9c4dcc);">
+                            👁️ ดูตัวอย่างเอกสาร
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveMobtuaDocument()">
+                            💾 บันทึกเอกสาร
+                        </button>
+                        <button type="reset" class="btn btn-outline" style="color: #7b3f9e; border-color: #7b3f9e;" onclick="clearAutosave(AUTOSAVE_KEY_MOBTUA)">
+                            🔄 ล้างข้อมูล
+                        </button>
+                        <button type="button" class="btn hidden" id="mobtuaTestDataBtn" onclick="fillMobtuaTestData()" style="background: #f59e0b; color: white;">
+                            🧪 กรอกข้อมูลตัวอย่าง
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="closeMobtuaModal()">
+                            ← กลับหน้าหลัก
+                        </button>
+                    </div>
+                </form>
+
+                <!-- ประวัติใบมอบตัว -->
+                <div style="margin-top: 2rem; border-top: 3px solid #e9d5ff; padding-top: 1.5rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                        <h3 style="color:#7b3f9e; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            📚 ประวัติใบมอบตัว
+                            <span id="mobtuaHistoryCount" style="background:#7b3f9e; color:white; padding:2px 10px; border-radius:999px; font-size:0.8rem;">0</span>
+                        </h3>
+                        <span class="history-locked-badge hidden" id="mobtuaLockedBadge">🔒 ล็อครายการแล้ว</span>
+                    </div>
+                    <div id="mobtuaHistoryList">
+                        <div class="empty-history">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:48px;height:48px;opacity:0.4;margin-bottom:0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p>ยังไม่มีประวัติใบมอบตัว</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ใบมอบตัว Preview Modal -->
+    <div class="modal-overlay" id="mobtuaPreviewModal" style="z-index: 1200;">
+        <div class="modal-content" style="max-width: 950px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7b3f9e, #9c4dcc); color: white;">
+                <h3>📄 ตัวอย่างใบมอบตัวนักเรียน วก.กทว.205</h3>
+                <button class="modal-close" onclick="closeMobtuaPreviewModal()" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="mobtuaPreviewArea"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeMobtuaPreviewModal()">ปิด</button>
+                <button class="btn btn-success" onclick="printMobtuaDocument()">🖨️ พิมพ์เอกสาร</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Area for มอบตัว -->
+    <div id="mobtuaPrintArea" style="display:none;"></div>
 
     <!-- Admin Settings Modal -->
     <div class="modal-overlay" id="adminModal">
@@ -1529,8 +2608,11 @@
                 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: var(--primary);">📊 ส่งออกข้อมูล Excel</h4>
-                    <button class="btn btn-success" onclick="exportToExcel()" style="width: 100%;">
-                        📥 ดาวน์โหลดข้อมูลทั้งหมด (Excel)
+                    <button class="btn btn-success" onclick="exportToExcel()" style="width: 100%; margin-bottom: 0.75rem;">
+                        📥 ดาวน์โหลดข้อมูลใบสมัคร (Excel)
+                    </button>
+                    <button class="btn btn-success" onclick="exportMobtuaToExcel()" style="width: 100%; background: linear-gradient(135deg,#7b3f9e,#9c4dcc);">
+                        📥 ดาวน์โหลดข้อมูลใบมอบตัว (Excel)
                     </button>
                 </div>
                 
@@ -1799,9 +2881,19 @@
                 }
             }
             
-            // รวมชื่อ-สกุล
+            // รวมชื่อ-สกุลนักเรียน
             if (data.firstName && data.lastName) {
                 data.fullName = data.firstName + ' ' + data.lastName;
+            }
+
+            // รวมชื่อ-สกุลบิดา
+            if (data.fatherFirstName || data.fatherLastName) {
+                data.fatherName = `${data.fatherPrefix || ''} ${data.fatherFirstName || ''} ${data.fatherLastName || ''}`.trim();
+            }
+
+            // รวมชื่อ-สกุลมารดา
+            if (data.motherFirstName || data.motherLastName) {
+                data.motherName = `${data.motherPrefix || ''} ${data.motherFirstName || ''} ${data.motherLastName || ''}`.trim();
             }
             
             // รวมวันเกิด
@@ -2107,6 +3199,10 @@
                 console.log('Document written with ID:', docRef.id);
                 showToast('บันทึกข้อมูลสำเร็จ');
                 await loadHistory();
+                // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
+                document.getElementById('admissionForm').reset();
+                clearAutosave(AUTOSAVE_KEY_ADMISSION);
+                setDefaultDate();
 
             } catch (error) {
                 console.error('Error adding document:', error);
@@ -2455,6 +3551,141 @@
             } else {
                 btn.classList.add('hidden');
             }
+            // sync ปุ่มใบมอบตัวด้วย
+            const mobBtn = document.getElementById('mobtuaTestDataBtn');
+            if (mobBtn) {
+                if (show) mobBtn.classList.remove('hidden');
+                else mobBtn.classList.add('hidden');
+            }
+        }
+
+        function fillMobtuaTestData() {
+            const f = (name, val) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = val;
+            };
+            const r = (name, val) => {
+                const el = document.querySelector(`[name="${name}"][value="${val}"]`);
+                if (el) el.checked = true;
+            };
+            const cb = (name, val) => {
+                const el = document.querySelector(`[name="${name}"][value="${val}"]`);
+                if (el) el.checked = true;
+            };
+
+            // ข้อมูลการเข้าเรียน
+            f('mt_studentId', '12345');
+            f('mt_classRoom', 'ม.1/2');
+            f('mt_academicYear', localStorage.getItem('defaultAcademicYear') || (new Date().getFullYear() + 543).toString());
+
+            // ผู้ปกครอง
+            f('mt_guardianPrefix', 'นาย');
+            f('mt_guardianFirstName', 'ชอบ');
+            f('mt_guardianLastName', 'รักดี');
+            f('mt_guardianNationalId', '3-3305-0999-19-9');
+            f('mt_guardianOccupation', 'เกษตรกรรม');
+            f('mt_guardianWorkplace', 'บ้านหนองดุม');
+            f('mt_guardianHouseNo', '2');
+            f('mt_guardianMoo', '2');
+            f('mt_guardianSubdistrict', 'หนองหัวช้าง');
+            f('mt_guardianDistrict', 'กันทรารมย์');
+            f('mt_guardianProvince', 'ศรีสะเกษ');
+            f('mt_guardianPostal', '33130');
+            f('mt_guardianHomePhone', '-');
+            f('mt_guardianMobile', '069-789-8989');
+            f('mt_guardianRelation', 'บิดา');
+            f('mt_guardianIncome', '9000');
+
+            // นักเรียน
+            f('mt_studentPrefix', 'เด็กชาย');
+            f('mt_studentFirstName', 'เก่ง');
+            f('mt_studentLastName', 'รักดี');
+            f('mt_studentNickname', 'เก่ง');
+            f('mt_birthDay', '2');
+            f('mt_birthMonth', 'มีนาคม');
+            f('mt_birthYear', '2546');
+            f('mt_nationality', 'ไทย');
+            f('mt_ethnicity', 'ไทย');
+            f('mt_religion', 'พุทธ');
+            f('mt_height', '160');
+            f('mt_weight', '45');
+            f('mt_disease', '-');
+            f('mt_studentNationalId', '1-3302-02214-14-5');
+
+            // ที่อยู่ตามทะเบียนบ้าน
+            f('mt_houseCode', '3303-021432-7');
+            f('mt_houseNo', '14');
+            f('mt_moo', '2');
+            f('mt_subdistrict', 'หนองหัวช้าง');
+            f('mt_district', 'กันทรารมย์');
+            f('mt_province', 'ศรีสะเกษ');
+            f('mt_postal', '33130');
+            f('mt_mobile', '069-789-8989');
+
+            // ที่อยู่ปัจจุบัน (เหมือนทะเบียนบ้าน)
+            f('mt_curHouseCode', '3303-021432-7');
+            f('mt_curHouseNo', '14');
+            f('mt_curMoo', '2');
+            f('mt_curSubdistrict', 'หนองหัวช้าง');
+            f('mt_curDistrict', 'กันทรารมย์');
+            f('mt_curProvince', 'ศรีสะเกษ');
+            f('mt_curPostal', '33130');
+            f('mt_curMobile', '069-789-8989');
+
+            // ข้อมูลเพิ่มเติม
+            r('mt_sleeping', 'อาศัยอยู่กับบิดามารดา');
+            r('mt_disadvantaged', 'ไม่ด้อยโอกาส');
+            cb('mt_transport', 'รถรับส่ง');
+            f('mt_travelTime', '10');
+            f('mt_travelDistance', '5 กิโลเมตร');
+            f('mt_siblings', '4');
+            f('mt_birthOrder', '3');
+            f('mt_siblingsStudying', '2');
+            f('mt_olderBrothers', '2');
+            f('mt_youngerBrothers', '1');
+            f('mt_olderSisters', '0');
+            f('mt_youngerSisters', '0');
+
+            // บิดา
+            f('mt_fatherPrefix', 'นาย');
+            f('mt_fatherFirstName', 'ชอบ');
+            f('mt_fatherLastName', 'รักดี');
+            f('mt_fatherNationalId', '3-3305-0999-19-9');
+            f('mt_fatherNationality', 'ไทย');
+            f('mt_fatherEthnicity', 'ไทย');
+            f('mt_fatherReligion', 'พุทธ');
+            r('mt_fatherAlive', 'มีชีวิตอยู่');
+            f('mt_fatherEducation', 'ม.6');
+            f('mt_fatherOccupation', 'เกษตรกร');
+            f('mt_fatherWorkplace', 'บ้านหนองดุม');
+            f('mt_fatherSubdistrict', 'หนองหัวช้าง');
+            f('mt_fatherDistrict', 'กันทรารมย์');
+            f('mt_fatherProvince', 'ศรีสะเกษ');
+            f('mt_fatherIncome', '9000');
+            f('mt_fatherMobile', '069-789-8989');
+
+            // มารดา
+            f('mt_motherPrefix', 'นาง');
+            f('mt_motherFirstName', 'เพียร');
+            f('mt_motherLastName', 'รักดี');
+            f('mt_motherNationalId', '3-3304-0549-19-7');
+            f('mt_motherNationality', 'ไทย');
+            f('mt_motherEthnicity', 'ไทย');
+            f('mt_motherReligion', 'พุทธ');
+            r('mt_motherAlive', 'มีชีวิตอยู่');
+            f('mt_motherEducation', 'ม.6');
+            f('mt_motherOccupation', 'เกษตรกรรม');
+            f('mt_motherWorkplace', 'บ้านหนองดุม');
+            f('mt_motherSubdistrict', 'หนองหัวช้าง');
+            f('mt_motherDistrict', 'กันทรารมย์');
+            f('mt_motherProvince', 'ศรีสะเกษ');
+            f('mt_motherIncome', '9000');
+            f('mt_motherMobile', '088-234-5678');
+
+            // สถานภาพบิดา-มารดา
+            r('mt_parentStatus', 'อยู่ร่วมกัน');
+
+            showToast('กรอกข้อมูลตัวอย่างใบมอบตัวสำเร็จ');
         }
 
         function fillTestData() {
@@ -2484,10 +3715,15 @@
             document.getElementById('nationalIdInput').value = '1-2345-67890-12-3';
 
             // บิดา-มารดา
-            document.querySelector('[name="fatherName"]').value = 'นายสมศักดิ์ ใจดี';
+            // บิดา-มารดา
+            document.querySelector('[name="fatherPrefix"]').value = 'นาย';
+            document.querySelector('[name="fatherFirstName"]').value = 'สมศักดิ์';
+            document.querySelector('[name="fatherLastName"]').value = 'ใจดี';
             document.querySelector('[name="fatherAge"]').value = '45';
             document.querySelector('[name="fatherOccupation"]').value = 'เกษตรกร';
-            document.querySelector('[name="motherName"]').value = 'นางสมหญิง ใจดี';
+            document.querySelector('[name="motherPrefix"]').value = 'นาง';
+            document.querySelector('[name="motherFirstName"]').value = 'สมหญิง';
+            document.querySelector('[name="motherLastName"]').value = 'ใจดี';
             document.querySelector('[name="motherAge"]').value = '42';
             document.querySelector('[name="motherOccupation"]').value = 'ค้าขาย';
 
@@ -2611,10 +3847,679 @@
             document.getElementById('alertAnnouncementModal').classList.remove('active');
         }
 
+        // ========== ระบบใบมอบตัวนักเรียน วก.กทว.205 ==========
+        function openMobTuaForm() {
+            document.getElementById('mobtuaModal').classList.add('active');
+            const defaultYear = localStorage.getItem('defaultAcademicYear');
+            if (defaultYear) {
+                document.getElementById('mt_academicYear').value = defaultYear;
+            } else {
+                document.getElementById('mt_academicYear').value = new Date().getFullYear() + 543;
+            }
+            // โหลดประวัติและ sync lock badge
+            loadMobtuaHistory();
+            const isLocked = localStorage.getItem('historyLocked') === 'true';
+            const badge = document.getElementById('mobtuaLockedBadge');
+            if (badge) {
+                isLocked ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+            }
+            // ตั้ง Autosave + โหลดข้อมูลที่บันทึกไว้
+            setupAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
+            promptRestoreAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
+        }
+
+        function closeMobtuaModal() {
+            document.getElementById('mobtuaModal').classList.remove('active');
+        }
+
+        function closeMobtuaPreviewModal() {
+            document.getElementById('mobtuaPreviewModal').classList.remove('active');
+        }
+
+        function copyAddressToCurrentMT() {
+            const same = document.getElementById('mt_sameAddress').checked;
+            if (!same) return;
+            const map = {
+                mt_curHouseCode: document.querySelector('[name="mt_houseCode"]')?.value,
+                mt_curHouseNo: document.querySelector('[name="mt_houseNo"]')?.value,
+                mt_curMoo: document.querySelector('[name="mt_moo"]')?.value,
+                mt_curSubdistrict: document.querySelector('[name="mt_subdistrict"]')?.value,
+                mt_curDistrict: document.querySelector('[name="mt_district"]')?.value,
+                mt_curProvince: document.querySelector('[name="mt_province"]')?.value,
+                mt_curPostal: document.querySelector('[name="mt_postal"]')?.value,
+                mt_curMobile: document.querySelector('[name="mt_mobile"]')?.value,
+            };
+            Object.entries(map).forEach(([name, val]) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el && val !== undefined) el.value = val;
+            });
+        }
+
+        // Setup ID format for มอบตัว fields
+        function setupMobtuaEvents() {
+            ['mt_guardianNationalIdInput', 'mt_studentNationalIdInput', 'mt_fatherNationalIdInput', 'mt_motherNationalIdInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', formatNationalId);
+            });
+
+            // Guardian relation other
+            document.querySelector('[name="mt_guardianRelation"]')?.addEventListener('change', function() {
+                const grp = document.getElementById('mt_guardianRelationOtherGroup');
+                if (grp) grp.style.display = this.value === 'อื่นๆ' ? 'block' : 'none';
+            });
+        }
+
+        function getMobtuaFormData() {
+            const form = document.getElementById('mobtuaForm');
+            const fd = new FormData(form);
+            const d = {};
+            for (let [k, v] of fd.entries()) {
+                if (k === 'mt_transport') {
+                    if (!d[k]) d[k] = [];
+                    d[k].push(v);
+                } else {
+                    d[k] = v;
+                }
+            }
+            // ประกอบชื่อเต็มจากฟิลด์แยก
+            d.mt_guardianName = `${d.mt_guardianPrefix || ''} ${d.mt_guardianFirstName || ''} ${d.mt_guardianLastName || ''}`.trim();
+            d.mt_studentFullName = `${d.mt_studentPrefix || ''}${d.mt_studentFirstName || ''} ${d.mt_studentLastName || ''}`.trim();
+            d.mt_fatherFullName = `${d.mt_fatherPrefix || ''} ${d.mt_fatherFirstName || ''} ${d.mt_fatherLastName || ''}`.trim();
+            d.mt_motherFullName = `${d.mt_motherPrefix || ''} ${d.mt_motherFirstName || ''} ${d.mt_motherLastName || ''}`.trim();
+            d.mt_altGuardianName = `${d.mt_altGuardianPrefix || ''} ${d.mt_altGuardianFirstName || ''} ${d.mt_altGuardianLastName || ''}`.trim();
+            return d;
+        }
+
+        function mtCb(checked) {
+            return `<span class="mt-box">${checked ? '✓' : ''}</span>`;
+        }
+
+        function mtIdBoxes(id) {
+            const raw = (id || '').replace(/[^0-9]/g, '');
+            if (raw.length !== 13) {
+                let boxes = '';
+                for (let i = 0; i < 13; i++) {
+                    if (i === 1 || i === 5 || i === 10 || i === 12) boxes += '<span class="mt-id-dash"></span>';
+                    boxes += '<span class="mt-id-box"></span>';
+                }
+                return boxes;
+            }
+            let boxes = '';
+            raw.split('').forEach((digit, i) => {
+                if (i === 1 || i === 5 || i === 10 || i === 12) boxes += '<span class="mt-id-dash"></span>';
+                boxes += `<span class="mt-id-box">${digit}</span>`;
+            });
+            return boxes;
+        }
+
+        function val(v, placeholder) {
+            const str = (v || '').toString().trim();
+            if (!str || str === '-') return `<span class="mt-line" style="min-width:${placeholder ? placeholder : '80px'}">&nbsp;</span>`;
+            return `<span class="mt-line">${str}</span>`;
+        }
+
+        function generateMobtuaDocumentHTML(d) {
+            const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+            const guardianRelation = d.mt_guardianRelation === 'อื่นๆ' ? (d.mt_guardianRelationOther || 'อื่นๆ') : (d.mt_guardianRelation || '');
+            const transports = Array.isArray(d.mt_transport) ? d.mt_transport : (d.mt_transport ? [d.mt_transport] : []);
+            const studentIdClean = (d.mt_studentNationalId || '').replace(/[^0-9]/g, '');
+
+            function parentStatusCb(status) {
+                const opts = ['อยู่ร่วมกัน', 'แยกกันอยู่', 'อย่าร้าง', 'บิดาเสียชีวิต', 'มารดาเสียชีวิต'];
+                return opts.map(o => `${mtCb(d.mt_parentStatus === o)} ${o}`).join(' &nbsp; ');
+            }
+
+            return `
+<div class="mobtua-doc">
+
+  <!-- หน้า 1 -->
+  <div class="mobtua-page-1">
+    <div class="mt-code">วก.กทว.205</div>
+    <div class="mt-doc-header-row">
+        <img src="${logoUrl}" class="mt-logo" alt="โลโก้">
+        <div class="mt-title-center">
+            <h2 style="font-size:17px; font-weight:700; margin:0;">ใบมอบตัวนักเรียน</h2>
+            <p style="font-size:15px; font-weight:600; margin:2px 0 0;">โรงเรียนกระดุมทองวิทยา</p>
+        </div>
+        <div class="mt-topright">
+            <div>เลขประจำตัว ${val(d.mt_studentId)}</div>
+            <div>เข้าเรียนชั้น ${val(d.mt_classRoom, '60px')}</div>
+            <div>ปีการศึกษา ${val(d.mt_academicYear)}</div>
+        </div>
+    </div>
+
+    <p class="mt-section-title">ข้อมูลนักเรียน <span style="font-weight:400; font-size:12px;">(กรอกข้อมูลด้วยลายมือบรรจง)</span></p>
+
+    <p class="mt-para mt-nowrap">ข้าพเจ้า(ชื่อผู้ปกครอง) ${val(d.mt_guardianName, '150px')} เลขประจำตัวประชาชน ${val(d.mt_guardianNationalId, '130px')}</p>
+    <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_guardianOccupation, '100px')} สถานที่ทำงาน ${val(d.mt_guardianWorkplace, '180px')}</p>
+    <p class="mt-para mt-nowrap">ที่อยู่ปัจจุบัน บ้านเลขที่ ${val(d.mt_guardianHouseNo, '35px')} หมู่ ${val(d.mt_guardianMoo, '25px')} ตำบล ${val(d.mt_guardianSubdistrict, '80px')} อำเภอ ${val(d.mt_guardianDistrict, '80px')} จังหวัด ${val(d.mt_guardianProvince, '70px')}</p>
+    <p class="mt-para mt-nowrap">รหัสไปรษณีย์ ${val(d.mt_guardianPostal, '45px')} โทรศัพท์บ้าน ${val(d.mt_guardianHomePhone, '90px')} โทรศัพท์มือถือ ${val(d.mt_guardianMobile, '90px')}</p>
+    <p class="mt-para mt-nowrap">เกี่ยวข้องกับนักเรียนโดยเป็น
+        ${mtCb(guardianRelation === 'บิดา')} บิดา &nbsp;
+        ${mtCb(guardianRelation === 'มารดา')} มารดา &nbsp;
+        อื่นๆ ระบุ ${val(guardianRelation !== 'บิดา' && guardianRelation !== 'มารดา' ? guardianRelation : '', '70px')} &nbsp;
+        รายได้ต่อเดือน ${val(d.mt_guardianIncome, '55px')} บาท
+    </p>
+
+    <p class="mt-section-title" style="margin-top:6px;">ขอทำใบมอบตัวนักเรียนให้ไว้ต่อผู้อำนวยการโรงเรียนกระดุมทองวิทยา</p>
+    <p class="mt-para mt-nowrap">ด้วย (ชื่อ–สกุลนักเรียน) ${val(d.mt_studentFullName, '200px')} ชื่อเล่น ${val(d.mt_studentNickname, '70px')}</p>
+    <p class="mt-para mt-nowrap">เกิดวันที่ ${val(d.mt_birthDay, '22px')} เดือน ${val(d.mt_birthMonth, '70px')} พ.ศ. ${val(d.mt_birthYear, '42px')} สัญชาติ ${val(d.mt_nationality, '55px')} เชื้อชาติ ${val(d.mt_ethnicity, '55px')}</p>
+    <p class="mt-para mt-nowrap">ศาสนา ${val(d.mt_religion, '48px')} ส่วนสูง ${val(d.mt_height, '35px')} ซ.ม. น้ำหนัก ${val(d.mt_weight, '35px')} ก.ก. โรคประจำตัว (ถ้ามี) ${val(d.mt_disease, '90px')}</p>
+    <p class="mt-para">เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="mt-id-boxes">${mtIdBoxes(d.mt_studentNationalId)}</span></p>
+
+    <p class="mt-section-title">ที่อยู่นักเรียน(ตามทะเบียนบ้าน)</p>
+    <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${val(d.mt_houseCode, '100px')} บ้านเลขที่ ${val(d.mt_houseNo, '30px')} หมู่ ${val(d.mt_moo, '25px')} ตำบล ${val(d.mt_subdistrict, '80px')}</p>
+    <p class="mt-para mt-nowrap">อำเภอ ${val(d.mt_district, '75px')} จังหวัด ${val(d.mt_province, '75px')} รหัสไปรษณีย์ ${val(d.mt_postal, '45px')} โทรศัพท์มือถือ ${val(d.mt_mobile, '85px')}</p>
+
+    <p class="mt-section-title">ที่อยู่นักเรียน(ปัจจุบัน)</p>
+    <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${val(d.mt_curHouseCode, '100px')} บ้านเลขที่ ${val(d.mt_curHouseNo, '30px')} หมู่ ${val(d.mt_curMoo, '25px')} ตำบล ${val(d.mt_curSubdistrict, '80px')}</p>
+    <p class="mt-para mt-nowrap">อำเภอ ${val(d.mt_curDistrict, '75px')} จังหวัด ${val(d.mt_curProvince, '75px')} รหัสไปรษณีย์ ${val(d.mt_curPostal, '45px')} โทรศัพท์มือถือ ${val(d.mt_curMobile, '85px')}</p>
+
+    <p class="mt-para mt-nowrap">การพักนอนของนักเรียน
+        ${mtCb(d.mt_sleeping === 'อาศัยอยู่กับญาติ')} อาศัยอยู่กับญาติ &nbsp;
+        ${mtCb(d.mt_sleeping === 'อาศัยอยู่กับบิดามารดา')} อาศัยอยู่กับบิดามารดา &nbsp;
+        ${mtCb(d.mt_sleeping === 'อื่นๆ')} อื่นๆ ระบุ ${val(d.mt_sleepingOther, '70px')}
+    </p>
+    <p class="mt-para mt-nowrap">ความด้อยโอกาส &nbsp;
+        ${mtCb(d.mt_disadvantaged === 'ด้อยโอกาส')} ด้อยโอกาส &nbsp;&nbsp;
+        ${mtCb(d.mt_disadvantaged === 'ไม่ด้อยโอกาส')} ไม่ด้อยโอกาส
+    </p>
+    <p class="mt-para mt-nowrap">การเดินทางมาโรงเรียน &nbsp;
+        ${mtCb(transports.includes('เดินเท้า'))} เดินเท้า &nbsp;
+        ${mtCb(transports.includes('จักรยาน'))} จักรยาน &nbsp;
+        ${mtCb(transports.includes('รถรับส่ง'))} รถรับส่ง &nbsp;
+        ${mtCb(transports.includes('รถจักรยานยนต์'))} รถจักรยานยนต์ &nbsp;
+        ${mtCb(transports.includes('อื่นๆ'))} อื่นๆ ระบุ ${val(d.mt_transportOther, '60px')}
+    </p>
+    <p class="mt-para mt-nowrap">เวลาในการเดินทางมาโรงเรียน ${val(d.mt_travelTime, '35px')} นาที &nbsp; ระยะทางจากบ้านมาโรงเรียน ${val(d.mt_travelDistance, '90px')}</p>
+    <p class="mt-para mt-nowrap">นักเรียนมีจำนวนพี่น้อง ${val(d.mt_siblings, '28px')} คน (รวมตัวนักเรียนด้วย) &nbsp; จำนวนพี่ชาย ${val(d.mt_olderBrothers, '22px')} คน &nbsp; จำนวนน้องชาย ${val(d.mt_youngerBrothers, '22px')} คน</p>
+    <p class="mt-para mt-nowrap">จำนวนพี่สาว ${val(d.mt_olderSisters, '22px')} คน &nbsp; จำนวนน้องสาว ${val(d.mt_youngerSisters, '22px')} คน &nbsp; จำนวนพี่น้องที่กำลังศึกษาอยู่ ${val(d.mt_siblingsStudying, '30px')} คน</p>
+    <p class="mt-para mt-nowrap">นักเรียนเป็นบุตรคนที่ ${val(d.mt_birthOrder, '28px')} ในจำนวนพี่น้อง ${val(d.mt_siblings, '28px')} คน (รวมตัวนักเรียนด้วย)</p>
+
+    <p class="mt-section-title">ข้อมูลของบิดามารดา</p>
+    <p class="mt-para mt-nowrap"><strong>บิดา</strong> ${val(d.mt_fatherFullName, '180px')} เลขประจำตัวประชาชน ${val(d.mt_fatherNationalId, '115px')}</p>
+    <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_fatherNationality, '42px')} เชื้อชาติ ${val(d.mt_fatherEthnicity, '42px')} ศาสนา ${val(d.mt_fatherReligion, '42px')} &nbsp;
+        ( ${d.mt_fatherAlive === 'มีชีวิตอยู่' ? '✓' : '&nbsp;'} ) มีชีวิตอยู่ &nbsp; ( ${d.mt_fatherAlive === 'เสียชีวิต' ? '✓' : '&nbsp;'} ) เสียชีวิต &nbsp; การศึกษา ${val(d.mt_fatherEducation, '55px')}</p>
+    <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_fatherOccupation, '75px')} สถานที่ทำงาน ${val(d.mt_fatherWorkplace, '85px')} ตำบล ${val(d.mt_fatherSubdistrict, '65px')} อำเภอ ${val(d.mt_fatherDistrict, '65px')}</p>
+    <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_fatherProvince, '65px')} รายได้/เดือน ${val(d.mt_fatherIncome, '48px')} บาท &nbsp; โทรศัพท์มือถือ ${val(d.mt_fatherMobile, '85px')}</p>
+
+    <p class="mt-para mt-nowrap" style="margin-top:5px;"><strong>มารดา</strong> ${val(d.mt_motherFullName, '180px')} เลขประจำตัวประชาชน ${val(d.mt_motherNationalId, '115px')}</p>
+    <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_motherNationality, '42px')} เชื้อชาติ ${val(d.mt_motherEthnicity, '42px')} ศาสนา ${val(d.mt_motherReligion, '42px')} &nbsp;
+        ( ${d.mt_motherAlive === 'มีชีวิตอยู่' ? '✓' : '&nbsp;'} ) มีชีวิตอยู่ &nbsp; ( ${d.mt_motherAlive === 'เสียชีวิต' ? '✓' : '&nbsp;'} ) เสียชีวิต &nbsp; การศึกษา ${val(d.mt_motherEducation, '55px')}</p>
+    <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_motherOccupation, '75px')} สถานที่ทำงาน ${val(d.mt_motherWorkplace, '85px')} ตำบล ${val(d.mt_motherSubdistrict, '65px')} อำเภอ ${val(d.mt_motherDistrict, '65px')}</p>
+    <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_motherProvince, '65px')} รายได้/เดือน ${val(d.mt_motherIncome, '48px')} บาท &nbsp; โทรศัพท์มือถือ ${val(d.mt_motherMobile, '85px')}</p>
+  </div>
+
+  <!-- หน้า 2 -->
+  <div class="mobtua-page-2">
+    <div class="mt-code" style="margin-top:4px;">วก.กทว.205</div>
+
+    <p class="mt-para mt-nowrap" style="margin-top:4px;">สถานภาพของบิดา มารดา &nbsp; ${parentStatusCb(d.mt_parentStatus)} &nbsp;
+    อื่นๆ ระบุ ${val(d.mt_parentStatus === 'อื่นๆ' ? d.mt_parentStatusOther : '', '70px')}</p>
+
+    <p class="mt-section-title">ข้อมูลผู้ปกครอง (กรณีที่นักเรียนไม่ได้อยู่กับบิดา/มารดา)</p>
+    <p class="mt-para mt-nowrap">ชื่อ-สกุล ${val(d.mt_altGuardianName, '180px')} เกี่ยวข้องกับนักเรียนเป็น ${val(d.mt_altGuardianRelation, '80px')}</p>
+    <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_altGuardianNationality, '48px')} เชื้อชาติ ${val(d.mt_altGuardianEthnicity, '48px')} ศาสนา ${val(d.mt_altGuardianReligion, '48px')} อาชีพ ${val(d.mt_altGuardianOccupation, '75px')} รายได้/เดือน ${val(d.mt_altGuardianIncome, '48px')} บาท</p>
+    <p class="mt-para mt-nowrap">อยู่บ้านเลขที่ ${val(d.mt_altGuardianHouseNo, '30px')} หมู่ที่ ${val(d.mt_altGuardianMoo, '22px')} ถนน ${val(d.mt_altGuardianRoad, '75px')} ตำบล ${val(d.mt_altGuardianSubdistrict, '75px')} อำเภอ ${val(d.mt_altGuardianDistrict, '75px')}</p>
+    <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_altGuardianProvince, '65px')} สถานที่ทำงาน ${val(d.mt_altGuardianWorkplace, '95px')} โทรศัพท์มือถือ ${val(d.mt_altGuardianMobile, '90px')}</p>
+
+    <p class="mt-para" style="margin-top:10px;">บัดนี้ <strong>${val(d.mt_studentFullName, '200px')}</strong> ได้เข้าเป็นนักเรียนโรงเรียนกระดุมทองวิทยาเรียบร้อยแล้ว</p>
+    <p class="mt-para">ข้าพเจ้าขอสัญญาว่าจะเป็นผู้ปกครอง คอยกำกับ ดูแล และเอาใจใส่ <strong>${val(d.mt_studentFullName, '200px')}</strong> ตั้งใจศึกษา</p>
+    <p class="mt-para">เอาใจใส่ต่อการเรียนให้ดีอย่างสม่ำเสมอและจะอบรม ตักเตือน สั่งสอนให้ประพฤติและปฏิบัติตนตามกฎระเบียบ วินัย และข้อบังคับของทางโรงเรียนอย่างดีทุกประการ</p>
+    <p class="mt-para">ทั้งจะเป็นผู้อุปถัมภ์ค่าใช้จ่ายต่างๆ อุปกรณ์การเรียนให้เพียงพอตามระเบียบของโรงเรียนนี้ ข้าพเจ้ายินดีมอบนักเรียนในความปกครอง</p>
+    <p class="mt-para">ของข้าพเจ้าให้ดำเนินการตามระเบียบข้อบังคับทุกประการ หากกระทำผิดกฎระเบียบวินัย ข้อบังคับของโรงเรียน ขอให้โรงเรียน</p>
+    <p class="mt-para">ได้ดำเนินการลงโทษตามกฎระเบียบของโรงเรียน ตามควรแก่กรณี ข้าพเจ้าได้อ่านความทั้งหมดถูกต้อง ครบถ้วนสมบูรณ์แล้ว</p>
+    <p class="mt-para">จึงลงลายมือชื่อไว้เป็นหลักฐาน</p>
+
+    <div class="mt-sig-row">
+        <div class="mt-sig-block">
+            <p>ลงชื่อ......................................................................ผู้ปกครอง</p>
+            <p>(${val(d.mt_guardianName, '150px')})</p>
+            <p>วันที่..............เดือน.....................พ.ศ..............</p>
+        </div>
+        <div class="mt-sig-block">
+            <p>ลงชื่อ......................................................................ผู้รับมอบตัว</p>
+            <p>(...........................................................................)</p>
+            <p>วันที่..............เดือน.....................พ.ศ..............</p>
+        </div>
+    </div>
+
+    <div class="mt-divider" style="margin-top:14px;"></div>
+    <p class="mt-section-title">เอกสารที่ต้องยื่นวันมอบตัว</p>
+    <div class="mt-doclist">
+        <div class="mt-doclist-item">${mtCb(false)} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของบิดา</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของมารดา</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของบิดา</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาสูติบัตรของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของมารดา</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของนักเรียน</div>
+    </div>
+    <p style="font-size:12px; font-weight:700; margin-top:6px;">***เอกสารทุกฉบับ รับรองสำเนาถูกต้อง</p>
+  </div>
+
+</div>`;
+        }
+
+        function previewMobtuaDocument() {
+            const form = document.getElementById('mobtuaForm');
+            if (!form.checkValidity()) {
+                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                form.reportValidity();
+                return;
+            }
+            const d = getMobtuaFormData();
+            const html = generateMobtuaDocumentHTML(d);
+            document.getElementById('mobtuaPreviewArea').innerHTML = html;
+            document.getElementById('mobtuaPrintArea').innerHTML = html;
+            document.getElementById('mobtuaPreviewModal').classList.add('active');
+        }
+
+        async function saveMobtuaDocument() {
+            const form = document.getElementById('mobtuaForm');
+            if (!form.checkValidity()) {
+                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                form.reportValidity();
+                return;
+            }
+            const d = getMobtuaFormData();
+            try {
+                showLoading(true);
+                const record = {
+                    formType: 'ใบมอบตัวนักเรียน',
+                    formCode: 'วก.กทว.205',
+                    studentName: d.mt_studentFullName || '',
+                    guardianName: d.mt_guardianName || '',
+                    academicYear: d.mt_academicYear || '',
+                    classRoom: d.mt_classRoom || '',
+                    data: d,
+                    createdAt: window.firestore.serverTimestamp(),
+                    updatedAt: window.firestore.serverTimestamp()
+                };
+                await window.firestore.addDoc(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    record
+                );
+                showToast('บันทึกใบมอบตัวสำเร็จ');
+                const html = generateMobtuaDocumentHTML(d);
+                document.getElementById('mobtuaPreviewArea').innerHTML = html;
+                document.getElementById('mobtuaPrintArea').innerHTML = html;
+                document.getElementById('mobtuaPreviewModal').classList.add('active');
+                await loadMobtuaHistory();
+                // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
+                document.getElementById('mobtuaForm').reset();
+                clearAutosave(AUTOSAVE_KEY_MOBTUA);
+                // reset autosave setup flag ให้ event listener ทำงานต่อได้
+                const mf = document.getElementById('mobtuaForm');
+                if (mf) mf._autosaveSetup = false;
+            } catch (error) {
+                console.error('Error saving mobtua:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadMobtuaHistory() {
+            try {
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    window.firestore.orderBy('createdAt', 'desc'),
+                    window.firestore.limit(50)
+                );
+                const snap = await window.firestore.getDocs(q);
+                const records = [];
+                snap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+
+                const list = document.getElementById('mobtuaHistoryList');
+                const count = document.getElementById('mobtuaHistoryCount');
+                if (!list) return;
+                count.textContent = records.length;
+
+                const isLocked = localStorage.getItem('historyLocked') === 'true';
+
+                if (records.length === 0) {
+                    list.innerHTML = `<div class="empty-history">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:48px;height:48px;opacity:0.4;margin-bottom:0.5rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p>ยังไม่มีประวัติใบมอบตัว</p></div>`;
+                    return;
+                }
+
+                list.innerHTML = records.map(rec => {
+                    let dateStr = '-';
+                    if (rec.createdAt) {
+                        dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH', {
+                            year: 'numeric', month: 'short', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                    }
+                    const actionBtns = isLocked
+                        ? `<span style="font-size:var(--text-xs);color:var(--text-light);">🔒 ล็อครายการ</span>`
+                        : `<button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
+
+                    return `<div class="history-item" style="border-left: 3px solid #9c4dcc;">
+                        <div class="history-item-header">
+                            <span class="history-item-type" style="background:#7b3f9e;">มอบตัว</span>
+                            <span class="history-item-date">${dateStr}</span>
+                        </div>
+                        <div class="history-item-name">${rec.studentName || '-'}</div>
+                        <div class="history-item-detail">ปีการศึกษา ${rec.academicYear || '-'} | ${rec.classRoom || '-'} | ผู้ปกครอง: ${rec.guardianName || '-'}</div>
+                        <div class="history-item-actions">
+                            <button class="btn btn-primary btn-sm" style="background:#7b3f9e;" onclick="viewMobtuaRecord('${rec.id}')">👁️ ดู</button>
+                            ${actionBtns}
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                console.error('loadMobtuaHistory error:', e);
+            }
+        }
+
+        async function viewMobtuaRecord(id) {
+            try {
+                showLoading(true);
+                const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
+                if (!snap.exists()) { showToast('ไม่พบข้อมูล', 'error'); return; }
+                const html = generateMobtuaDocumentHTML(snap.data().data);
+                document.getElementById('mobtuaPreviewArea').innerHTML = html;
+                document.getElementById('mobtuaPrintArea').innerHTML = html;
+                document.getElementById('mobtuaPreviewModal').classList.add('active');
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function deleteMobtuaRecord(id) {
+            if (localStorage.getItem('historyLocked') === 'true') {
+                showToast('รายการถูกล็อค ไม่สามารถลบได้', 'error'); return;
+            }
+            const pw = prompt('กรุณาใส่รหัสผ่านเพื่อยืนยันการลบ:');
+            if (pw === null) return;
+            if (pw !== '1111') { showToast('รหัสผ่านไม่ถูกต้อง', 'error'); return; }
+            if (!confirm('ยืนยันการลบรายการนี้?')) return;
+            try {
+                showLoading(true);
+                await window.firestore.deleteDoc(window.firestore.doc(window.db, 'mobtua', id));
+                showToast('ลบรายการสำเร็จ');
+                await loadMobtuaHistory();
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function exportMobtuaToExcel() {
+            try {
+                showLoading(true);
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    window.firestore.orderBy('createdAt', 'desc')
+                );
+                const snap = await window.firestore.getDocs(q);
+                const rows = [];
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const d = r.data || {};
+                    const transports = Array.isArray(d.mt_transport) ? d.mt_transport.join(', ') : (d.mt_transport || '-');
+                    rows.push({
+                        // ทั่วไป
+                        'วันที่บันทึก':         r.createdAt ? new Date(r.createdAt.toDate()).toLocaleDateString('th-TH') : '-',
+                        'ปีการศึกษา':           d.mt_academicYear || '-',
+                        'ชั้น/ห้อง':            d.mt_classRoom || '-',
+                        'เลขประจำตัวนักเรียน':  d.mt_studentId || '-',
+                        // นักเรียน
+                        'ชื่อ-สกุลนักเรียน':   r.studentName || '-',
+                        'ชื่อเล่น':             d.mt_studentNickname || '-',
+                        'เลขบัตรนักเรียน':      (d.mt_studentNationalId || '').replace(/-/g,''),
+                        'วันเกิด(วัน)':         d.mt_birthDay || '-',
+                        'วันเกิด(เดือน)':       d.mt_birthMonth || '-',
+                        'วันเกิด(ปีพ.ศ.)':     d.mt_birthYear || '-',
+                        'อายุ':                 d.mt_age || '-',
+                        'น้ำหนัก(กก.)':         d.mt_weight || '-',
+                        'ส่วนสูง(ซม.)':         d.mt_height || '-',
+                        'สัญชาตินักเรียน':      d.mt_nationality || '-',
+                        'เชื้อชาตินักเรียน':    d.mt_ethnicity || '-',
+                        'ศาสนานักเรียน':        d.mt_religion || '-',
+                        'โรคประจำตัว':          d.mt_disease || '-',
+                        'ข้อด้อยโอกาส':         d.mt_disadvantaged || '-',
+                        'โรงเรียนเดิม':         d.mt_previousSchool || '-',
+                        'จำนวนพี่น้องทั้งหมด':  d.mt_siblings || '-',
+                        'พี่ชาย':               d.mt_olderBrothers || '-',
+                        'พี่สาว':               d.mt_olderSisters || '-',
+                        'น้องชาย':              d.mt_youngerBrothers || '-',
+                        'น้องสาว':              d.mt_youngerSisters || '-',
+                        'พี่น้องกำลังศึกษา':    d.mt_siblingsStudying || '-',
+                        'เป็นบุตรคนที่':        d.mt_birthOrder || '-',
+                        'ที่พัก':               d.mt_sleeping === 'อื่นๆ' ? (d.mt_sleepingOther||'อื่นๆ') : (d.mt_sleeping||'-'),
+                        'การเดินทาง':           transports + (d.mt_transportOther ? ` (${d.mt_transportOther})` : ''),
+                        'ระยะทาง(กม.)':         d.mt_travelDistance || '-',
+                        'เวลาเดินทาง(นาที)':    d.mt_travelTime || '-',
+                        // ที่อยู่นักเรียน
+                        'รหัสบ้านนักเรียน':     d.mt_houseCode || '-',
+                        'บ้านเลขที่นักเรียน':   d.mt_houseNo || '-',
+                        'หมู่นักเรียน':         d.mt_moo || '-',
+                        'ตำบลนักเรียน':         d.mt_subdistrict || '-',
+                        'อำเภอนักเรียน':        d.mt_district || '-',
+                        'จังหวัดนักเรียน':      d.mt_province || '-',
+                        'รหัสไปรษณีย์นักเรียน': d.mt_postal || '-',
+                        'โทรนักเรียน':          d.mt_mobile || '-',
+                        // ที่อยู่ปัจจุบัน
+                        'รหัสบ้านปัจจุบัน':     d.mt_curHouseCode || '-',
+                        'บ้านเลขที่ปัจจุบัน':   d.mt_curHouseNo || '-',
+                        'หมู่ปัจจุบัน':         d.mt_curMoo || '-',
+                        'ตำบลปัจจุบัน':         d.mt_curSubdistrict || '-',
+                        'อำเภอปัจจุบัน':        d.mt_curDistrict || '-',
+                        'จังหวัดปัจจุบัน':      d.mt_curProvince || '-',
+                        'ไปรษณีย์ปัจจุบัน':     d.mt_curPostal || '-',
+                        'โทรปัจจุบัน':          d.mt_curMobile || '-',
+                        // ผู้ปกครอง
+                        'ชื่อผู้ปกครอง':        r.guardianName || '-',
+                        'เลขบัตรผู้ปกครอง':     (d.mt_guardianNationalId || '').replace(/-/g,''),
+                        'ความสัมพันธ์ผู้ปกครอง': d.mt_guardianRelation === 'อื่นๆ' ? (d.mt_guardianRelationOther||'อื่นๆ') : (d.mt_guardianRelation||'-'),
+                        'อาชีพผู้ปกครอง':       d.mt_guardianOccupation || '-',
+                        'ที่ทำงานผู้ปกครอง':    d.mt_guardianWorkplace || '-',
+                        'รายได้ผู้ปกครอง':      d.mt_guardianIncome || '-',
+                        'โทรบ้านผู้ปกครอง':     d.mt_guardianHomePhone || '-',
+                        'โทรมือถือผู้ปกครอง':   d.mt_guardianMobile || '-',
+                        'บ้านเลขที่ผู้ปกครอง':  d.mt_guardianHouseNo || '-',
+                        'หมู่ผู้ปกครอง':        d.mt_guardianMoo || '-',
+                        'ตำบลผู้ปกครอง':        d.mt_guardianSubdistrict || '-',
+                        'อำเภอผู้ปกครอง':       d.mt_guardianDistrict || '-',
+                        'จังหวัดผู้ปกครอง':     d.mt_guardianProvince || '-',
+                        'ไปรษณีย์ผู้ปกครอง':    d.mt_guardianPostal || '-',
+                        // บิดา
+                        'ชื่อ-สกุลบิดา':        d.mt_fatherFullName || '-',
+                        'เลขบัตรบิดา':          (d.mt_fatherNationalId || '').replace(/-/g,''),
+                        'สัญชาติบิดา':          d.mt_fatherNationality || '-',
+                        'เชื้อชาติบิดา':        d.mt_fatherEthnicity || '-',
+                        'ศาสนาบิดา':            d.mt_fatherReligion || '-',
+                        'สถานะบิดา':            d.mt_fatherAlive || '-',
+                        'การศึกษาบิดา':         d.mt_fatherEducation || '-',
+                        'อาชีพบิดา':            d.mt_fatherOccupation || '-',
+                        'ที่ทำงานบิดา':         d.mt_fatherWorkplace || '-',
+                        'รายได้บิดา':           d.mt_fatherIncome || '-',
+                        'โทรบิดา':              d.mt_fatherMobile || '-',
+                        'ตำบลบิดา':             d.mt_fatherSubdistrict || '-',
+                        'อำเภอบิดา':            d.mt_fatherDistrict || '-',
+                        'จังหวัดบิดา':          d.mt_fatherProvince || '-',
+                        // มารดา
+                        'ชื่อ-สกุลมารดา':       d.mt_motherFullName || '-',
+                        'เลขบัตรมารดา':         (d.mt_motherNationalId || '').replace(/-/g,''),
+                        'สัญชาติมารดา':         d.mt_motherNationality || '-',
+                        'เชื้อชาติมารดา':       d.mt_motherEthnicity || '-',
+                        'ศาสนามารดา':           d.mt_motherReligion || '-',
+                        'สถานะมารดา':           d.mt_motherAlive || '-',
+                        'การศึกษามารดา':        d.mt_motherEducation || '-',
+                        'อาชีพมารดา':           d.mt_motherOccupation || '-',
+                        'ที่ทำงานมารดา':        d.mt_motherWorkplace || '-',
+                        'รายได้มารดา':          d.mt_motherIncome || '-',
+                        'โทรมารดา':             d.mt_motherMobile || '-',
+                        'ตำบลมารดา':            d.mt_motherSubdistrict || '-',
+                        'อำเภอมารดา':           d.mt_motherDistrict || '-',
+                        'จังหวัดมารดา':         d.mt_motherProvince || '-',
+                        // สถานภาพ
+                        'สถานภาพบิดา-มารดา':   d.mt_parentStatus === 'อื่นๆ' ? (d.mt_parentStatusOther||'อื่นๆ') : (d.mt_parentStatus||'-'),
+                        // ผู้ปกครองทดแทน
+                        'ชื่อผู้ปกครองทดแทน':   d.mt_altGuardianName || '-',
+                        'ความสัมพันธ์ทดแทน':    d.mt_altGuardianRelation || '-',
+                        'สัญชาติทดแทน':         d.mt_altGuardianNationality || '-',
+                        'เชื้อชาติทดแทน':       d.mt_altGuardianEthnicity || '-',
+                        'ศาสนาทดแทน':           d.mt_altGuardianReligion || '-',
+                        'อาชีพทดแทน':           d.mt_altGuardianOccupation || '-',
+                        'รายได้ทดแทน':          d.mt_altGuardianIncome || '-',
+                        'โทรทดแทน':             d.mt_altGuardianMobile || '-',
+                        'ที่อยู่ทดแทน':         [d.mt_altGuardianHouseNo, d.mt_altGuardianMoo && `หมู่${d.mt_altGuardianMoo}`, d.mt_altGuardianRoad && `ถ.${d.mt_altGuardianRoad}`, d.mt_altGuardianSubdistrict && `ต.${d.mt_altGuardianSubdistrict}`, d.mt_altGuardianDistrict && `อ.${d.mt_altGuardianDistrict}`, d.mt_altGuardianProvince && `จ.${d.mt_altGuardianProvince}`].filter(Boolean).join(' ') || '-',
+                    });
+                });
+                if (rows.length === 0) { showToast('ไม่มีข้อมูลให้ส่งออก', 'error'); return; }
+                const headers = Object.keys(rows[0]);
+                const csv = [
+                    '\ufeff' + headers.join(','),
+                    ...rows.map(row => headers.map(h => `"${(row[h]||'').toString().replace(/"/g,'""')}"`).join(','))
+                ].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const today = new Date().toLocaleDateString('th-TH').replace(/\//g,'-');
+                a.href = url; a.download = `รายชื่อใบมอบตัว_${today}.csv`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                showToast('ส่งออกข้อมูลใบมอบตัวสำเร็จ');
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ========== AUTOSAVE SYSTEM ==========
+        const AUTOSAVE_KEY_MOBTUA = 'autosave_mobtua';
+        const AUTOSAVE_KEY_ADMISSION = 'autosave_admission';
+        const autosaveTimers = {};
+
+        function autosaveForm(formId, storageKey) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            const fd = new FormData(form);
+            const data = {};
+            for (let [k, v] of fd.entries()) {
+                if (!data[k]) data[k] = v;
+                else if (Array.isArray(data[k])) data[k].push(v);
+                else data[k] = [data[k], v];
+            }
+            localStorage.setItem(storageKey, JSON.stringify({ data, savedAt: new Date().toISOString() }));
+        }
+
+        function restoreForm(formId, storageKey) {
+            const saved = localStorage.getItem(storageKey);
+            if (!saved) return false;
+            try {
+                const { data, savedAt } = JSON.parse(saved);
+                const form = document.getElementById(formId);
+                if (!form) return false;
+                Object.entries(data).forEach(([name, value]) => {
+                    const values = Array.isArray(value) ? value : [value];
+                    const els = form.querySelectorAll(`[name="${name}"]`);
+                    els.forEach(el => {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            el.checked = values.includes(el.value);
+                        } else {
+                            el.value = values[0] || '';
+                        }
+                    });
+                });
+                return savedAt;
+            } catch(e) {
+                console.warn('Restore autosave failed:', e);
+                return false;
+            }
+        }
+
+        function setupAutosave(formId, storageKey, debounceMs = 1500) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            // ป้องกัน register ซ้ำ
+            if (form._autosaveSetup) return;
+            form._autosaveSetup = true;
+            const trigger = () => {
+                clearTimeout(autosaveTimers[storageKey]);
+                autosaveTimers[storageKey] = setTimeout(() => {
+                    autosaveForm(formId, storageKey);
+                    showAutosaveBadge(storageKey);
+                }, debounceMs);
+            };
+            form.addEventListener('input', trigger);
+            form.addEventListener('change', trigger);
+        }
+
+        function showAutosaveBadge(storageKey) {
+            const badgeId = storageKey === AUTOSAVE_KEY_MOBTUA ? 'autosaveBadgeMobtua' : 'autosaveBadgeAdmission';
+            const badge = document.getElementById(badgeId);
+            if (!badge) return;
+            badge.textContent = '💾 บันทึกอัตโนมัติ ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+            badge.style.opacity = '1';
+            clearTimeout(badge._hideTimer);
+            badge._hideTimer = setTimeout(() => { badge.style.opacity = '0'; }, 3000);
+        }
+
+        function clearAutosave(storageKey) {
+            localStorage.removeItem(storageKey);
+        }
+
+        function promptRestoreAutosave(formId, storageKey) {
+            const savedAt = restoreForm(formId, storageKey);
+            if (savedAt) {
+                const dt = new Date(savedAt).toLocaleString('th-TH');
+                const badgeId = storageKey === AUTOSAVE_KEY_MOBTUA ? 'autosaveBadgeMobtua' : 'autosaveBadgeAdmission';
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    badge.textContent = `📂 โหลดข้อมูลที่บันทึกไว้อัตโนมัติ (${dt})`;
+                    badge.style.opacity = '1';
+                    clearTimeout(badge._hideTimer);
+                    badge._hideTimer = setTimeout(() => { badge.style.opacity = '0'; }, 5000);
+                }
+                // trigger age calc
+                if (formId === 'mobtuaForm') {
+                    document.getElementById('mt_birthDay')?.dispatchEvent(new Event('change'));
+                } else {
+                    document.getElementById('birthDay')?.dispatchEvent(new Event('change'));
+                }
+                // trigger talent checkbox visibility
+                if (formId === 'admissionForm') {
+                    ['sports','music','other'].forEach(v => {
+                        const cb = document.querySelector(`input[name="talent"][value="${v}"]`);
+                        if (cb) cb.dispatchEvent(new Event('change'));
+                    });
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function printMobtuaDocument() {
+            // ตั้ง flag บน body ให้ CSS print รู้ว่าพิมพ์ใบมอบตัว
+            document.body.setAttribute('data-print', 'mobtua');
+            const mobtuaPrint = document.getElementById('mobtuaPrintArea');
+            mobtuaPrint.style.display = 'block';
+            setTimeout(() => {
+                window.print();
+                document.body.removeAttribute('data-print');
+                mobtuaPrint.style.display = 'none';
+            }, 200);
+        }
+
         // เรียกใช้เมื่อโหลดหน้า
         window.addEventListener('DOMContentLoaded', () => {
             loadHistory();
             setTimeout(showAlertIfEnabled, 500);
+            setupMobtuaEvents();
 
             // โหลดโหมดทดสอบ
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
@@ -2623,6 +4528,11 @@
             // โหลดสถานะล็อค
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
             applyHistoryLockUI(historyLocked);
+
+            // ตั้ง Autosave สำหรับฟอร์มใบสมัคร
+            setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
+            // โหลดข้อมูลที่เคยบันทึกของใบสมัคร
+            promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
         });
     </script>
 </body>

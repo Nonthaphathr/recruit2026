@@ -1709,43 +1709,140 @@
         }
 
 
-        /* ===== ใบมอบตัว modal ===== */
-        .mobtua-modal {
-            z-index: 1050;
+        /* ===== ใบมอบตัว FULL PAGE ===== */
+        .mobtua-page {
+            display: none;
+            animation: fadeIn 0.4s ease;
         }
-        .mobtua-modal .modal-content {
-            max-width: 1100px;
-            width: 100%;
-            height: 92vh;
-            max-height: 92vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        .mobtua-page.active {
+            display: block;
         }
-        .mobtua-modal .modal-header {
-            flex-shrink: 0;
-        }
-        .mobtua-modal .modal-body {
-            background: white;
-            padding: 1.25rem 1.75rem;
-            overflow-y: scroll;
-            overflow-x: hidden;
-            flex: 1 1 0;
-            min-height: 0;
-        }
-        .mobtua-modal .form-actions {
-            flex-shrink: 0;
+
+        .mobtua-page-header {
             position: sticky;
-            bottom: 0;
-            background: white;
-            border-top: 2px solid var(--border);
-            padding: 1rem 0 0.5rem;
-            margin-top: 1rem;
-            z-index: 10;
+            top: 0;
+            z-index: 90;
+            background: linear-gradient(135deg, #6a1b9a 0%, #7b3f9e 50%, #9c4dcc 100%);
+            color: white;
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.5rem);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            box-shadow: 0 4px 20px rgba(107, 27, 154, 0.4);
+            flex-wrap: wrap;
         }
-        @media (max-width: 768px) {
-            .mobtua-modal .modal-body { padding: 1rem; }
-            .mobtua-modal .modal-content { height: 100vh; max-height: 100vh; border-radius: 0; }
+
+        .mobtua-back-btn {
+            background: rgba(255,255,255,0.18);
+            border: 1.5px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .mobtua-back-btn:hover {
+            background: rgba(255,255,255,0.32);
+            transform: translateX(-3px);
+        }
+
+        .mobtua-page-header h2 {
+            flex: 1;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: 600;
+            line-height: 1.3;
+            min-width: 0;
+        }
+
+        .mobtua-page-body {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: clamp(1rem, 3vw, 2rem);
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: clamp(1rem, 3vw, 2rem);
+            align-items: start;
+        }
+
+        .mobtua-form-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .mobtua-form-card-header {
+            background: linear-gradient(135deg, #7b3f9e 0%, #9c4dcc 100%);
+            color: white;
+            padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 4vw, 2rem);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .mobtua-form-card-header .form-header-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .mobtua-form-card-body {
+            padding: clamp(1rem, 4vw, 2rem);
+        }
+
+        .mobtua-history-sidebar {
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            height: fit-content;
+            animation: fadeIn 0.5s ease 0.1s both;
+        }
+
+        .mobtua-history-sidebar-header {
+            background: linear-gradient(135deg, #ce93d8 0%, #e9d5ff 100%);
+            color: #5b21b6;
+            padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .mobtua-history-sidebar-header h3 {
+            font-size: clamp(1rem, 3.5vw, 1.1rem);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+
+        .mobtua-history-sidebar .history-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
+            .mobtua-page-body {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+            .mobtua-history-sidebar {
+                order: 2;
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .mobtua-history-sidebar {
+                position: sticky;
+                top: 120px;
+            }
         }
         /* form-row สำหรับ คำนำหน้า + ชื่อ + นามสกุล */
         .form-row-prefix {
@@ -2676,17 +2773,33 @@
         </div>
     </div>
 
-    <!-- ===== ใบมอบตัวนักเรียน Modal ===== -->
-    <div class="modal-overlay mobtua-modal" id="mobtuaModal">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #7b3f9e, #9c4dcc); color: white; flex-shrink: 0;">
-                <h3 style="flex:1;">
-                    📋 ใบมอบตัวนักเรียน วก.กทว.205
-                    <span id="autosaveBadgeMobtua" style="font-size:0.7rem;opacity:0;transition:opacity 0.5s;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;display:inline-block;"></span>
-                </h3>
-                <button class="modal-close" onclick="closeMobtuaModal()" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
-            </div>
-            <div class="modal-body">
+    <!-- ===== ใบมอบตัวนักเรียน FULL PAGE ===== -->
+    <div class="mobtua-page" id="mobtuaPage">
+        <!-- Sticky Header -->
+        <div class="mobtua-page-header">
+            <button class="mobtua-back-btn" onclick="closeMobtuaModal()">
+                ← กลับหน้าหลัก
+            </button>
+            <h2>
+                📋 ใบมอบตัวนักเรียน วก.กทว.205
+                <span id="autosaveBadgeMobtua" style="font-size:0.7rem;opacity:0;transition:opacity 0.5s;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;display:inline-block;"></span>
+            </h2>
+            <span class="history-locked-badge hidden" id="mobtuaLockedBadge">🔒 ล็อครายการแล้ว</span>
+        </div>
+
+        <!-- Page Body: 2 columns -->
+        <div class="mobtua-page-body">
+
+            <!-- LEFT: Form Card -->
+            <div class="mobtua-form-card">
+                <div class="mobtua-form-card-header">
+                    <div class="form-header-icon">📋</div>
+                    <div>
+                        <h2 style="font-size:clamp(1rem,3vw,1.15rem); font-weight:600;">กรอกข้อมูลใบมอบตัวนักเรียน</h2>
+                        <p style="font-size:0.85rem; opacity:0.9; margin-top:2px;">วก.กทว.205 | โรงเรียนกระดุมทองวิทยา</p>
+                    </div>
+                </div>
+                <div class="mobtua-form-card-body">
                 <form id="mobtuaForm">
                     <!-- ข้อมูลด้านบนขวา -->
                     <h3 class="section-divider">🔢 ข้อมูลการเข้าเรียน (ด้านบนขวาของเอกสาร)</h3>
@@ -3408,33 +3521,31 @@
                         <button type="button" class="btn hidden" id="mobtuaTestDataBtn" onclick="fillMobtuaTestData()" style="background: #f59e0b; color: white;">
                             🧪 กรอกข้อมูลตัวอย่าง
                         </button>
-                        <button type="button" class="btn btn-outline" onclick="closeMobtuaModal()">
-                            ← กลับหน้าหลัก
-                        </button>
                     </div>
                 </form>
+                </div><!-- end mobtua-form-card-body -->
+            </div><!-- end mobtua-form-card -->
 
-                <!-- ประวัติใบมอบตัว -->
-                <div style="margin-top: 2rem; border-top: 3px solid #e9d5ff; padding-top: 1.5rem;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-                        <h3 style="color:#7b3f9e; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
-                            📚 ประวัติใบมอบตัว
-                            <span id="mobtuaHistoryCount" style="background:#7b3f9e; color:white; padding:2px 10px; border-radius:999px; font-size:0.8rem;">0</span>
-                        </h3>
-                        <span class="history-locked-badge hidden" id="mobtuaLockedBadge">🔒 ล็อครายการแล้ว</span>
-                    </div>
-                    <div id="mobtuaHistoryList">
-                        <div class="empty-history">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:48px;height:48px;opacity:0.4;margin-bottom:0.5rem;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p>ยังไม่มีประวัติใบมอบตัว</p>
-                        </div>
+            <!-- RIGHT: History Sidebar -->
+            <div class="mobtua-history-sidebar">
+                <div class="mobtua-history-sidebar-header">
+                    <h3>
+                        📚 ประวัติใบมอบตัว
+                        <span id="mobtuaHistoryCount" style="background:#7b3f9e; color:white; padding:2px 10px; border-radius:999px; font-size:0.8rem;">0</span>
+                    </h3>
+                </div>
+                <div class="history-list" id="mobtuaHistoryList">
+                    <div class="empty-history">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:48px;height:48px;opacity:0.4;margin-bottom:0.5rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p>ยังไม่มีประวัติใบมอบตัว</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div><!-- end mobtua-history-sidebar -->
+
+        </div><!-- end mobtua-page-body -->
+    </div><!-- end mobtua-page -->
 
     <!-- ใบมอบตัว Preview Modal -->
     <div class="modal-overlay" id="mobtuaPreviewModal" style="z-index: 1200;">
@@ -3616,6 +3727,9 @@
                     </button>
                     <button class="btn btn-success" onclick="exportMobtuaToExcel()" style="width: 100%; background: linear-gradient(135deg,#7b3f9e,#9c4dcc);">
                         📥 ดาวน์โหลดข้อมูลใบมอบตัว (Excel)
+                    </button>
+                    <button class="btn" onclick="exportIncompleteDocsToExcel()" style="width:100%; margin-top:0.75rem; background: linear-gradient(135deg,#d97706,#f59e0b); color:white;">
+                        ⚠️ ส่งออกรายการหลักฐานไม่ครบ (Excel)
                     </button>
                 </div>
                 
@@ -3849,6 +3963,8 @@
 
         function backToLanding() {
             document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('mobtuaPage').classList.remove('active');
+            document.getElementById('reportPage').classList.remove('active');
             document.getElementById('landingPage').classList.remove('hidden');
             backToStep1();
         }
@@ -3870,6 +3986,8 @@
 
         function selectGrade(grade) {
             document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mobtuaPage').classList.remove('active');
+            document.getElementById('reportPage').classList.remove('active');
             document.getElementById('mainContainer').classList.remove('hidden');
             // reset step for next time
             backToStep1();
@@ -5072,7 +5190,11 @@
 
         // ========== ระบบใบมอบตัวนักเรียน วก.กทว.205 ==========
         function openMobTuaForm(grade) {
-            document.getElementById('mobtuaModal').classList.add('active');
+            // ซ่อนหน้าอื่น แสดงหน้า mobtua full page
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('reportPage').classList.remove('active');
+            document.getElementById('mobtuaPage').classList.add('active');
             // reset landing step for next time
             backToStep1();
 
@@ -5107,7 +5229,8 @@
         }
 
         function closeMobtuaModal() {
-            document.getElementById('mobtuaModal').classList.remove('active');
+            document.getElementById('mobtuaPage').classList.remove('active');
+            document.getElementById('landingPage').classList.remove('hidden');
             backToStep1();
         }
 
@@ -5888,6 +6011,7 @@
         function openReportPage() {
             document.getElementById('landingPage').classList.add('hidden');
             document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('mobtuaPage').classList.remove('active');
             document.getElementById('reportPage').classList.add('active');
             const dateEl = document.getElementById('rpt_date');
             if (!dateEl.value) {
@@ -5927,6 +6051,7 @@
 
         function closeReportPage() {
             document.getElementById('reportPage').classList.remove('active');
+            document.getElementById('mobtuaPage').classList.remove('active');
             document.getElementById('landingPage').classList.remove('hidden');
             backToStep1();
         }
@@ -6303,6 +6428,80 @@ ${lines}
             window.print();
             setTimeout(() => document.body.removeAttribute('data-print'), 1500);
         }
+        async function exportIncompleteDocsToExcel() {
+            try {
+                showLoading(true);
+                const items = getChecklistItems();
+                if (items.length === 0) {
+                    showToast('ยังไม่มีรายการหลักฐาน กรุณาตั้งค่าก่อน', 'error');
+                    return;
+                }
+
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'admissions'),
+                    window.firestore.orderBy('createdAt', 'desc')
+                );
+                const snap = await window.firestore.getDocs(q);
+                const incompleteRows = [];
+
+                snap.forEach(doc => {
+                    const rec = doc.data();
+                    const docs = getRecordDocs(doc.id);
+                    const checkedCount = items.filter(it => docs[it] === true).length;
+                    const isComplete = checkedCount === items.length;
+                    if (!isComplete) {
+                        const missingItems = items.filter(it => !docs[it]);
+                        const d = rec.data || {};
+                        const row = {
+                            'วันที่สมัคร': rec.createdAt ? new Date(rec.createdAt.toDate()).toLocaleDateString('th-TH') : '-',
+                            'ระดับชั้น': rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1',
+                            'ชื่อ-สกุล': rec.studentName || '-',
+                            'โทรศัพท์': d.phone || '-',
+                            'โรงเรียนเดิม': d.previousSchool || '-',
+                            'อำเภอ': d.district || '-',
+                            'จังหวัด': d.province || '-',
+                            'หลักฐานครบแล้ว': `${checkedCount}/${items.length}`,
+                        };
+                        items.forEach(it => {
+                            row[it] = docs[it] ? '✅ ครบ' : '❌ ขาด';
+                        });
+                        row['รายการที่ขาด'] = missingItems.join(' | ');
+                        incompleteRows.push(row);
+                    }
+                });
+
+                if (incompleteRows.length === 0) {
+                    showToast('🎉 ผู้สมัครทุกรายส่งหลักฐานครบแล้ว!');
+                    return;
+                }
+
+                const headers = Object.keys(incompleteRows[0]);
+                const csv = [
+                    '\ufeff' + headers.join(','),
+                    ...incompleteRows.map(row =>
+                        headers.map(h => `"${(row[h]||'').toString().replace(/"/g,'""')}"`).join(',')
+                    )
+                ].join('\n');
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const today = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
+                a.href = url;
+                a.download = `รายการหลักฐานไม่ครบ_${today}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                showToast(`ส่งออกรายการหลักฐานไม่ครบสำเร็จ (${incompleteRows.length} ราย)`);
+            } catch (e) {
+                console.error('exportIncompleteDocsToExcel error:', e);
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
     </script>
 </body>
 </html>

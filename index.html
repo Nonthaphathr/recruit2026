@@ -149,6 +149,349 @@
             transform: rotate(90deg) scale(1.1);
         }
 
+        .report-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            height: 48px;
+            padding: 0 18px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            flex-shrink: 0;
+            font-family: inherit;
+        }
+        .report-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* ===== Report Page ===== */
+        .report-page {
+            display: none;
+            padding: var(--space-xl) var(--space-lg);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .report-page.active { display: block; }
+
+        .report-page-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+        }
+        .report-page-header h2 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .reporter-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-lg);
+            border-left: 5px solid var(--primary);
+        }
+        .reporter-section h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .report-query-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-lg);
+            border-left: 5px solid var(--accent-dark);
+        }
+        .report-query-section h3 {
+            font-size: 1rem;
+            color: var(--accent-dark);
+            margin-bottom: var(--space-md);
+        }
+
+        .report-results {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-lg);
+        }
+        .report-results h3 {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        .report-summary-card {
+            background: var(--accent-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            text-align: center;
+        }
+        .report-summary-card .num {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+        .report-summary-card .lbl {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+        }
+
+        .report-table-wrap { overflow-x: auto; }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--text-sm);
+        }
+        .report-table th {
+            background: var(--primary);
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .report-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .report-table tr:hover td { background: var(--accent-light); }
+        .report-table .grade-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--primary);
+            color: white;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+            margin-top: var(--space-lg);
+        }
+
+        /* Line copy modal */
+        .line-copy-modal .modal-body {
+            background: white;
+            padding: var(--space-lg);
+        }
+        .line-copy-area {
+            background: #f0f8e8;
+            border: 2px solid #25d366;
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            font-family: inherit;
+            font-size: var(--text-sm);
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-bottom: var(--space-md);
+            min-height: 200px;
+        }
+
+        /* A4 Memo Document — Thai Government Format */
+        #memoDocModal .modal-content { background: #f5f5f5; }
+        #memoDocContent { background: transparent; }
+
+        /* Screen view: A4 container */
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            font-family: 'Sarabun', sans-serif;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            margin: 0 auto 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Memo modal display wrapper */
+        .memo-modal-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        /* Page 1 layout */
+        .memo-layout {
+            font-family: 'Sarabun', sans-serif !important;
+            position: relative;
+            min-height: 297mm;
+            padding: 10mm 15mm 25mm 20mm;
+        }
+        .memo-layout .garuda {
+            position: absolute;
+            left: 22mm;
+            top: 9.3mm;
+            width: 1.3cm;
+            height: auto;
+        }
+        .memo-layout .doc-title {
+            text-align: center;
+            font-size: 20pt;
+            font-weight: bold;
+            padding-top: 5mm;
+            margin-bottom: 2mm;
+        }
+        .memo-layout .doc-meta {
+            font-size: 11pt;
+            line-height: 1.4;
+            margin-bottom: 1px;
+            white-space: normal;
+        }
+        .memo-layout .doc-meta-row {
+            display: flex;
+            justify-content: flex-start;
+            gap: 0;
+        }
+        .memo-layout .doc-meta-row .doc-ref { flex: 0 0 50%; }
+        .memo-layout .doc-meta-row .doc-date { flex: 0 0 50%; text-align: left; padding-left: 10px; }
+        .memo-layout .doc-line {
+            border: none;
+            border-bottom: 1px solid black;
+            margin: 2px 0 8px 0;
+        }
+        .memo-layout .doc-to {
+            font-size: 11pt;
+            font-weight: bold;
+            font-style: italic;
+            margin-bottom: 2px;
+            line-height: 1.4;
+        }
+        .memo-layout .doc-content {
+            font-size: 11pt;
+            text-indent: 2.5cm;
+            text-align: justify;
+            line-height: 1.5;
+            margin-bottom: 2px;
+        }
+        .memo-layout .doc-closing {
+            font-size: 11pt;
+            text-indent: 2.5cm;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .memo-layout .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0;
+            font-size: 10pt;
+        }
+        .memo-layout .doc-table th,
+        .memo-layout .doc-table td {
+            border: 1px solid black;
+            padding: 2px 3px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.2;
+            font-size: 10pt;
+        }
+        .memo-layout .doc-table th { background: white; font-weight: bold; color: black; }
+        .memo-layout .doc-table td.text-left { text-align: left; }
+        .memo-layout .sign-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none !important;
+            margin-top: 12px;
+        }
+        .memo-layout .sign-table td {
+            border: none !important;
+            vertical-align: top;
+            text-align: center;
+            padding: 2px 5px;
+            width: 50%;
+            font-size: 11pt;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+        .memo-layout .name-shift-left {
+            display: inline-block;
+            position: relative;
+            left: -10mm;
+        }
+        .memo-layout .checkbox-text {
+            text-align: left;
+            padding-left: 15px;
+            margin-bottom: 1px;
+            font-size: 11pt;
+        }
+        .memo-layout .footer-system {
+            position: absolute;
+            bottom: 10mm;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Page 2 layout */
+        .memo-page2 {
+            font-family: 'Sarabun', sans-serif !important;
+            position: relative;
+            min-height: 297mm;
+            padding: 10mm 15mm 25mm 20mm;
+            page-break-before: always;
+        }
+        .memo-page2 .page2-title { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 4mm; padding-top: 5mm; }
+        .memo-page2 .page2-subtitle { text-align: center; font-size: 11pt; margin-bottom: 6mm; color: #444; }
+        .memo-page2 .school-block { margin-bottom: 6mm; }
+        .memo-page2 .school-name {
+            font-size: 11pt; font-weight: bold;
+            background: #fff5eb; padding: 2px 6px;
+            border-left: 3px solid #1a56a0;
+            margin-bottom: 2mm; display: block;
+        }
+        .memo-page2 .student-table {
+            width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 2mm;
+        }
+        .memo-page2 .student-table th {
+            background: var(--primary-dark, #1a56a0);
+            color: white; font-weight: bold;
+            padding: 3px 5px; border: 1px solid #0d3d7a;
+            text-align: center; font-size: 9.5pt;
+        }
+        .memo-page2 .student-table td {
+            border: 1px solid #ccc; padding: 2px 5px; vertical-align: middle; font-size: 9.5pt;
+        }
+        .memo-page2 .student-table td.text-left { text-align: left; }
+        .memo-page2 .student-table tr:nth-child(even) { background: #f0f5ff; }
+        .memo-page2 .footer-system {
+            position: absolute; bottom: 10mm; left: 0;
+            width: 100%; text-align: center; font-size: 9pt; color: #666; font-style: italic;
+        }
+
+        @media screen and (max-width: 900px) {
+            .a4-paper { transform-origin: top left; }
+        }
+
         .logo-section {
             display: flex;
             align-items: center;
@@ -932,6 +1275,94 @@
             body[data-print="mobtua"] #mobtuaPrintArea * {
                 visibility: visible !important;
             }
+
+            /* ===== บันทึกข้อความรายงานประจำวัน ===== */
+            body[data-print="memo"] #memoPrintArea {
+                display: block !important;
+                visibility: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+            body[data-print="memo"] #memoPrintArea * {
+                visibility: visible !important;
+            }
+            body[data-print="memo"] .a4-paper {
+                width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            body[data-print="memo"] .memo-layout {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                padding: 8mm 10mm 8mm 15mm !important;
+                margin: 0 !important;
+            }
+            body[data-print="memo"] .memo-page2 {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                padding: 8mm 10mm 8mm 15mm !important;
+                margin: 0 !important;
+                page-break-before: always;
+            }
+            body[data-print="memo"] .memo-layout .garuda {
+                position: absolute !important;
+                left: 22mm !important;
+                top: 9.3mm !important;
+                width: 1.3cm !important;
+            }
+            body[data-print="memo"] .memo-layout .doc-title {
+                font-size: 18pt !important;
+                padding-top: 8mm !important;
+            }
+            body[data-print="memo"] .memo-layout .doc-table th,
+            body[data-print="memo"] .memo-layout .doc-table td {
+                border: 1px solid black !important;
+                padding: 1.5mm 1mm !important;
+                font-size: 9pt !important;
+            }
+            body[data-print="memo"] .memo-layout .sign-table td {
+                border: none !important;
+                font-size: 11pt !important;
+            }
+            body[data-print="memo"] .memo-layout .footer-system {
+                position: relative !important;
+                bottom: auto !important;
+                margin-top: 10mm !important;
+                font-size: 9pt !important;
+            }
+            body[data-print="memo"] .memo-page2 .student-table th {
+                background: #1a56a0 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body[data-print="memo"] .memo-page2 .student-table tr:nth-child(even) {
+                background: #f0f5ff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body[data-print="memo"] .memo-page2 .school-name {
+                background: #fff5eb !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body[data-print="memo"] .memo-page2 .footer-system {
+                position: relative !important;
+                bottom: auto !important;
+                margin-top: 10mm !important;
+            }
             
             .print-document {
                 display: block !important;
@@ -1451,11 +1882,270 @@
                     <p style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px;">พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง งานทะเบียนและเทียบโอนผลการเรียน</p>
                 </div>
             </div>
-            <button class="settings-btn" onclick="openAdminSettings()" title="ตั้งค่าแอดมิน">
-                ⚙️
-            </button>
+            <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                <button class="report-btn" onclick="openReportPage()" title="รายงานประจำวัน">
+                    📊 รายงาน
+                </button>
+                <button class="settings-btn" onclick="openAdminSettings()" title="ตั้งค่าแอดมิน">
+                    ⚙️
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- ===== Report Page ===== -->
+    <div class="report-page" id="reportPage">
+
+        <div class="report-page-header">
+            <button class="btn btn-outline" onclick="closeReportPage()" style="flex-shrink:0;">← กลับ</button>
+            <h2>📊 รายงานการสมัครเรียนรายวัน</h2>
+        </div>
+
+        <!-- ข้อมูลครูผู้รายงาน -->
+        <div class="reporter-section">
+            <h3>👤 ข้อมูลผู้ลงนามในเอกสาร</h3>
+            <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:var(--space-md);">
+                กรอกครั้งเดียว ระบบจะจำไว้ใช้ในเอกสารทุกครั้ง
+            </p>
+
+            <!-- ผู้รับผิดชอบงานรับนักเรียน -->
+            <p style="font-weight:600; font-size:var(--text-sm); color:var(--primary); margin-bottom:6px;">
+                ✍️ ผู้รับผิดชอบงานรับนักเรียน (ผู้จัดทำรายงาน)
+            </p>
+            <div class="form-row-3" style="margin-bottom:var(--space-md);">
+                <div class="form-group">
+                    <label>คำนำหน้า</label>
+                    <select class="form-control" id="rpt_prefix">
+                        <option value="นาย">นาย</option>
+                        <option value="นาง">นาง</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="ครู">ครู</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ</label>
+                    <input type="text" class="form-control" id="rpt_firstName" placeholder="ชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" class="form-control" id="rpt_lastName" placeholder="นามสกุล">
+                </div>
+            </div>
+
+            <!-- หัวหน้างานรับนักเรียน -->
+            <p style="font-weight:600; font-size:var(--text-sm); color:var(--primary); margin-bottom:6px;">
+                ✍️ หัวหน้างานรับนักเรียน
+            </p>
+            <div class="form-row-3" style="margin-bottom:var(--space-md);">
+                <div class="form-group">
+                    <label>คำนำหน้า</label>
+                    <select class="form-control" id="sig1_prefix">
+                        <option value="นาย">นาย</option>
+                        <option value="นาง">นาง</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="ครู">ครู</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ</label>
+                    <input type="text" class="form-control" id="sig1_firstName" placeholder="ชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" class="form-control" id="sig1_lastName" placeholder="นามสกุล">
+                </div>
+            </div>
+
+            <!-- หัวหน้ากลุ่มบริหารงานทั่วไป -->
+            <p style="font-weight:600; font-size:var(--text-sm); color:var(--primary); margin-bottom:6px;">
+                ✍️ หัวหน้ากลุ่มบริหารงานทั่วไป
+            </p>
+            <div class="form-row-3" style="margin-bottom:var(--space-md);">
+                <div class="form-group">
+                    <label>คำนำหน้า</label>
+                    <select class="form-control" id="sig2_prefix">
+                        <option value="นาย">นาย</option>
+                        <option value="นาง">นาง</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="ครู">ครู</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ</label>
+                    <input type="text" class="form-control" id="sig2_firstName" placeholder="ชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" class="form-control" id="sig2_lastName" placeholder="นามสกุล">
+                </div>
+            </div>
+
+            <!-- รองผู้อำนวยการ -->
+            <p style="font-weight:600; font-size:var(--text-sm); color:var(--primary); margin-bottom:6px;">
+                ✍️ รองผู้อำนวยการโรงเรียน
+            </p>
+            <div class="form-row-3" style="margin-bottom:var(--space-md);">
+                <div class="form-group">
+                    <label>คำนำหน้า</label>
+                    <select class="form-control" id="sig3_prefix">
+                        <option value="นาย">นาย</option>
+                        <option value="นาง">นาง</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="ครู">ครู</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ</label>
+                    <input type="text" class="form-control" id="sig3_firstName" placeholder="ชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" class="form-control" id="sig3_lastName" placeholder="นามสกุล">
+                </div>
+            </div>
+
+            <!-- ผู้อำนวยการ -->
+            <p style="font-weight:600; font-size:var(--text-sm); color:var(--primary); margin-bottom:6px;">
+                ✍️ ผู้อำนวยการโรงเรียน
+            </p>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>คำนำหน้า</label>
+                    <select class="form-control" id="sig4_prefix">
+                        <option value="นาย">นาย</option>
+                        <option value="นาง">นาง</option>
+                        <option value="นางสาว">นางสาว</option>
+                        <option value="ดร.">ดร.</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ</label>
+                    <input type="text" class="form-control" id="sig4_firstName" placeholder="ชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" class="form-control" id="sig4_lastName" placeholder="นามสกุล">
+                </div>
+            </div>
+        </div>
+
+        <!-- เลือกวันที่ -->
+        <div class="report-query-section">
+            <h3>📅 เลือกวันที่ต้องการดึงข้อมูล</h3>
+            <div class="form-row" style="align-items:flex-end;">
+                <div class="form-group">
+                    <label>วันที่</label>
+                    <input type="date" class="form-control" id="rpt_date">
+                </div>
+                <div class="form-group" style="flex:0 0 auto;">
+                    <button class="btn btn-primary" onclick="fetchDailyReport()">
+                        🔍 ดึงข้อมูลประจำวัน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ผลลัพธ์ -->
+        <div class="report-results" id="rpt_results" style="display:none;">
+            <h3>📋 ผลการค้นหา
+                <span id="rpt_dateLabel" style="font-weight:400; color:var(--text-light); font-size:0.9rem;"></span>
+            </h3>
+
+            <!-- Summary Cards -->
+            <div class="report-summary-grid">
+                <div class="report-summary-card">
+                    <span class="num" id="rpt_total">0</span>
+                    <span class="lbl">ผู้สมัครทั้งหมด</span>
+                </div>
+                <div class="report-summary-card">
+                    <span class="num" id="rpt_m1count">0</span>
+                    <span class="lbl">ม.1</span>
+                </div>
+                <div class="report-summary-card">
+                    <span class="num" id="rpt_m4count">0</span>
+                    <span class="lbl">ม.4</span>
+                </div>
+                <div class="report-summary-card">
+                    <span class="num" id="rpt_maleCount">0</span>
+                    <span class="lbl">ชาย</span>
+                </div>
+                <div class="report-summary-card">
+                    <span class="num" id="rpt_femaleCount">0</span>
+                    <span class="lbl">หญิง</span>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ชั้น</th>
+                            <th>ชื่อ-สกุล</th>
+                            <th>โรงเรียนเดิม</th>
+                            <th>อำเภอ</th>
+                            <th>จังหวัด</th>
+                            <th>เวลาสมัคร</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rpt_tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="report-actions">
+                <button class="btn btn-success" onclick="openLineCopyModal()" style="background:linear-gradient(135deg,#25d366,#128c7e);">
+                    📱 คัดลอกส่งไลน์
+                </button>
+                <button class="btn btn-primary" onclick="generateMemoDocument()">
+                    📄 สร้างเอกสาร (ผู้รับผิดชอบงานรับนักเรียน)
+                </button>
+            </div>
+        </div>
+
+        <div id="rpt_empty" style="display:none; text-align:center; padding:3rem; color:var(--text-light);">
+            <div style="font-size:3rem; margin-bottom:1rem;">📭</div>
+            <p>ไม่พบข้อมูลผู้สมัครในวันที่เลือก</p>
+        </div>
+    </div>
+
+    <!-- Line Copy Modal -->
+    <div class="modal-overlay" id="lineCopyModal" style="z-index:1500;">
+        <div class="modal-content line-copy-modal" style="max-width:600px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#25d366,#128c7e); color:white;">
+                <h3>📱 คัดลอกส่งไลน์</h3>
+                <button class="modal-close" onclick="document.getElementById('lineCopyModal').classList.remove('active')" style="background:rgba(255,255,255,0.2);color:white;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:var(--space-sm);">
+                    กดปุ่ม "คัดลอก" แล้วนำไปวางในแอปไลน์ได้เลยครับ
+                </p>
+                <div class="line-copy-area" id="lineCopyText"></div>
+                <button class="btn btn-success" onclick="copyLineText()" style="background:linear-gradient(135deg,#25d366,#128c7e); width:100%;">
+                    📋 คัดลอกข้อความ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memo Document Modal -->
+    <div class="modal-overlay" id="memoDocModal" style="z-index:1500; overflow-y:auto; padding:20px 8px; align-items:flex-start;">
+        <div style="max-width:230mm; width:100%; margin:0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px; position:sticky; top:0; z-index:10; background:rgba(0,0,0,0.5); padding:8px 12px; border-radius:8px;">
+                <button class="btn btn-outline" onclick="document.getElementById('memoDocModal').classList.remove('active')" style="background:white; padding:8px 16px;">← ปิด</button>
+                <span style="color:white; font-size:0.9rem;">📄 บันทึกข้อความ</span>
+                <button class="btn btn-success" onclick="printMemoDoc()" style="padding:8px 16px;">🖨️ พิมพ์</button>
+            </div>
+            <div id="memoDocContent" style="overflow-x:auto;">
+                <!-- generated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Print area for memo - outside modal, direct body child -->
+    <div id="memoPrintArea" style="display:none;"></div>
 
     <!-- Landing Page -->
     <div class="landing-page" id="landingPage">
@@ -2925,7 +3615,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -2941,7 +3631,7 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, serverTimestamp };
+        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
 
         console.log('Firebase initialized successfully!');
     </script>
@@ -4894,6 +5584,430 @@
             // โหลดข้อมูลที่เคยบันทึกของใบสมัคร
             promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
         });
+
+        /* =========================================================
+           DAILY REPORT MODULE
+           ========================================================= */
+        let rptData = []; // ข้อมูลผลลัพธ์ประจำวัน
+
+        function openReportPage() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('reportPage').classList.add('active');
+            const dateEl = document.getElementById('rpt_date');
+            if (!dateEl.value) {
+                dateEl.value = new Date().toISOString().slice(0, 10);
+            }
+            // โหลดข้อมูลผู้ลงนามจาก localStorage
+            const saved = JSON.parse(localStorage.getItem('memoSignatories') || '{}');
+            const fields = ['rpt','sig1','sig2','sig3','sig4'];
+            fields.forEach(id => {
+                if (saved[id+'_prefix'])    { const el = document.getElementById(id+'_prefix');    if(el) el.value = saved[id+'_prefix']; }
+                if (saved[id+'_firstName']) { const el = document.getElementById(id+'_firstName'); if(el) el.value = saved[id+'_firstName']; }
+                if (saved[id+'_lastName'])  { const el = document.getElementById(id+'_lastName');  if(el) el.value = saved[id+'_lastName']; }
+            });
+        }
+
+        function saveSignatoriesToStorage() {
+            const fields = ['rpt','sig1','sig2','sig3','sig4'];
+            const data = {};
+            fields.forEach(id => {
+                const pe = document.getElementById(id+'_prefix');
+                const fe = document.getElementById(id+'_firstName');
+                const le = document.getElementById(id+'_lastName');
+                if(pe) data[id+'_prefix']    = pe.value;
+                if(fe) data[id+'_firstName'] = fe.value.trim();
+                if(le) data[id+'_lastName']  = le.value.trim();
+            });
+            localStorage.setItem('memoSignatories', JSON.stringify(data));
+        }
+
+        function getSigName(id) {
+            const prefix    = (document.getElementById(id+'_prefix')?.value    || '').trim();
+            const firstName = (document.getElementById(id+'_firstName')?.value || '').trim();
+            const lastName  = (document.getElementById(id+'_lastName')?.value  || '').trim();
+            if (!firstName && !lastName) return '................................................................';
+            return `${prefix}${firstName} ${lastName}`;
+        }
+
+        function closeReportPage() {
+            document.getElementById('reportPage').classList.remove('active');
+            document.getElementById('landingPage').classList.remove('hidden');
+            backToStep1();
+        }
+
+        async function fetchDailyReport() {
+            const dateVal = document.getElementById('rpt_date').value;
+            if (!dateVal) { showToast('กรุณาเลือกวันที่', 'error'); return; }
+
+            // บันทึกข้อมูลผู้ลงนาม
+            saveSignatoriesToStorage();
+
+            try {
+                showLoading(true);
+
+                const startDate = new Date(dateVal + 'T00:00:00');
+                const endDate   = new Date(dateVal + 'T23:59:59');
+
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'admissions'),
+                    window.firestore.where('createdAt', '>=', window.firestore.Timestamp.fromDate(startDate)),
+                    window.firestore.where('createdAt', '<=', window.firestore.Timestamp.fromDate(endDate)),
+                    window.firestore.orderBy('createdAt', 'asc')
+                );
+
+                const snap = await window.firestore.getDocs(q);
+                rptData = [];
+                snap.forEach(doc => rptData.push({ id: doc.id, ...doc.data() }));
+
+                renderReportResults(dateVal, rptData);
+            } catch (e) {
+                console.error('fetchDailyReport error:', e);
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderReportResults(dateVal, records) {
+            const resultsEl = document.getElementById('rpt_results');
+            const emptyEl   = document.getElementById('rpt_empty');
+
+            if (records.length === 0) {
+                resultsEl.style.display = 'none';
+                emptyEl.style.display   = 'block';
+                return;
+            }
+            emptyEl.style.display   = 'none';
+            resultsEl.style.display = 'block';
+
+            const d = new Date(dateVal + 'T12:00:00');
+            const thaiDate = d.toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+            document.getElementById('rpt_dateLabel').textContent = `— ${thaiDate}`;
+
+            const m1 = records.filter(r => r.gradeLevel === 'm1');
+            const m4 = records.filter(r => r.gradeLevel === 'm4');
+            const male   = records.filter(r => { const p=(r.data&&r.data.prefix)||''; return p==='เด็กชาย'||p==='นาย'; });
+            const female = records.filter(r => { const p=(r.data&&r.data.prefix)||''; return p==='เด็กหญิง'||p==='นางสาว'; });
+
+            document.getElementById('rpt_total').textContent       = records.length;
+            document.getElementById('rpt_m1count').textContent     = m1.length;
+            document.getElementById('rpt_m4count').textContent     = m4.length;
+            document.getElementById('rpt_maleCount').textContent   = male.length;
+            document.getElementById('rpt_femaleCount').textContent = female.length;
+
+            const tbody = document.getElementById('rpt_tableBody');
+            tbody.innerHTML = records.map((rec, i) => {
+                const d = rec.data || {};
+                const grade = rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+                const timeStr = rec.createdAt ? rec.createdAt.toDate().toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' }) : '-';
+                return `<tr>
+                    <td style="text-align:center;">${i + 1}</td>
+                    <td><span class="grade-badge">${grade}</span></td>
+                    <td>${rec.studentName || '-'}</td>
+                    <td>${d.previousSchool || '-'}</td>
+                    <td>${d.district || '-'}</td>
+                    <td>${d.province || '-'}</td>
+                    <td>${timeStr}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function getReporterName() {
+            return getSigName('rpt');
+        }
+
+        function getSelectedThaiDate() {
+            const dateVal = document.getElementById('rpt_date').value;
+            if (!dateVal) return '';
+            const d = new Date(dateVal + 'T12:00:00');
+            return d.toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+        }
+
+        /* ---------- LINE COPY ---------- */
+        function openLineCopyModal() {
+            if (rptData.length === 0) { showToast('ไม่มีข้อมูลสำหรับสร้างรายงาน', 'error'); return; }
+
+            const thaiDate   = getSelectedThaiDate();
+            const reporter   = getReporterName();
+            const m1 = rptData.filter(r => r.gradeLevel === 'm1');
+            const m4 = rptData.filter(r => r.gradeLevel === 'm4');
+            const male   = rptData.filter(r => { const p=(r.data?.prefix||''); return p==='เด็กชาย'||p==='นาย'; });
+            const female = rptData.filter(r => { const p=(r.data?.prefix||''); return p==='เด็กหญิง'||p==='นางสาว'; });
+
+            const lines = rptData.map((r, i) => {
+                const grade = r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+                const school = (r.data?.previousSchool || '-');
+                return `   ${i+1}. ${r.studentName || '-'} (${grade}) — ${school}`;
+            }).join('\n');
+
+            const text =
+`📋 รายงานผลการรับสมัครนักเรียน
+โรงเรียนกระดุมทองวิทยา
+วันที่ ${thaiDate}
+━━━━━━━━━━━━━━━━━━━━━
+📊 สรุปยอดผู้สมัคร
+• รวมทั้งหมด : ${rptData.length} คน
+  - ม.1 : ${m1.length} คน
+  - ม.4 : ${m4.length} คน
+• ชาย : ${male.length} คน | หญิง : ${female.length} คน
+━━━━━━━━━━━━━━━━━━━━━
+📝 รายชื่อผู้สมัคร
+${lines}
+━━━━━━━━━━━━━━━━━━━━━
+รายงานโดย ${reporter || '—'}`;
+
+            document.getElementById('lineCopyText').textContent = text;
+            document.getElementById('lineCopyModal').classList.add('active');
+        }
+
+        function copyLineText() {
+            const text = document.getElementById('lineCopyText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('คัดลอกข้อความสำเร็จ! นำไปวางในไลน์ได้เลย');
+            }).catch(() => {
+                // fallback
+                const sel = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(document.getElementById('lineCopyText'));
+                sel.removeAllRanges();
+                sel.addRange(range);
+                document.execCommand('copy');
+                showToast('คัดลอกแล้ว');
+            });
+        }
+
+        /* ---------- MEMO DOCUMENT ---------- */
+        async function generateMemoDocument() {
+            // บันทึกชื่อผู้ลงนามก่อน
+            saveSignatoriesToStorage();
+
+            try {
+                showLoading(true);
+
+                // ดึงข้อมูลทั้งหมดจาก Firestore
+                const snap = await window.firestore.getDocs(
+                    window.firestore.query(
+                        window.firestore.collection(window.db, 'admissions'),
+                        window.firestore.orderBy('createdAt', 'asc')
+                    )
+                );
+                const allData = [];
+                snap.forEach(doc => allData.push({ id: doc.id, ...doc.data() }));
+
+                if (allData.length === 0) {
+                    showToast('ยังไม่มีข้อมูลผู้สมัครในระบบ', 'error');
+                    showLoading(false);
+                    return;
+                }
+
+                _buildMemoHTML(allData);
+
+            } catch(e) {
+                console.error('generateMemoDocument error:', e);
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function _buildMemoHTML(allData) {
+            // ===== ข้อมูลพื้นฐาน =====
+            const today = new Date();
+            const thaiDateToday = today.toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+            const thaiYear = today.getFullYear() + 543;
+
+            const m1All = allData.filter(r => r.gradeLevel === 'm1');
+            const m4All = allData.filter(r => r.gradeLevel === 'm4');
+            const maleAll   = allData.filter(r => { const p=(r.data?.prefix||''); return p==='เด็กชาย'||p==='นาย'; });
+            const femaleAll = allData.filter(r => { const p=(r.data?.prefix||''); return p==='เด็กหญิง'||p==='นางสาว'; });
+
+            // ===== สรุปรายวัน (pivot table หน้า 1) =====
+            const dayMap = {};
+            allData.forEach(rec => {
+                const dateKey = rec.createdAt
+                    ? rec.createdAt.toDate().toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' })
+                    : 'ไม่ระบุวันที่';
+                if (!dayMap[dateKey]) dayMap[dateKey] = { total:0, m1:0, m4:0, male:0, female:0 };
+                dayMap[dateKey].total++;
+                if (rec.gradeLevel === 'm1') dayMap[dateKey].m1++;
+                if (rec.gradeLevel === 'm4') dayMap[dateKey].m4++;
+                const p = rec.data?.prefix || '';
+                if (p==='เด็กชาย'||p==='นาย') dayMap[dateKey].male++;
+                if (p==='เด็กหญิง'||p==='นางสาว') dayMap[dateKey].female++;
+            });
+
+            const summaryRows = Object.entries(dayMap).map(([date, c], i) =>
+                `<tr>
+                    <td>${i+1}</td>
+                    <td class="text-left">${date}</td>
+                    <td>${c.m1}</td>
+                    <td>${c.m4}</td>
+                    <td>${c.male}</td>
+                    <td>${c.female}</td>
+                    <td><strong>${c.total}</strong></td>
+                </tr>`
+            ).join('');
+
+            const sumRow = `<tr style="background:#fff5eb;font-weight:bold;">
+                <td colspan="2" style="text-align:center;">รวมทั้งหมด</td>
+                <td>${m1All.length}</td>
+                <td>${m4All.length}</td>
+                <td>${maleAll.length}</td>
+                <td>${femaleAll.length}</td>
+                <td>${allData.length}</td>
+            </tr>`;
+
+            // ===== หน้า 2: รายชื่อทั้งหมดแยกชั้น =====
+            const buildGradeBlock = (gradeLabel, recs) => {
+                if (recs.length === 0) return '';
+                const rows = recs.map((rec, i) => {
+                    const d = rec.data || {};
+                    const dateStr = rec.createdAt
+                        ? rec.createdAt.toDate().toLocaleDateString('th-TH', { day:'2-digit', month:'short', year:'numeric' })
+                        : '-';
+                    return `<tr>
+                        <td>${i+1}</td>
+                        <td class="text-left">${rec.studentName||'-'}</td>
+                        <td class="text-left">${d.previousSchool||'-'}</td>
+                        <td>${d.district||'-'}</td>
+                        <td>${d.province||'-'}</td>
+                        <td>${dateStr}</td>
+                    </tr>`;
+                }).join('');
+                return `<div class="school-block">
+                    <span class="school-name">📚 นักเรียนชั้น ${gradeLabel} — รวม ${recs.length} คน</span>
+                    <table class="student-table">
+                        <thead>
+                            <tr><th>ที่</th><th>ชื่อ-สกุล</th><th>โรงเรียนเดิม</th><th>อำเภอ</th><th>จังหวัด</th><th>วันที่สมัคร</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+            };
+
+            const page2Content = buildGradeBlock('ม.1', m1All) + buildGradeBlock('ม.4', m4All);
+
+            // ===== สร้าง HTML =====
+            const memoHTML = `
+            <div class="a4-paper memo-layout">
+                <img src="https://nonthaphathr.github.io/uploadimg/kruda.png" class="garuda" alt="ตราครุฑ">
+
+                <div class="doc-title">บันทึกข้อความ</div>
+
+                <div class="doc-meta">
+                    <b>ส่วนราชการ</b>&nbsp;&nbsp;งานทะเบียนและเทียบโอนผลการเรียน โรงเรียนกระดุมทองวิทยา
+                    ตำบลหนองหัวช้าง อำเภอกันทรารมย์ จังหวัดศรีสะเกษ
+                </div>
+                <div class="doc-meta doc-meta-row">
+                    <span class="doc-ref"><b>ที่</b>&nbsp;&nbsp;ศก 51008.08/............</span>
+                    <span class="doc-date"><b>วันที่</b>&nbsp;&nbsp;${thaiDateToday}</span>
+                </div>
+                <div class="doc-meta">
+                    <b>เรื่อง</b>&nbsp;&nbsp;รายงานผลการรับสมัครนักเรียน (สรุปรวมทั้งหมด) ประจำปีการศึกษา ${thaiYear}
+                </div>
+                <hr class="doc-line">
+                <div class="doc-to">เรียน&nbsp;&nbsp;ผู้อำนวยการโรงเรียนกระดุมทองวิทยา</div>
+
+                <div class="doc-content">
+                    ด้วยงานทะเบียนและเทียบโอนผลการเรียน โรงเรียนกระดุมทองวิทยา ได้ดำเนินการเปิดรับสมัครนักเรียน
+                    ประจำปีการศึกษา ${thaiYear} มีนักเรียนสมัครเข้าเรียนผ่านระบบออนไลน์รวมทั้งสิ้น
+                    <strong>${allData.length}</strong> คน แบ่งเป็นนักเรียนชั้น ม.1 จำนวน ${m1All.length} คน
+                    และนักเรียนชั้น ม.4 จำนวน ${m4All.length} คน (ชาย ${maleAll.length} คน หญิง ${femaleAll.length} คน)
+                    มีรายละเอียดสรุปรายวันดังตารางต่อไปนี้
+                </div>
+
+                <table class="doc-table">
+                    <colgroup>
+                        <col style="width:5%"><col style="width:25%">
+                        <col style="width:10%"><col style="width:10%">
+                        <col style="width:12%"><col style="width:12%"><col style="width:12%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">ที่</th>
+                            <th rowspan="2">วันที่</th>
+                            <th colspan="2">ระดับชั้น</th>
+                            <th colspan="2">เพศ</th>
+                            <th rowspan="2">รวม</th>
+                        </tr>
+                        <tr>
+                            <th>ม.1</th><th>ม.4</th>
+                            <th>ชาย</th><th>หญิง</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${summaryRows}
+                        ${sumRow}
+                    </tbody>
+                </table>
+
+                <div class="doc-closing">จึงเรียนมาเพื่อโปรดทราบ และโปรดพิจารณา</div>
+
+                <table class="sign-table">
+                    <tr>
+                        <td>
+                            ลงชื่อ&nbsp;........................................<br>
+                            (${getSigName('rpt')})<br>
+                            ผู้รับผิดชอบงานรับนักเรียน
+                        </td>
+                        <td>
+                            ลงชื่อ&nbsp;........................................<br>
+                            (${getSigName('sig1')})<br>
+                            หัวหน้างานรับนักเรียน
+                        </td>
+                    </tr>
+                    <tr style="height:14px;"><td></td><td></td></tr>
+                    <tr>
+                        <td>
+                            <div class="checkbox-text">(&nbsp;&nbsp;&nbsp;) รับทราบ</div>
+                            ลงชื่อ&nbsp;........................................<br>
+                            (${getSigName('sig2')})<br>
+                            หัวหน้ากลุ่มบริหารงานทั่วไป
+                        </td>
+                        <td>
+                            <div class="checkbox-text">(&nbsp;&nbsp;&nbsp;) รับทราบ</div>
+                            ลงชื่อ&nbsp;........................................<br>
+                            (${getSigName('sig3')})<br>
+                            รองผู้อำนวยการโรงเรียนกระดุมทองวิทยา
+                        </td>
+                    </tr>
+                    <tr style="height:14px;"><td></td><td></td></tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="checkbox-text">(&nbsp;&nbsp;&nbsp;) รับทราบ</div>
+                            ลงชื่อ&nbsp;........................................<br>
+                            (${getSigName('sig4')})<br>
+                            ผู้อำนวยการโรงเรียนกระดุมทองวิทยา
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+            ${page2Content ? `
+            <div class="a4-paper memo-page2">
+                <div class="page2-title">รายชื่อนักเรียนที่สมัครเรียน (ทั้งหมด) ปีการศึกษา ${thaiYear}</div>
+                <div class="page2-subtitle">โรงเรียนกระดุมทองวิทยา | พิมพ์ ณ วันที่ ${thaiDateToday}</div>
+                ${page2Content}
+            </div>` : ''}`;
+
+            document.getElementById('memoDocContent').innerHTML = memoHTML;
+            document.getElementById('memoPrintArea').innerHTML  = memoHTML;
+            document.getElementById('memoDocModal').classList.add('active');
+        }
+
+        function printMemoDoc() {
+            // ตรวจว่ามีเนื้อหาหรือเปล่า
+            const printArea = document.getElementById('memoPrintArea');
+            if (!printArea || !printArea.innerHTML.trim()) {
+                showToast('กรุณาสร้างเอกสารก่อนพิมพ์', 'error'); return;
+            }
+            document.body.setAttribute('data-print', 'memo');
+            window.print();
+            setTimeout(() => document.body.removeAttribute('data-print'), 1500);
+        }
     </script>
 </body>
 </html>

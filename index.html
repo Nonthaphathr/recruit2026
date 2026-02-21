@@ -2159,13 +2159,19 @@
                 <h3>ใบสมัครเข้าเรียน</h3>
                 <p>สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1 หรือ 4<br>โรงเรียนกระดุมทองวิทยา</p>
                 <div style="margin-top:1rem; color:var(--primary); font-size:0.85rem; font-weight:600;">คลิกเพื่อเลือกระดับชั้น →</div>
+                <div style="margin-top:0.5rem; font-size:0.8rem; color:#16a34a; font-weight:600; background:#f0fdf4; border-radius:8px; padding:6px 10px;">
+                    🖥️ นักเรียนสมัครเรียนออนไลน์คลิกปุ่มนี้
+                </div>
             </div>
-            <div class="doc-type-card mobtua" onclick="showLandingStep2('mobtua')">
+            <div class="doc-type-card mobtua" id="mobtuaCard" onclick="handleMobtuaClick()">
                 <div class="card-icon">📋</div>
                 <span class="card-badge">วก.กทว.205</span>
                 <h3>ใบมอบตัวนักเรียน</h3>
                 <p>บันทึกข้อมูลนักเรียนและผู้ปกครอง<br>สำหรับมอบตัวเข้าเรียน</p>
-                <div style="margin-top:1rem; color:#7b3f9e; font-size:0.85rem; font-weight:600;">คลิกเพื่อเลือกระดับชั้น →</div>
+                <div style="margin-top:1rem; color:#7b3f9e; font-size:0.85rem; font-weight:600;" id="mobtuaCardArrow">คลิกเพื่อเลือกระดับชั้น →</div>
+                <div id="mobtuaLockedMsg" style="margin-top:0.5rem; font-size:0.8rem; color:#b45309; font-weight:600; background:#fffbeb; border-radius:8px; padding:6px 10px; display:none;">
+                    🔒 เปิดให้มอบตัววันที่ รร.กำหนด
+                </div>
             </div>
         </div>
 
@@ -3486,6 +3492,19 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 1rem; color: #b45309;">🔒 ล็อกเมนูใบมอบตัว</h4>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="mobtuaLockToggle" onchange="toggleMobtuaLock()" style="width: 20px; height: 20px;">
+                            <span>ล็อกเมนูใบมอบตัว (แสดงข้อความ "เปิดให้มอบตัววันที่ รร.กำหนด")</span>
+                        </label>
+                        <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:6px;">
+                            เมื่อล็อก นักเรียน/ผู้ปกครองจะกดเข้าเมนูใบมอบตัวไม่ได้
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: var(--primary);">🧪 ระบบทดสอบ</h4>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -4461,6 +4480,43 @@
 
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
             document.getElementById('historyLockToggle').checked = historyLocked;
+
+            const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
+            document.getElementById('mobtuaLockToggle').checked = mobtuaLocked;
+        }
+
+        function toggleMobtuaLock() {
+            const locked = document.getElementById('mobtuaLockToggle').checked;
+            localStorage.setItem('mobtuaLocked', locked);
+            applyMobtuaLock(locked);
+            showToast(locked ? '🔒 ล็อกเมนูใบมอบตัวแล้ว' : '🔓 ปลดล็อกเมนูใบมอบตัวแล้ว');
+        }
+
+        function applyMobtuaLock(locked) {
+            const card  = document.getElementById('mobtuaCard');
+            const arrow = document.getElementById('mobtuaCardArrow');
+            const msg   = document.getElementById('mobtuaLockedMsg');
+            if (!card) return;
+            if (locked) {
+                card.style.opacity = '0.7';
+                card.style.cursor  = 'not-allowed';
+                if (arrow) arrow.style.display = 'none';
+                if (msg)   msg.style.display   = 'block';
+            } else {
+                card.style.opacity = '1';
+                card.style.cursor  = 'pointer';
+                if (arrow) arrow.style.display = 'block';
+                if (msg)   msg.style.display   = 'none';
+            }
+        }
+
+        function handleMobtuaClick() {
+            const locked = localStorage.getItem('mobtuaLocked') === 'true';
+            if (locked) {
+                showToast('🔒 เปิดให้มอบตัววันที่ รร.กำหนด', 'error');
+                return;
+            }
+            showLandingStep2('mobtua');
         }
 
         function saveDefaultYear() {
@@ -5578,6 +5634,10 @@
             // โหลดสถานะล็อค
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
             applyHistoryLockUI(historyLocked);
+
+            // โหลดสถานะล็อกเมนูใบมอบตัว
+            const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
+            applyMobtuaLock(mobtuaLocked);
 
             // ตั้ง Autosave สำหรับฟอร์มใบสมัคร
             setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);

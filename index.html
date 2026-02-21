@@ -808,16 +808,94 @@
         .history-item {
             padding: var(--space-md) clamp(1rem, 3vw, 1.5rem);
             border-bottom: 1px solid var(--border);
-            cursor: pointer;
+            cursor: default;
             transition: all 0.2s ease;
         }
 
-        .history-item:hover {
-            background: var(--bg);
+        .history-item.docs-complete {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
         }
 
-        .history-item:active {
-            background: var(--bg-secondary);
+        .history-item.docs-incomplete {
+            background: #fefce8;
+            border-left: 4px solid #eab308;
+        }
+
+        .history-item:hover {
+            filter: brightness(0.97);
+        }
+
+        /* Checklist */
+        .doc-checklist {
+            margin-top: var(--space-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+        }
+
+        .doc-checklist-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .doc-check-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 99px;
+            border: 1px solid #d1d5db;
+            background: white;
+            user-select: none;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .doc-check-item.checked {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .doc-check-item.unchecked {
+            background: #fef9c3;
+            border-color: #ca8a04;
+            color: #92400e;
+        }
+
+        .doc-check-item input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #16a34a;
+            flex-shrink: 0;
+        }
+
+        .docs-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            margin-left: 6px;
+        }
+
+        .docs-status-badge.complete {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .docs-status-badge.incomplete {
+            background: #fef9c3;
+            color: #92400e;
         }
 
         .history-item-header {
@@ -3505,6 +3583,23 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary);">📋 จัดการรายการหลักฐานการสมัคร</h4>
+                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem;">
+                        รายการเหล่านี้จะแสดงเป็น checklist ในประวัติการสมัครทุกรายการ
+                    </p>
+                    <div id="checklistItemsAdmin" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:6px;">
+                        <!-- generated -->
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="newChecklistItem" class="form-control" placeholder="พิมพ์รายการหลักฐานใหม่..." style="flex:1;">
+                        <button class="btn btn-primary" onclick="addChecklistItem()" style="flex-shrink:0;">+ เพิ่ม</button>
+                    </div>
+                    <button class="btn btn-success" onclick="saveChecklistItems()" style="width:100%; margin-top:0.75rem;">
+                        💾 บันทึกรายการหลักฐาน
+                    </button>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: var(--primary);">🧪 ระบบทดสอบ</h4>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -4219,13 +4314,17 @@
                            <button class="btn btn-danger btn-sm" onclick="deleteHistoryRecord('${record.id}')">🗑️ ลบ</button>`;
 
                     return `
-                        <div class="history-item">
+                        <div class="history-item ${getDocsStatusClass(record.id)}" id="hist_${record.id}">
                             <div class="history-item-header">
                                 <span class="history-item-type">${gradeLabel} - ${record.formCode}</span>
                                 <span class="history-item-date">${dateStr}</span>
                             </div>
-                            <div class="history-item-name">${record.studentName || '-'}</div>
+                            <div class="history-item-name">
+                                ${record.studentName || '-'}
+                                ${getDocsStatusBadge(record.id)}
+                            </div>
                             <div class="history-item-detail">ปีการศึกษา ${record.academicYear || '-'}</div>
+                            ${buildChecklistHTML(record.id)}
                             <div class="history-item-actions">
                                 <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">👁️ ดู</button>
                                 ${actionButtons}
@@ -4483,6 +4582,142 @@
 
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             document.getElementById('mobtuaLockToggle').checked = mobtuaLocked;
+
+            renderChecklistAdmin();
+        }
+
+        // ===== CHECKLIST MANAGEMENT =====
+        const DEFAULT_CHECKLIST = [
+            'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
+            'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
+            'สำเนาทะเบียนบ้านของนร/บิดา/มารดา',
+            'สำเนาบัตรประชาชนของนร/บิดา/มารดา',
+            'สำเนาสูติบัตรของนักเรียน',
+        ];
+
+        function getChecklistItems() {
+            const saved = localStorage.getItem('checklistItems');
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) {}
+            }
+            return [...DEFAULT_CHECKLIST];
+        }
+
+        function renderChecklistAdmin() {
+            const items = getChecklistItems();
+            const container = document.getElementById('checklistItemsAdmin');
+            if (!container) return;
+            container.innerHTML = items.map((item, i) => `
+                <div style="display:flex; align-items:center; gap:8px; background:#f9fafb; padding:6px 10px; border-radius:8px; border:1px solid var(--border);">
+                    <span style="flex:1; font-size:0.85rem;">${item}</span>
+                    <button onclick="removeChecklistItem(${i})" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:1rem; line-height:1; padding:2px 6px;" title="ลบ">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addChecklistItem() {
+            const input = document.getElementById('newChecklistItem');
+            const val = input.value.trim();
+            if (!val) { showToast('กรุณาพิมพ์รายการก่อน', 'error'); return; }
+            const items = getChecklistItems();
+            items.push(val);
+            localStorage.setItem('checklistItems', JSON.stringify(items));
+            input.value = '';
+            renderChecklistAdmin();
+            showToast('เพิ่มรายการแล้ว');
+        }
+
+        function removeChecklistItem(index) {
+            const items = getChecklistItems();
+            items.splice(index, 1);
+            localStorage.setItem('checklistItems', JSON.stringify(items));
+            renderChecklistAdmin();
+            showToast('ลบรายการแล้ว');
+        }
+
+        function saveChecklistItems() {
+            // ค่าปัจจุบันถูกบันทึกแบบ real-time แล้ว แค่แจ้งผู้ใช้
+            showToast('💾 บันทึกรายการหลักฐานแล้ว');
+            loadHistory(); // reload history เพื่อ re-render checklist
+        }
+
+        // บันทึก/โหลด doc checklist ต่อรายการ จาก localStorage key: docs_{recordId}
+        function getRecordDocs(recordId) {
+            const saved = localStorage.getItem('docs_' + recordId);
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) {}
+            }
+            return {};  // key = item text, value = true/false
+        }
+
+        function toggleDocItem(recordId, itemText, checkbox) {
+            const docs = getRecordDocs(recordId);
+            docs[itemText] = checkbox.checked;
+            localStorage.setItem('docs_' + recordId, JSON.stringify(docs));
+            // อัพเดตสี history-item
+            const histItem = document.getElementById('hist_' + recordId);
+            if (histItem) {
+                const items = getChecklistItems();
+                const allChecked = items.every(it => docs[it] === true);
+                histItem.className = 'history-item ' + (allChecked ? 'docs-complete' : 'docs-incomplete');
+                // อัพเดต badge
+                const badge = histItem.querySelector('.docs-status-badge');
+                if (badge) {
+                    const checkedCount = items.filter(it => docs[it]).length;
+                    if (allChecked) {
+                        badge.className = 'docs-status-badge complete';
+                        badge.textContent = '✅ ครบ';
+                    } else {
+                        badge.className = 'docs-status-badge incomplete';
+                        badge.textContent = `⚠️ ${checkedCount}/${items.length}`;
+                    }
+                }
+                // อัพเดต label ของแต่ละ check item
+                histItem.querySelectorAll('.doc-check-item').forEach(el => {
+                    const cb = el.querySelector('input[type="checkbox"]');
+                    if (cb) {
+                        el.className = 'doc-check-item ' + (cb.checked ? 'checked' : 'unchecked');
+                    }
+                });
+            }
+        }
+
+        function buildChecklistHTML(recordId) {
+            const items = getChecklistItems();
+            const docs  = getRecordDocs(recordId);
+            return `<div class="doc-checklist">
+                <span class="doc-checklist-label">📋 หลักฐานการสมัคร:</span>
+                ${items.map(item => {
+                    const checked = docs[item] === true;
+                    const safeItem = item.replace(/'/g, '\\x27').replace(/"/g, '&quot;');
+                    return `<label class="doc-check-item ${checked ? 'checked' : 'unchecked'}">
+                        <input type="checkbox" ${checked ? 'checked' : ''}
+                            onchange="toggleDocItem('${recordId}', '${safeItem}', this)"
+                            onclick="event.stopPropagation()">
+                        ${item}
+                    </label>`;
+                }).join('')}
+            </div>`;
+        }
+
+        function getDocsStatusClass(recordId) {
+            const items = getChecklistItems();
+            if (items.length === 0) return '';
+            const docs = getRecordDocs(recordId);
+            const checkedCount = items.filter(it => docs[it]).length;
+            if (checkedCount === 0) return 'docs-incomplete';
+            return checkedCount === items.length ? 'docs-complete' : 'docs-incomplete';
+        }
+
+        function getDocsStatusBadge(recordId) {
+            const items = getChecklistItems();
+            if (items.length === 0) return '';
+            const docs = getRecordDocs(recordId);
+            const checkedCount = items.filter(it => docs[it]).length;
+            const allDone = checkedCount === items.length;
+            return `<span class="docs-status-badge ${allDone ? 'complete' : 'incomplete'}">
+                ${allDone ? '✅ ครบ' : `⚠️ ${checkedCount}/${items.length}`}
+            </span>`;
         }
 
         function toggleMobtuaLock() {

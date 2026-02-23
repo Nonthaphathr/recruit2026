@@ -309,6 +309,63 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
    VERIFY DOCS MODAL
 ══════════════════════════════════════════════ */
 .verify-checklist{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem;}
+
+/* ── Student detail overlay (stacked on top of verify modal) ── */
+#studentDetailOverlay{
+  position:fixed;inset:0;z-index:4500;
+  display:none;align-items:center;justify-content:center;
+  padding:1rem;
+  /* No backdrop-filter so verify modal stays crisp underneath */
+  background:rgba(15,28,46,.45);
+}
+#studentDetailOverlay.open{display:flex;animation:fadeIn .2s ease;}
+.student-detail-card{
+  background:var(--card);
+  border-radius:var(--r-xl);
+  width:100%;max-width:600px;
+  max-height:82vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  border:1.5px solid rgba(212,168,67,.25);
+  overflow:hidden;
+  animation:slideUp .22s ease;
+}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.student-detail-card .sdc-header{
+  background:linear-gradient(135deg,var(--slate) 0%,var(--navy-light) 100%);
+  padding:.85rem 1.1rem;
+  display:flex;align-items:center;gap:.75rem;
+}
+.student-detail-card .sdc-header h4{
+  flex:1;font-family:'Mitr',sans-serif;font-weight:600;color:#fff;font-size:.92rem;
+}
+.student-detail-card .sdc-close{
+  background:rgba(255,255,255,.12);border:none;width:26px;height:26px;
+  border-radius:50%;color:rgba(255,255,255,.8);font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+}
+.student-detail-card .sdc-close:hover{background:rgba(255,255,255,.25);}
+.student-detail-card .sdc-badge{
+  font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;
+  background:rgba(212,168,67,.25);color:var(--gold-light);border:1px solid rgba(212,168,67,.4);
+}
+.student-detail-card .sdc-body{overflow-y:auto;padding:1rem;flex:1;}
+.sdc-section-title{
+  font-family:'Mitr',sans-serif;font-size:.75rem;font-weight:600;
+  color:var(--slate-light);letter-spacing:.06em;text-transform:uppercase;
+  margin:1rem 0 .4rem;padding-bottom:.3rem;
+  border-bottom:1.5px solid var(--border);
+}
+.sdc-section-title:first-child{margin-top:0;}
+.sdc-row{display:flex;gap:.5rem;padding:5px 0;border-bottom:1px solid rgba(var(--border-rgb,221,228,238),.6);font-size:.83rem;}
+.sdc-row:last-child{border-bottom:none;}
+.sdc-label{width:38%;color:var(--text-soft);font-weight:600;font-size:.76rem;flex-shrink:0;padding-top:1px;}
+.sdc-val{flex:1;color:var(--text);font-weight:500;word-break:break-word;}
+.sdc-val.highlight{font-weight:700;color:var(--gold);}
+@media(max-width:640px){
+  #studentDetailOverlay{align-items:flex-end;padding:.5rem;}
+  .student-detail-card{border-radius:var(--r-xl) var(--r-xl) 0 0;max-height:88vh;}
+}
 .verify-check-item{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:.85rem;cursor:pointer;transition:all .15s;user-select:none;}
 .verify-check-item:hover{border-color:#a5b4fc;background:rgba(165,180,252,.08);}
 .verify-check-item.done{border-color:#16a34a;background:rgba(22,163,74,.08);}
@@ -1057,13 +1114,33 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <textarea class="verify-note-area" id="verifyDocsNote" placeholder="เช่น รอสำเนาบัตรประชาชนมารดา / ตรวจสอบแล้วครบถ้วน..."></textarea>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalVerifyDocs')">ยกเลิก</button>
-      <button class="btn-gold" id="verifyDocsConfirmBtn" onclick="confirmDocVerification()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
-        บันทึกผลการตรวจ
-      </button>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <div style="display:flex;gap:.5rem;align-items:center;">
+        <button id="verifyViewStudentBtn" class="btn-sm btn-view" style="padding:.45rem .85rem;font-size:.82rem;display:inline-flex;align-items:center;gap:5px;" onclick="openStudentDetailFromVerify()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1C6.477 1 2 6.477 2 12s4.477 11 10 11 10-4.477 10-11S17.523 1 12 1zm0 0c0 2.485-2.015 4.5-4.5 4.5"/><path stroke-linecap="round" d="M2 12h1m18 0h1M12 2v1m0 18v1"/><path stroke-linecap="round" d="M4.929 4.929l.707.707m12.728 12.728l.707.707M4.929 19.071l.707-.707m12.728-12.728l.707-.707"/></svg>
+          ดูรายละเอียดนักเรียน
+        </button>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;">
+        <button class="btn-secondary" onclick="closeModal('modalVerifyDocs')">ยกเลิก</button>
+        <button class="btn-gold" id="verifyDocsConfirmBtn" onclick="confirmDocVerification()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+          บันทึกผลการตรวจ
+        </button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- ======= STUDENT DETAIL OVERLAY (stacked on verify modal) ======= -->
+<div id="studentDetailOverlay" onclick="closeStudentDetailOverlay(event)">
+  <div class="student-detail-card" id="studentDetailCard">
+    <div class="sdc-header">
+      <h4 id="sdc-name">👤 รายละเอียดนักเรียน</h4>
+      <span class="sdc-badge" id="sdc-grade-badge">—</span>
+      <button class="sdc-close" onclick="closeStudentDetailOverlay(null)" title="ปิด">✕</button>
+    </div>
+    <div class="sdc-body" id="sdc-body"></div>
   </div>
 </div>
 
@@ -2407,7 +2484,139 @@ async function syncVerifiedDocsFromMobtua(mtId, mtStaffVerified, note) {
         console.warn('syncVerifiedDocsFromMobtua error:', e.message);
     }
 }
+
 window.syncVerifiedDocsFromMobtua = syncVerifiedDocsFromMobtua;
+
+/* ═══════════════════════════════════════════════════════════════
+   STUDENT DETAIL OVERLAY (stacked over verify docs modal)
+═══════════════════════════════════════════════════════════════ */
+function openStudentDetailFromVerify() {
+    const col = _verifyCurrentCollection;
+    const id  = _verifyCurrentId;
+    if (!id) return;
+
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) return;
+
+    const d = rec.data || {};
+    const gradeLabel = col === 'admissions'
+        ? (rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')
+        : ((rec.gradeLevel || rec.classRoom || '').includes('4') ? 'ม.4' : 'ม.1');
+
+    document.getElementById('sdc-name').textContent = `👤 ${rec.studentName || 'รายละเอียดนักเรียน'}`;
+    document.getElementById('sdc-grade-badge').textContent = gradeLabel;
+
+    // Build content rows
+    const row = (label, val, hl = false) =>
+        `<div class="sdc-row">
+            <span class="sdc-label">${label}</span>
+            <span class="sdc-val${hl ? ' highlight' : ''}">${val || '<span style="color:#94a3b8">—</span>'}</span>
+        </div>`;
+    const sec = t => `<div class="sdc-section-title">${t}</div>`;
+
+    let html = '';
+
+    if (col === 'admissions') {
+        const birthStr = d.birthDay && d.birthMonth
+            ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}`.trim() : (d.birthDate || '');
+        const addrParts = [
+            d.houseNumber ? d.houseNumber : '',
+            d.moo ? `หมู่ ${d.moo}` : '',
+            d.subdistrict ? `ต.${d.subdistrict}` : '',
+            d.district ? `อ.${d.district}` : '',
+            d.province ? `จ.${d.province}` : ''
+        ].filter(Boolean);
+
+        html =
+            sec('👤 ข้อมูลนักเรียน') +
+            row('ชื่อ-นามสกุล', `${d.prefix||''}${d.firstName||''} ${d.lastName||''}`.trim(), true) +
+            row('ระดับชั้นที่สมัคร', gradeLabel) +
+            row('ชื่อเล่น', d.nickname) +
+            row('วันเกิด', birthStr) +
+            row('อายุ', d.age ? d.age + ' ปี' : '') +
+            row('หมู่เลือด', d.bloodType) +
+            row('ส่วนสูง / น้ำหนัก', `${d.height || '—'} cm / ${d.weight || '—'} kg`) +
+            row('เลขบัตรประชาชน', d.nationalId) +
+            sec('📞 ติดต่อ & ที่อยู่') +
+            row('โทรศัพท์', d.phone) +
+            row('ที่อยู่', addrParts.join(' ')) +
+            sec('🏫 การศึกษาเดิม') +
+            row('โรงเรียนเดิม', d.previousSchool) +
+            row('จังหวัด', d.previousSchoolProvince || d.schoolProvince || d.province) +
+            row('เกรดเฉลี่ย', d.gpa) +
+            sec('👨‍👩‍👧 ผู้ปกครอง') +
+            row('บิดา', d.fatherName) +
+            row('อาชีพบิดา', d.fatherOccupation) +
+            row('มารดา', d.motherName) +
+            row('อาชีพมารดา', d.motherOccupation) +
+            row('ผู้ปกครอง', d.parentName) +
+            row('โทรผู้ปกครอง', d.parentPhone) +
+            sec('🕐 ข้อมูลระบบ') +
+            row('วันที่สมัคร', thaiDate(rec.createdAt)) +
+            row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+    } else {
+        // mobtua
+        const birthStr = d.mt_birthDay && d.mt_birthMonth
+            ? `${d.mt_birthDay} ${d.mt_birthMonth} ${d.mt_birthYear || ''}`.trim() : '';
+        const addrParts = [
+            d.mt_houseNo ? d.mt_houseNo : '',
+            d.mt_moo ? `หมู่ ${d.mt_moo}` : '',
+            d.mt_subdistrict ? `ต.${d.mt_subdistrict}` : '',
+            d.mt_district ? `อ.${d.mt_district}` : '',
+            d.mt_province ? `จ.${d.mt_province}` : ''
+        ].filter(Boolean);
+
+        const guardianAddr = [
+            d.mt_guardianHouseNo || '',
+            d.mt_guardianMoo ? `หมู่ ${d.mt_guardianMoo}` : '',
+            d.mt_guardianSubdistrict ? `ต.${d.mt_guardianSubdistrict}` : '',
+            d.mt_guardianDistrict ? `อ.${d.mt_guardianDistrict}` : '',
+            d.mt_guardianProvince ? `จ.${d.mt_guardianProvince}` : ''
+        ].filter(Boolean);
+
+        html =
+            sec('👤 ข้อมูลนักเรียน') +
+            row('ชื่อ-นามสกุล', `${d.mt_studentPrefix||''}${d.mt_studentFirstName||''} ${d.mt_studentLastName||''}`.trim(), true) +
+            row('ห้องเรียน', d.mt_classRoom) +
+            row('ปีการศึกษา', d.mt_academicYear) +
+            row('วันเกิด', birthStr) +
+            row('หมู่เลือด', d.mt_bloodType) +
+            row('ส่วนสูง / น้ำหนัก', `${d.mt_height || '—'} cm / ${d.mt_weight || '—'} kg`) +
+            row('เลขบัตรประชาชน', d.mt_studentNationalId) +
+            row('ที่อยู่ตามทะเบียนบ้าน', addrParts.join(' ')) +
+            sec('👤 ผู้ปกครอง') +
+            row('ผู้ปกครอง', `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim(), true) +
+            row('ความสัมพันธ์', d.mt_guardianRelation) +
+            row('อาชีพ', d.mt_guardianOccupation) +
+            row('โทรมือถือ', d.mt_guardianMobile) +
+            row('โทรบ้าน', d.mt_guardianHomePhone) +
+            row('ที่อยู่ผู้ปกครอง', guardianAddr.join(' ')) +
+            sec('👨‍👩‍👧 บิดา / มารดา') +
+            row('บิดา', `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim()) +
+            row('อาชีพบิดา', d.mt_fatherOccupation) +
+            row('มารดา', `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim()) +
+            row('อาชีพมารดา', d.mt_motherOccupation) +
+            sec('🕐 ข้อมูลระบบ') +
+            row('วันที่บันทึก', thaiDate(rec.createdAt)) +
+            row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+    }
+
+    document.getElementById('sdc-body').innerHTML = html;
+    const overlay = document.getElementById('studentDetailOverlay');
+    overlay.classList.add('open');
+    overlay.style.display = 'flex';
+}
+window.openStudentDetailFromVerify = openStudentDetailFromVerify;
+
+function closeStudentDetailOverlay(e) {
+    // Close on backdrop click (not card click) or button
+    if (e && e.target !== document.getElementById('studentDetailOverlay')) return;
+    const overlay = document.getElementById('studentDetailOverlay');
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+}
+window.closeStudentDetailOverlay = closeStudentDetailOverlay;
 
 function toggleVerifyItem(itemKey, idx) {
     _verifyDraft[itemKey] = !_verifyDraft[itemKey];
@@ -2460,6 +2669,7 @@ async function confirmDocVerification() {
         } else {
             await syncVerifiedDocsFromMobtua(id, { ..._verifyDraft }, note);
         }
+        closeStudentDetailOverlay(null);
         closeModal('modalVerifyDocs');
         if (col === 'admissions') renderAdmissions();
         else renderMobtua();
@@ -2713,6 +2923,16 @@ function setConnStatus(online) {
 /* ─────────────────────────────────────────────────
    BOOT
 ───────────────────────────────────────────────── */
+// Close student detail overlay with Escape key
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        const overlay = document.getElementById('studentDetailOverlay');
+        if (overlay && overlay.classList.contains('open')) {
+            closeStudentDetailOverlay(null);
+        }
+    }
+});
+
 window.addEventListener('DOMContentLoaded', () => {
   // Dismiss loader after short delay
   setTimeout(() => document.getElementById('pageLoader').classList.add('done'), 600);

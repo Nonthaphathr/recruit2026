@@ -695,6 +695,20 @@ body {
 }
 .doc-preview-scroll .print-document,
 .doc-preview-scroll .mobtua-doc { transform-origin:top center; }
+
+/* ======== VERIFY DOCS ======== */
+.verify-checklist { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:1rem; }
+.verify-check-item { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:var(--r-sm); padding:6px 10px; font-size:.82rem; }
+.verify-check-item.done { border-color:#16a34a; background:rgba(22,163,74,.08); }
+.verify-check-item.done .vci-icon { color:#16a34a; }
+.verify-check-item .vci-icon { font-size:1rem; flex-shrink:0; color:#94a3b8; }
+.verify-summary { background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); padding:.75rem 1rem; margin-bottom:1rem; font-size:.85rem; }
+.verify-summary strong { font-size:1rem; }
+.doc-verify-badge { display:inline-flex; align-items:center; gap:4px; background:#16a34a; color:white; border-radius:4px; font-size:11px; padding:2px 7px; font-weight:700; }
+.doc-pending-badge { display:inline-flex; align-items:center; gap:4px; background:#b45309; color:white; border-radius:4px; font-size:11px; padding:2px 7px; font-weight:700; }
+.btn-verify { background:#eef2ff; border-color:#a5b4fc; color:#4338ca; }
+.btn-verify:hover { background:#c7d2fe; }
+.verify-note-area { width:100%; min-height:70px; border:1px solid var(--border); border-radius:var(--r-sm); padding:8px 10px; font-family:'Sarabun',sans-serif; font-size:.85rem; background:var(--card); color:var(--text); resize:vertical; }
 </style>
 </head>
 <body>
@@ -896,6 +910,7 @@ body {
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('modalViewAdmission')">ปิด</button>
+      <button class="btn-verify" style="border-radius:var(--r-sm);padding:.4rem .8rem;font-weight:600;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;cursor:pointer;" onclick="openVerifyDocsFromView('admissions')">🔍 ยืนยันหลักฐาน</button>
       <button class="btn-gold" id="btnPrintAdmission" onclick="printCurrentAdmission()">🖨️ พิมพ์เอกสาร</button>
     </div>
   </div>
@@ -1039,6 +1054,7 @@ body {
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('modalViewMobtua')">ปิด</button>
+      <button class="btn-verify" style="border-radius:var(--r-sm);padding:.4rem .8rem;font-weight:600;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;cursor:pointer;" onclick="openVerifyDocsFromView('mobtua')">🔍 ยืนยันหลักฐาน</button>
       <button class="btn-gold" onclick="printCurrentMobtua()">🖨️ พิมพ์เอกสาร</button>
     </div>
   </div>
@@ -1181,6 +1197,28 @@ body {
     <div class="modal-footer" style="justify-content:center; gap:1rem;">
       <button class="btn-secondary" onclick="closeModal('modalConfirm')">ยกเลิก</button>
       <button class="btn-danger" id="confirmDeleteBtn">ยืนยันลบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY DOCS MODAL -->
+<div class="modal-backdrop" id="modalVerifyDocs">
+  <div class="modal-box" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 id="verifyDocsTitle">🔍 ยืนยันหลักฐานประกอบการสมัคร</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalVerifyDocs')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="verify-summary" id="verifyDocsSummary"></div>
+      <div class="verify-checklist" id="verifyDocsChecklist"></div>
+      <div style="margin-top:.5rem;">
+        <label style="font-size:.85rem;font-weight:600;color:var(--gold);display:block;margin-bottom:4px;">📝 หมายเหตุประกอบการยืนยัน (แสดงเฉพาะในระบบ ไม่พิมพ์)</label>
+        <textarea class="verify-note-area" id="verifyDocsNote" placeholder="เช่น ตรวจสอบแล้ว เอกสารครบถ้วน / รอสำเนาบัตรประชาชนมารดา..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalVerifyDocs')">ปิด</button>
+      <button class="btn-gold" id="verifyDocsConfirmBtn" onclick="confirmDocVerification()">✅ ยืนยันหลักฐาน</button>
     </div>
   </div>
 </div>
@@ -1401,7 +1439,7 @@ function renderAdmissions() {
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     return `<tr id="row-admission-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName || '—'} ${todayBadge}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge}${r.docVerified ? '<span style="background:#16a34a;color:#fff;border-radius:3px;font-size:10px;padding:1px 5px;margin-left:4px;font-weight:700;">✅ ยืนยันแล้ว</span>' : ''}</td>
       <td><span class="badge ${gradeCls}">${gradeLabel}</span></td>
       <td class="td-muted">${d.previousSchool || '—'}</td>
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
@@ -1409,6 +1447,7 @@ function renderAdmissions() {
         <div class="action-group">
           <button class="btn-sm btn-view"  onclick="viewAdmission('${r.id}')">👁 ดู</button>
           <button class="btn-sm btn-edit"  onclick="editAdmission('${r.id}')">✏️ แก้ไข</button>
+          <button class="btn-sm btn-verify" onclick="openVerifyDocs('${r.id}','admissions')" title="ยืนยันหลักฐาน">🔍</button>
           <button class="btn-sm btn-print" onclick="printAdmissionById('${r.id}')">🖨️</button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\\'")}')">🗑️</button>
         </div>
@@ -1441,7 +1480,7 @@ function renderMobtua() {
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     return `<tr id="row-mobtua-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName || '—'} ${todayBadge}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge}${r.docVerified ? '<span style="background:#16a34a;color:#fff;border-radius:3px;font-size:10px;padding:1px 5px;margin-left:4px;font-weight:700;">✅ ยืนยันแล้ว</span>' : ''}</td>
       <td class="td-muted">${r.guardianName || '—'}</td>
       <td class="td-muted">${r.classRoom || '—'}</td>
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
@@ -1449,6 +1488,7 @@ function renderMobtua() {
         <div class="action-group">
           <button class="btn-sm btn-view"  onclick="viewMobtua('${r.id}')">👁 ดู</button>
           <button class="btn-sm btn-edit"  onclick="editMobtua('${r.id}')">✏️ แก้ไข</button>
+          <button class="btn-sm btn-verify" onclick="openVerifyDocs('${r.id}','mobtua')" title="ยืนยันหลักฐาน">🔍</button>
           <button class="btn-sm btn-print" onclick="printMobtuaById('${r.id}')">🖨️</button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\\'")}')">🗑️</button>
         </div>
@@ -1782,7 +1822,8 @@ function mtIdBoxes(id) {
 }
 
 /* ── ใบสมัคร HTML generator ── */
-function generateAdmissionDocHTML(data) {
+function generateAdmissionDocHTML(data, docChecks, docVerified) {
+  docChecks = docChecks || {}; docVerified = docVerified || false;
   const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
   const talents = data.talent || [];
   const grade = data.gradeLevel==='m4' ? 'มัธยมศึกษาปีที่ 4' : 'มัธยมศึกษาปีที่ 1';
@@ -1863,13 +1904,16 @@ function generateAdmissionDocHTML(data) {
   </div>
   <div class="approval-section">
     <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} ระเบียนแสดงผลการเรียน(ปพ.1)หรือใบรับรอง</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาทะเบียนบ้านของนร/บิดา/มารดา</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาบัตรประชาชนของนร/บิดา/มารดา</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาสูติบัตรของนักเรียน</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} หลักฐานอื่นๆ………………….</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของบิดา'])} สำเนาทะเบียนบ้านของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของบิดา'])} สำเนาบัตรประชาชนของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของมารดา'])} สำเนาทะเบียนบ้านของมารดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของมารดา'])} สำเนาบัตรประชาชนของมารดา</div>
     </div>
     <div style="text-align:right;margin-top:12px;">
       <p>ลงชื่อ.............................................................กรรมการรับสมัคร</p>
@@ -1881,7 +1925,8 @@ function generateAdmissionDocHTML(data) {
 }
 
 /* ── ใบมอบตัว HTML generator ── */
-function generateMobtuaDocHTML(d) {
+function generateMobtuaDocHTML(d, docChecks, docVerified) {
+  docChecks = docChecks || {}; docVerified = docVerified || false;
   const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
   const gr = d.mt_guardianRelation==='อื่นๆ' ? (d.mt_guardianRelationOther||'อื่นๆ') : (d.mt_guardianRelation||'');
   const tr = Array.isArray(d.mt_transport) ? d.mt_transport : (d.mt_transport?[d.mt_transport]:[]);
@@ -1970,16 +2015,16 @@ function generateMobtuaDocHTML(d) {
   <div class="mt-divider" style="margin-top:14px;"></div>
   <p class="mt-section-title">เอกสารที่ต้องยื่นวันมอบตัว</p>
   <div class="mt-doclist">
-    <div class="mt-doclist-item">${mtCb(false)} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของบิดา</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของนักเรียน</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของมารดา</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของบิดา</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาสูติบัตรของนักเรียน</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของมารดา</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
-    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนา ปพ.1 (ฉบับจบการศึกษา)'])} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของบิดา'])} สำเนาทะเบียนบ้านของบิดา</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของบิดา'])} สำเนาบัตรประชาชนของบิดา</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของมารดา'])} สำเนาทะเบียนบ้านของมารดา</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของมารดา'])} สำเนาบัตรประชาชนของมารดา</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)'])} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+    <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)'])} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
   </div>
   <p style="font-size:12px;font-weight:700;margin-top:6px;">***เอกสารทุกฉบับ รับรองสำเนาถูกต้อง</p>
 </div>
@@ -2008,7 +2053,7 @@ window.printFromPreview = printFromPreview;
 function printAdmissionById(id) {
   const rec = allAdmissions.find(r => r.id === id);
   if (!rec) return;
-  const html = generateAdmissionDocHTML(rec.data || {});
+  const html = generateAdmissionDocHTML(rec.data || {}, rec.docChecks || {}, rec.docVerified || false);
   const grade = rec.gradeLevel==='m4' ? 'ม.4' : 'ม.1';
   openDocPreview(html, `ใบสมัคร — ${rec.studentName||'ไม่ระบุ'} (${grade})`);
 }
@@ -2016,7 +2061,7 @@ function printAdmissionById(id) {
 function printMobtuaById(id) {
   const rec = allMobtua.find(r => r.id === id);
   if (!rec) return;
-  const html = generateMobtuaDocHTML(rec.data || {});
+  const html = generateMobtuaDocHTML(rec.data || {}, rec.docChecks || {}, rec.docVerified || false);
   openDocPreview(html, `ใบมอบตัว — ${rec.studentName||'ไม่ระบุ'}`);
 }
 
@@ -2035,6 +2080,119 @@ window.printAdmissionById    = printAdmissionById;
 window.printMobtuaById       = printMobtuaById;
 window.printCurrentAdmission = printCurrentAdmission;
 window.printCurrentMobtua    = printCurrentMobtua;
+
+/* ─────────────────────────────────────────────────
+   VERIFY DOCS SYSTEM
+───────────────────────────────────────────────── */
+const ADMISSION_CHECKLIST_KEYS = [
+    'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
+    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
+    'สำเนาทะเบียนบ้านของนักเรียน',
+    'สำเนาบัตรประชาชนของนักเรียน',
+    'สำเนาสูติบัตรของนักเรียน',
+    'สำเนาทะเบียนบ้านของบิดา',
+    'สำเนาบัตรประชาชนของบิดา',
+    'สำเนาทะเบียนบ้านของมารดา',
+    'สำเนาบัตรประชาชนของมารดา',
+];
+const MOBTUA_CHECKLIST_KEYS = [
+    'สำเนา ปพ.1 (ฉบับจบการศึกษา)',
+    'สำเนาทะเบียนบ้านของนักเรียน',
+    'สำเนาบัตรประชาชนของนักเรียน',
+    'สำเนาสูติบัตรของนักเรียน',
+    'สำเนาทะเบียนบ้านของบิดา',
+    'สำเนาบัตรประชาชนของบิดา',
+    'สำเนาทะเบียนบ้านของมารดา',
+    'สำเนาบัตรประชาชนของมารดา',
+    'สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
+    'สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
+];
+
+let _verifyCurrentId = '';
+let _verifyCurrentCollection = '';
+
+function openVerifyDocs(id, collection) {
+    const isAdm = collection === 'admissions';
+    const rec = isAdm ? allAdmissions.find(r => r.id === id) : allMobtua.find(r => r.id === id);
+    if (!rec) return;
+    _verifyCurrentId = id;
+    _verifyCurrentCollection = collection;
+    const docChecks = rec.docChecks || {};
+    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
+    const checkedCount = items.filter(k => docChecks[k] === true).length;
+    const allDone = checkedCount === items.length;
+    const title = isAdm ? 'ยืนยันหลักฐานใบสมัคร' : 'ยืนยันหลักฐานใบมอบตัว';
+    document.getElementById('verifyDocsTitle').textContent = `🔍 ${title} — ${rec.studentName || ''}`;
+    // Summary
+    const prevVerified = rec.docVerified === true;
+    const prevNote = rec.docVerifiedNote || '';
+    const prevAt = rec.docVerifiedAt ? thaiDate(rec.docVerifiedAt) : '';
+    document.getElementById('verifyDocsSummary').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <div>
+                <strong>${checkedCount}/${items.length}</strong> รายการที่ผู้สมัครทำเครื่องหมาย
+                ${allDone ? '<span style="color:#16a34a;font-weight:700;"> ✅ ครบทุกรายการ</span>' : `<span style="color:#b45309;font-weight:700;"> ⚠️ ขาดอีก ${items.length - checkedCount} รายการ</span>`}
+            </div>
+            ${prevVerified ? `<span class="doc-verify-badge">✅ ยืนยันแล้ว ${prevAt}</span>` : `<span class="doc-pending-badge">⏳ รอยืนยัน</span>`}
+        </div>
+        ${prevNote ? `<div style="margin-top:6px;font-size:.8rem;color:var(--text-soft);">หมายเหตุก่อนหน้า: ${prevNote}</div>` : ''}
+    `;
+    // Checklist
+    document.getElementById('verifyDocsChecklist').innerHTML = items.map(item => {
+        const done = docChecks[item] === true;
+        return `<div class="verify-check-item ${done ? 'done' : ''}">
+            <span class="vci-icon">${done ? '✅' : '⬜'}</span>
+            <span>${item}</span>
+        </div>`;
+    }).join('');
+    // Note pre-fill
+    document.getElementById('verifyDocsNote').value = prevNote;
+    openModal('modalVerifyDocs');
+}
+
+function openVerifyDocsFromView(collection) {
+    if (!currentViewRecord) return;
+    closeModal(collection === 'admissions' ? 'modalViewAdmission' : 'modalViewMobtua');
+    setTimeout(() => openVerifyDocs(currentViewRecord.id, collection), 120);
+}
+
+async function confirmDocVerification() {
+    const note = document.getElementById('verifyDocsNote').value.trim();
+    const col = _verifyCurrentCollection;
+    const id  = _verifyCurrentId;
+    if (!id) return;
+    const btn = document.getElementById('verifyDocsConfirmBtn');
+    btn.disabled = true;
+    btn.textContent = 'กำลังบันทึก...';
+    try {
+        await window._fs.updateDoc(
+            window._fs.doc(window._db, col, id),
+            {
+                docVerified: true,
+                docVerifiedNote: note,
+                docVerifiedAt: window._fs.serverTimestamp(),
+            }
+        );
+        // Update local cache
+        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const rec = arr.find(r => r.id === id);
+        if (rec) { rec.docVerified = true; rec.docVerifiedNote = note; }
+        showToast('✅ ยืนยันหลักฐานแล้ว', 'success');
+        closeModal('modalVerifyDocs');
+        // Re-render table
+        if (col === 'admissions') renderAdmissions();
+        else renderMobtua();
+    } catch(e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✅ ยืนยันหลักฐาน';
+    }
+}
+
+window.openVerifyDocs         = openVerifyDocs;
+window.openVerifyDocsFromView = openVerifyDocsFromView;
+window.confirmDocVerification = confirmDocVerification;
 
 /* ─────────────────────────────────────────────────
    NOTIFICATIONS

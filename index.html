@@ -2058,7 +2058,7 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
-                <a href="staff.html" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.3); color:white; border-radius:999px; padding:6px 14px; font-size:0.8rem; font-weight:600; text-decoration:none; transition:background 0.2s; font-family:'Sarabun',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                <a href="staff.html" target="_blank" class="report-btn" style="text-decoration:none; color:white;">
                     🖥️ ระบบครู
                 </a>
                 <button class="report-btn" onclick="openReportPage()" title="รายงานประจำวัน">
@@ -2713,6 +2713,15 @@
                     </div>
                     <div class="form-group" id="otherTalentGroup" style="display: none; margin-left: 2rem;">
                         <input type="text" class="form-control" name="otherTalent" placeholder="ระบุความสามารถพิเศษอื่นๆ">
+                    </div>
+
+                    <!-- หลักฐานประกอบการสมัคร -->
+                    <h3 class="section-divider" style="margin-top:1.5rem;">📋 หลักฐานประกอบการสมัคร</h3>
+                    <div style="background:var(--bg-secondary,#f8fafc);border:1.5px solid var(--border,#e2e8f0);border-radius:12px;padding:1rem 1.25rem;margin-bottom:.5rem;">
+                        <p style="font-size:.82rem;color:var(--text-light,#64748b);margin-bottom:.75rem;">
+                            ✅ ทำเครื่องหมายรายการที่เตรียมมาแล้ว · ข้อมูลจะถูกบันทึกพร้อมใบสมัคร
+                        </p>
+                        <div id="admFormChecklist" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
                     </div>
 
                     <!-- Actions -->
@@ -4003,6 +4012,9 @@
             const gradeSelect = document.getElementById('gradeLevel');
             gradeSelect.value = grade;
             updateFormTitle();
+            // render form checklist
+            _formDocChecks = {};
+            setTimeout(renderFormChecklist, 50);
         }
 
         function updateFormTitle() {
@@ -4258,7 +4270,7 @@
 
                     <div class="signature-section" style="text-align: right; margin-top: 12px;">
                         <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
-                        <p style="margin-right: 1cm;">(.......................................................................)</p>
+                        <p style="margin-right: 1cm;">( ${(data.prefix||'') + (data.firstName||'') + ' ' + (data.lastName||'')} )</p>
                         <p>วันที่.................เดือน...............................พ.ศ................</p>
                     </div>
 
@@ -4346,6 +4358,7 @@
                     studentName: `${data.prefix || ''}${data.fullName || ''}`,
                     academicYear: data.academicYear,
                     data: data,
+                    docChecks: { ..._formDocChecks },
                     createdAt: window.firestore.serverTimestamp(),
                     updatedAt: window.firestore.serverTimestamp()
                 };
@@ -4362,6 +4375,8 @@
                 document.getElementById('admissionForm').reset();
                 clearAutosave(AUTOSAVE_KEY_ADMISSION);
                 setDefaultDate();
+                _formDocChecks = {};
+                renderFormChecklist();
 
             } catch (error) {
                 console.error('Error adding document:', error);
@@ -4440,7 +4455,9 @@
                                 ${getDocsStatusBadge(record.id)}
                             </div>
                             <div class="history-item-detail">ปีการศึกษา ${record.academicYear || '-'}</div>
-                            ${buildChecklistHTML(record.id)}
+                            <div style="margin:.25rem 0;font-size:.75rem;color:var(--text-light,#64748b);">
+                                หลักฐาน: ${(()=>{const dc=record.docChecks||{};const items=Object.keys(dc);const chk=items.filter(k=>dc[k]).length;return items.length>0?`${chk}/${items.length} รายการ`:'ยังไม่ระบุ';})()}
+                            </div>
                             <div class="history-item-actions">
                                 <button class="btn btn-primary btn-sm" onclick="viewHistoryRecord('${record.id}')">👁️ ดู</button>
                                 ${actionButtons}
@@ -4798,6 +4815,24 @@
         }
         function getMobtuaRecordDocs(recordId) {
             return (_mobtuaRecords[recordId] || {}).docChecks || {};
+        }
+
+        /* ── Form checklist (inline dalam form) ── */
+        let _formDocChecks = {};
+
+        function renderFormChecklist() {
+            const container = document.getElementById('admFormChecklist');
+            if (!container) return;
+            const items = getChecklistItems();
+            container.innerHTML = items.map(item => {
+                const checked = _formDocChecks[item] === true;
+                const safe = item.replace(/'/g, "\'");
+                return `<label style="display:flex;align-items:center;gap:8px;background:white;border:1.5px solid ${checked ? '#16a34a' : '#e2e8f0'};border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.83rem;transition:border-color .15s;">
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="_formDocChecks['${safe}']=this.checked;renderFormChecklist();" style="width:16px;height:16px;accent-color:#16a34a;cursor:pointer;flex-shrink:0;">
+                    <span>${item}</span>
+                    ${checked ? '<span style="color:#16a34a;font-size:.75rem;margin-left:auto;">✓</span>' : ''}
+                </label>`;
+            }).join('');
         }
 
         async function toggleDocItem(recordId, itemText, cbEl, collection) {
@@ -5364,9 +5399,10 @@
         }
 
         function val(v, placeholder) {
-            const str = (v || '').toString().trim();
-            if (!str || str === '-') return `<span class="mt-line" style="min-width:${placeholder ? placeholder : '80px'}">&nbsp;</span>`;
-            return `<span class="mt-line">${str}</span>`;
+            // ต้องใช้ v !== undefined && v !== null && v !== '' ไม่ใช่ v || '' เพราะ 0 เป็น falsy
+            const raw = (v !== undefined && v !== null) ? String(v).trim() : '';
+            if (!raw || raw === '-') return `<span class="mt-line" style="min-width:${placeholder ? placeholder : '80px'}">&nbsp;</span>`;
+            return `<span class="mt-line">${raw}</span>`;
         }
 
         function generateMobtuaDocumentHTML(d, staffVerified, docVerified) {
@@ -5630,7 +5666,7 @@
                             ${getDocsStatusBadge(rec.id,'mobtua')}
                         </div>
                         <div class="history-item-detail">ปีการศึกษา ${rec.academicYear || '-'} | ${rec.classRoom || '-'} | ผู้ปกครอง: ${rec.guardianName || '-'}</div>
-                        ${buildChecklistHTML(rec.id,'mobtua')}
+
                         <div class="history-item-actions">
                             <button class="btn btn-primary btn-sm" style="background:#7b3f9e;" onclick="viewMobtuaRecord('${rec.id}')">👁️ ดู</button>
                             ${actionBtns}

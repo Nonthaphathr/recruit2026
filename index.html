@@ -4109,8 +4109,9 @@
             return `<span class="doc-checkbox${isChecked ? ' checked' : ''}"></span>`;
         }
 
-        function generateDocumentHTML(data, docChecks, docVerified) {
-            docChecks = docChecks || {}; docVerified = docVerified || false;
+        function generateDocumentHTML(data, staffVerified, docVerified) {
+            staffVerified = staffVerified || {}; docVerified = docVerified || false;
+            const docChecks = staffVerified; // alias for template use
             const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
             const talents = data.talent || [];
             
@@ -4464,7 +4465,7 @@
                 
                 if (docSnap.exists()) {
                     const record = docSnap.data();
-                    const html = generateDocumentHTML(record.data || {}, record.docChecks || {}, record.docVerified || false);
+                    const html = generateDocumentHTML(record.data || {}, record.staffVerified || {}, !!record.staffVerified);
                     
                     const previewArea = document.getElementById('previewArea');
                     const printArea   = document.getElementById('printArea');
@@ -5368,8 +5369,9 @@
             return `<span class="mt-line">${str}</span>`;
         }
 
-        function generateMobtuaDocumentHTML(d, docChecks, docVerified) {
-            docChecks = docChecks || {}; docVerified = docVerified || false;
+        function generateMobtuaDocumentHTML(d, staffVerified, docVerified) {
+            staffVerified = staffVerified || {}; docVerified = docVerified || false;
+            const docChecks = staffVerified; // alias for template use
             const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
             const guardianRelation = d.mt_guardianRelation === 'อื่นๆ' ? (d.mt_guardianRelationOther || 'อื่นๆ') : (d.mt_guardianRelation || '');
             const transports = Array.isArray(d.mt_transport) ? d.mt_transport : (d.mt_transport ? [d.mt_transport] : []);
@@ -5646,7 +5648,7 @@
                 const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
                 if (!snap.exists()) { showToast('ไม่พบข้อมูล', 'error'); return; }
                 const rec = snap.data();
-                const html = generateMobtuaDocumentHTML(rec.data, rec.docChecks || {}, rec.docVerified || false);
+                const html = generateMobtuaDocumentHTML(rec.data, rec.staffVerified || {}, !!rec.staffVerified);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
                 document.getElementById('mobtuaPreviewModal').classList.add('active');

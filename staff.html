@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบตรวจสอบการสมัคร — ครูผู้รับสมัคร | โรงเรียนกระดุมทองวิทยา</title>
+<link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Mitr:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ======================================================
+   ROOT & RESET
+====================================================== */
+:root {
+  --navy:        #0f1c2e;
+  --navy-mid:    #162236;
+  --navy-light:  #1e3352;
+  --slate:       #2d4263;
+  --slate-light: #3a5580;
+  --gold:        #d4a843;
+  --gold-light:  #f0c355;
+  --gold-pale:   #fdf3d7;
+  --rose:        #c2185b;
+  --rose-light:  #e91e63;
+  --violet:      #7b3f9e;
+  --emerald:     #059669;
+  --emerald-light:#10b981;
+  --amber:       #d97706;
+  --red:         #dc2626;
+  --surface:     #f5f7fa;
+  --surface-2:   #eef1f6;
+  --card:        #ffffff;
+  --border:      #dde3ee;
+  --text:        #1a2332;
+  --text-mid:    #3d5170;
+  --text-soft:   #7a8faf;
+  --shadow-sm:   0 1px 3px rgba(15,28,46,.08);
+  --shadow-md:   0 4px 16px rgba(15,28,46,.12);
+  --shadow-lg:   0 12px 40px rgba(15,28,46,.16);
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  16px;
+  --r-xl:  22px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ======================================================
+   LOADING OVERLAY
+====================================================== */
+#pageLoader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.5rem;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+#pageLoader.done { opacity: 0; visibility: hidden; }
+.loader-logo {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 3px solid rgba(212,168,67,.3);
+  border-top-color: var(--gold);
+  animation: spin .9s linear infinite;
+}
+#pageLoader p { color: rgba(255,255,255,.6); font-size: .9rem; font-family: 'Mitr',sans-serif; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ======================================================
+   AUTH OVERLAY
+====================================================== */
+#authOverlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy-light) 60%, #1a2d4a 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+#authOverlay.hidden { display: none; }
+.auth-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(212,168,67,.25);
+  border-radius: var(--r-xl);
+  padding: 2.5rem 2rem;
+  width: 100%; max-width: 380px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  text-align: center;
+}
+.auth-card .school-logo {
+  width: 64px; height: 64px; border-radius: 50%;
+  margin: 0 auto 1.25rem;
+  border: 2px solid rgba(212,168,67,.4);
+  object-fit: cover;
+}
+.auth-card h2 {
+  font-family: 'Mitr', sans-serif; font-weight: 600;
+  color: #fff; font-size: 1.2rem; margin-bottom: .25rem;
+}
+.auth-card p { color: rgba(255,255,255,.5); font-size: .85rem; margin-bottom: 1.75rem; }
+.auth-label {
+  display: block; text-align: left;
+  font-size: .8rem; color: rgba(255,255,255,.6);
+  margin-bottom: .4rem; font-weight: 500;
+}
+.auth-input {
+  width: 100%; padding: .75rem 1rem;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.15);
+  border-radius: var(--r-md); color: #fff;
+  font-family: 'Sarabun', sans-serif; font-size: .95rem;
+  transition: border-color .2s, background .2s;
+  margin-bottom: 1rem;
+}
+.auth-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(255,255,255,.12);
+}
+.auth-btn {
+  width: 100%; padding: .85rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  border: none; border-radius: var(--r-md);
+  color: var(--navy); font-family: 'Mitr', sans-serif;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: transform .15s, box-shadow .2s;
+}
+.auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,168,67,.4); }
+.auth-btn:active { transform: translateY(0); }
+.auth-error {
+  color: #ff6b6b; font-size: .82rem;
+  margin-top: .75rem; display: none;
+}
+
+/* ======================================================
+   HEADER
+====================================================== */
+.app-header {
+  background: var(--navy);
+  border-bottom: 2px solid rgba(212,168,67,.2);
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  padding: .875rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.header-logo {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid rgba(212,168,67,.4);
+  object-fit: cover; flex-shrink: 0;
+}
+.header-title { flex: 1; }
+.header-title h1 {
+  font-family: 'Mitr', sans-serif; font-size: 1rem;
+  font-weight: 600; color: #fff; line-height: 1.2;
+}
+.header-title p { font-size: .75rem; color: rgba(255,255,255,.45); }
+.header-actions { display: flex; align-items: center; gap: .75rem; }
+.notification-bell {
+  position: relative; background: none; border: none;
+  cursor: pointer; padding: .5rem;
+}
+.notification-bell svg { width: 22px; height: 22px; stroke: rgba(255,255,255,.7); }
+.notification-bell:hover svg { stroke: var(--gold); }
+.notif-badge {
+  position: absolute; top: 4px; right: 4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--rose-light); color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  display: none;
+}
+.notif-badge.show { display: flex; animation: pulse-badge .6s ease; }
+@keyframes pulse-badge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+.btn-logout {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7); border-radius: var(--r-sm);
+  padding: .45rem .9rem; font-family: 'Sarabun', sans-serif;
+  font-size: .82rem; cursor: pointer; transition: all .2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+/* Connection badge */
+.conn-badge {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .75rem; color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r-sm); padding: .35rem .75rem;
+}
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; }
+.conn-dot.live { background: var(--emerald-light); animation: pulse-dot 2s ease infinite; }
+.conn-dot.offline { background: #94a3b8; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; } 50% { opacity: .4; }
+}
+
+/* ======================================================
+   NOTIFICATION TOAST AREA
+====================================================== */
+#toastArea {
+  position: fixed; top: 80px; right: 1.5rem;
+  z-index: 5000; display: flex; flex-direction: column; gap: .6rem;
+  max-width: 340px;
+}
+.toast-item {
+  background: var(--card); border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg); border-left: 4px solid;
+  padding: .875rem 1rem; display: flex; gap: .75rem;
+  align-items: flex-start;
+  animation: slideInRight .3s ease;
+}
+.toast-item.success { border-color: var(--emerald); }
+.toast-item.error   { border-color: var(--red); }
+.toast-item.info    { border-color: var(--slate-light); }
+.toast-item.new-data { border-color: var(--gold); }
+.toast-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.toast-body { flex: 1; }
+.toast-title { font-weight: 600; font-size: .88rem; color: var(--text); }
+.toast-msg   { font-size: .8rem; color: var(--text-soft); margin-top: 2px; }
+.toast-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-soft); font-size: .9rem; padding: 0;
+  line-height: 1; flex-shrink: 0;
+}
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* ======================================================
+   MAIN LAYOUT
+====================================================== */
+.main-wrap { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+/* ======================================================
+   STATS ROW
+====================================================== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.25rem 1.25rem 1rem;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%; border-radius: 4px 0 0 4px;
+}
+.stat-card.c-total::before   { background: var(--slate-light); }
+.stat-card.c-m1::before      { background: var(--rose); }
+.stat-card.c-m4::before      { background: var(--violet); }
+.stat-card.c-mobtua::before  { background: var(--emerald); }
+.stat-card.c-today::before   { background: var(--gold); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-label { font-size: .78rem; color: var(--text-soft); font-weight: 500; margin-bottom: .35rem; }
+.stat-num {
+  font-family: 'Mitr', sans-serif; font-size: 2.2rem;
+  font-weight: 700; color: var(--text); line-height: 1;
+}
+.stat-sub { font-size: .75rem; color: var(--text-soft); margin-top: .4rem; }
+
+/* ======================================================
+   TAB SYSTEM
+====================================================== */
+.section-tabs {
+  display: flex; gap: .5rem; margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+.tab-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Sarabun', sans-serif; font-size: .9rem;
+  font-weight: 600; color: var(--text-soft);
+  padding: .65rem 1.25rem .85rem;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: color .2s, border-color .2s;
+  display: flex; align-items: center; gap: .5rem;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+.tab-btn:hover { color: var(--text); background: rgba(0,0,0,.03); }
+.tab-btn.active { color: var(--navy-light); border-bottom-color: var(--navy-light); }
+.tab-btn .tab-count {
+  background: var(--surface-2); color: var(--text-soft);
+  border-radius: 99px; padding: 1px 7px; font-size: .75rem;
+}
+.tab-btn.active .tab-count { background: var(--navy); color: #fff; }
+
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn .25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ======================================================
+   TOOLBAR / FILTERS
+====================================================== */
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: .75rem; margin-bottom: 1rem;
+}
+.search-box {
+  flex: 1; min-width: 200px;
+  position: relative;
+}
+.search-box svg {
+  position: absolute; left: .875rem; top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px; stroke: var(--text-soft);
+  pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: .6rem .875rem .6rem 2.5rem;
+  border: 1.5px solid var(--border); border-radius: var(--r-md);
+  font-family: 'Sarabun', sans-serif; font-size: .88rem;
+  background: var(--card); color: var(--text);
+  transition: border-color .2s;
+}
+.search-input:focus { outline: none; border-color: var(--slate-light); }
+.filter-select {
+  padding: .6rem .875rem; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-family: 'Sarabun', sans-serif;
+  font-size: .88rem; background: var(--card); color: var(--text);
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--slate-light); }
+.btn-icon {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .6rem 1rem; border-radius: var(--r-md);
+  font-family: 'Sarabun', sans-serif; font-size: .88rem;
+  font-weight: 600; cursor: pointer; border: 1.5px solid;
+  transition: all .2s;
+}
+.btn-refresh {
+  background: var(--card); border-color: var(--border);
+  color: var(--text-mid);
+}
+.btn-refresh:hover { border-color: var(--slate-light); color: var(--slate); }
+.btn-refresh svg { width: 15px; height: 15px; stroke: currentColor; }
+
+/* ======================================================
+   DATA TABLE
+====================================================== */
+.table-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead { background: var(--navy); }
+.data-table th {
+  padding: .75rem 1rem; text-align: left;
+  font-family: 'Mitr', sans-serif; font-size: .78rem;
+  font-weight: 500; color: rgba(255,255,255,.75);
+  letter-spacing: .03em; white-space: nowrap;
+}
+.data-table th:first-child { border-radius: var(--r-sm) 0 0 0; }
+.data-table th:last-child  { border-radius: 0 var(--r-sm) 0 0; }
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.data-table tbody tr:hover { background: #f8faff; }
+.data-table tbody tr.new-row { animation: highlight-new 2s ease; }
+@keyframes highlight-new {
+  0%, 30% { background: #fffbeb; }
+  100% { background: transparent; }
+}
+.data-table td {
+  padding: .8rem 1rem; font-size: .875rem;
+  vertical-align: middle;
+}
+.data-table td.td-name { font-weight: 600; color: var(--text); }
+.data-table td.td-muted { color: var(--text-soft); font-size: .8rem; }
+
+/* Grade badge */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px; border-radius: 99px;
+  font-size: .75rem; font-weight: 600; white-space: nowrap;
+}
+.badge-m1    { background: #fce4ec; color: #c2185b; }
+.badge-m4    { background: #ede7f6; color: #5e35b1; }
+.badge-mobtua{ background: #e8f5e9; color: #2e7d32; }
+.badge-new   { background: #fffde7; color: #f57f17; border: 1px solid #ffe082; }
+
+/* Action buttons in table */
+.action-group { display: flex; gap: .4rem; align-items: center; }
+.btn-sm {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .35rem .7rem; border-radius: var(--r-sm);
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid; transition: all .15s; white-space: nowrap;
+}
+.btn-view   { background: #e8f4fd; border-color: #90caf9; color: #1565c0; }
+.btn-view:hover  { background: #bbdefb; }
+.btn-edit   { background: #fff8e1; border-color: #ffe082; color: #e65100; }
+.btn-edit:hover  { background: #ffecb3; }
+.btn-print  { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+.btn-print:hover { background: #c8e6c9; }
+.btn-delete { background: #fce4ec; border-color: #f48fb1; color: #c62828; }
+.btn-delete:hover { background: #f8bbd0; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 3.5rem 1rem;
+  color: var(--text-soft);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: .75rem; opacity: .4; }
+.empty-state p { font-size: .9rem; }
+
+/* Table footer */
+.table-footer {
+  padding: .75rem 1rem; background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .8rem; color: var(--text-soft);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+
+/* ======================================================
+   MODAL
+====================================================== */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(15,28,46,.6); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal-backdrop.open { display: flex; animation: fadeIn .2s ease; }
+.modal-box {
+  background: var(--card); border-radius: var(--r-xl);
+  width: 100%; max-width: 720px; max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.modal-header {
+  background: var(--navy); padding: 1.1rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.modal-header h3 {
+  flex: 1; font-family: 'Mitr', sans-serif;
+  font-weight: 600; color: #fff; font-size: 1rem;
+}
+.modal-close-btn {
+  background: rgba(255,255,255,.1); border: none;
+  width: 30px; height: 30px; border-radius: 50%;
+  color: rgba(255,255,255,.7); font-size: 1.1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.modal-close-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+.modal-body {
+  padding: 1.5rem; overflow-y: auto; flex: 1;
+}
+.modal-footer {
+  padding: 1rem 1.5rem; background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; gap: .75rem; justify-content: flex-end;
+}
+
+/* Detail view grid */
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .75rem 1.5rem;
+}
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-label { font-size: .75rem; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.detail-val { font-size: .9rem; color: var(--text); font-weight: 500; }
+.detail-section-title {
+  font-family: 'Mitr', sans-serif; font-size: .85rem;
+  color: var(--slate); font-weight: 600;
+  margin: 1.25rem 0 .75rem; padding-bottom: .4rem;
+  border-bottom: 1.5px solid var(--border);
+  grid-column: 1 / -1;
+}
+
+/* Edit form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1rem; }
+.form-group { display: flex; flex-direction: column; gap: .35rem; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: .8rem; font-weight: 600; color: var(--text-mid); }
+.form-control {
+  padding: .6rem .875rem; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); font-family: 'Sarabun', sans-serif;
+  font-size: .9rem; color: var(--text); background: var(--card);
+  transition: border-color .2s;
+}
+.form-control:focus { outline: none; border-color: var(--slate-light); }
+.form-control select { cursor: pointer; }
+
+/* Action buttons in modal footer */
+.btn-primary {
+  background: var(--navy); color: #fff;
+  border: none; padding: .65rem 1.5rem;
+  border-radius: var(--r-md); font-family: 'Mitr', sans-serif;
+  font-size: .9rem; font-weight: 500; cursor: pointer;
+  transition: background .2s;
+}
+.btn-primary:hover { background: var(--slate); }
+.btn-secondary {
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text-mid); padding: .65rem 1.25rem;
+  border-radius: var(--r-md); font-family: 'Sarabun', sans-serif;
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+  transition: background .2s;
+}
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-danger {
+  background: var(--red); color: #fff;
+  border: none; padding: .65rem 1.25rem;
+  border-radius: var(--r-md); font-family: 'Sarabun', sans-serif;
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+}
+.btn-success-solid {
+  background: var(--emerald); color: #fff;
+  border: none; padding: .65rem 1.25rem;
+  border-radius: var(--r-md); font-family: 'Sarabun', sans-serif;
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--navy); border: none; padding: .65rem 1.25rem;
+  border-radius: var(--r-md); font-family: 'Mitr', sans-serif;
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+}
+
+/* Print preview inside modal */
+.print-preview-wrap {
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: #f9f9f9; padding: 1rem;
+  max-height: 400px; overflow-y: auto;
+}
+
+/* Confirm modal (small) */
+.confirm-modal {
+  max-width: 400px;
+}
+.confirm-modal .modal-body { text-align: center; padding: 2rem 1.5rem; }
+.confirm-modal .confirm-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+.confirm-modal .confirm-title { font-family: 'Mitr', sans-serif; font-size: 1.1rem; font-weight: 600; }
+.confirm-modal .confirm-msg { color: var(--text-soft); font-size: .88rem; margin-top: .5rem; }
+
+/* ======================================================
+   NOTIFICATION PANEL (slide in)
+====================================================== */
+#notifPanel {
+  position: fixed; top: 64px; right: 0;
+  width: 340px; height: calc(100vh - 64px);
+  background: var(--card); border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0,0,0,.12);
+  z-index: 1000; transform: translateX(100%);
+  transition: transform .3s ease;
+  display: flex; flex-direction: column;
+}
+#notifPanel.open { transform: translateX(0); }
+.notif-panel-header {
+  background: var(--navy); padding: 1rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notif-panel-header h4 { color: #fff; font-family: 'Mitr', sans-serif; font-size: .95rem; }
+.notif-panel-header button {
+  background: none; border: none; color: rgba(255,255,255,.6);
+  cursor: pointer; font-size: 1.1rem;
+}
+.notif-list { flex: 1; overflow-y: auto; padding: .75rem; }
+.notif-item {
+  padding: .875rem 1rem; border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  margin-bottom: .5rem; cursor: pointer;
+  transition: background .15s;
+}
+.notif-item:hover { background: var(--surface); }
+.notif-item.unread { border-left: 3px solid var(--gold); }
+.notif-type { font-size: .72rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: .04em; }
+.notif-name { font-size: .88rem; font-weight: 600; color: var(--text); margin: 2px 0; }
+.notif-time { font-size: .75rem; color: var(--text-soft); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5cde0; border-radius: 99px; }
+
+/* ======================================================
+   RESPONSIVE
+====================================================== */
+@media (max-width: 768px) {
+  .detail-grid, .form-row { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4) { display: none; }
+  #notifPanel { width: 100%; }
+  .main-wrap { padding: 1rem; }
+}
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .section-tabs { overflow-x: auto; }
+}
+
+/* ======================================================
+   PRINT
+====================================================== */
+@media print {
+  body > *:not(#printTarget) { display: none !important; }
+  #printTarget { display: block !important; visibility: visible !important; }
+  #printTarget * { visibility: visible !important; }
+  .print-document { box-shadow:none !important; width:100% !important; padding:5mm 8mm !important; }
+  .mobtua-doc     { box-shadow:none !important; width:100% !important; padding:5mm 10mm !important; font-size:13px !important; }
+  .mobtua-doc .mobtua-page-2 { border-top:none !important; }
+}
+#printTarget { display: none; }
+
+/* ======================================================
+   DOCUMENT STYLES — ใบสมัคร (same as index.html)
+====================================================== */
+.print-document {
+  background:white; width:210mm; min-height:297mm;
+  padding:8mm 10mm; font-family:'Sarabun',sans-serif;
+  font-size:15px; line-height:1.5; color:black;
+  margin:0 auto; position:relative;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+}
+.print-document .doc-code { text-align:right; font-size:13px; font-weight:500; margin-bottom:5px; }
+.print-document .doc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; position:relative; }
+.print-document .doc-logo-section { text-align:center; flex:1; }
+.print-document .doc-logo { width:110px; height:110px; margin:0 auto; }
+.print-document .doc-school-info { position:absolute; right:0; top:0; text-align:right; font-size:13px; line-height:1.5; }
+.print-document .doc-title-section { text-align:center; margin-top:8px; }
+.print-document .doc-title { text-align:center; font-size:16px; font-weight:700; margin:5px 0; }
+.print-document .doc-content { margin-bottom:5px; }
+.print-document .doc-content p { margin-bottom:4px; }
+.print-document .field-line { display:flex; align-items:baseline; gap:4px; margin:3px 0; line-height:1.6; flex-wrap:wrap; }
+.print-document .field-label { font-size:14px; white-space:nowrap; }
+.print-document .field-value { font-weight:600; border-bottom:1px dotted #333; min-width:80px; display:inline-block; }
+.print-document .checkbox-line { display:flex; align-items:flex-start; gap:6px; margin:2px 0 2px 25px; line-height:1.4; }
+.print-document .doc-checkbox { display:inline-block; width:13px; height:13px; min-width:13px; min-height:13px; border:1.5px solid #333; background:white; position:relative; flex-shrink:0; margin-top:3px; }
+.print-document .doc-checkbox.checked::after { content:'✓'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:11px; font-weight:bold; color:#333; line-height:1; }
+.print-document .signature-section { margin-top:15px; text-align:right; padding-right:20px; }
+.print-document .signature-section p { margin:2px 0; }
+.print-document .approval-section { margin-top:15px; border-top:1px solid #666; padding-top:10px; }
+.print-document .id-boxes { display:flex; gap:2px; align-items:center; }
+.print-document .id-box { width:18px; height:22px; border:1.5px solid #333; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; }
+.print-document .id-dash { width:8px; height:2px; background:#333; margin:0 1px; }
+
+/* ======================================================
+   DOCUMENT STYLES — ใบมอบตัว (same as index.html)
+====================================================== */
+.mobtua-doc { background:white; width:210mm; min-height:297mm; padding:8mm 12mm; font-family:'Sarabun',sans-serif; font-size:14px; line-height:1.5; color:black; margin:0 auto; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.15); }
+.mobtua-doc .mt-doc-header-row { display:flex; align-items:flex-start; margin-bottom:6px; }
+.mobtua-doc .mt-logo { width:90px; height:90px; flex-shrink:0; }
+.mobtua-doc .mt-title-center { flex:1; text-align:center; padding-top:8px; }
+.mobtua-doc .mt-title-center h2 { font-size:18px; font-weight:700; margin:0; }
+.mobtua-doc .mt-title-center p  { font-size:15px; font-weight:600; margin:2px 0 0; }
+.mobtua-doc .mt-topright { width:120px; border:1.5px solid #333; padding:5px 8px; font-size:12px; line-height:1.8; flex-shrink:0; }
+.mobtua-doc .mt-line { border-bottom:1px dotted #333; display:inline-block; min-width:80px; font-weight:600; text-align:center; vertical-align:bottom; }
+.mobtua-doc .mt-section-title { font-weight:700; margin:6px 0 2px; }
+.mobtua-doc .mt-para { margin:3px 0; line-height:1.6; }
+.mobtua-doc .mt-box { width:13px; height:13px; border:1.5px solid #333; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; flex-shrink:0; vertical-align:middle; }
+.mobtua-doc .mt-sig-row { display:flex; justify-content:space-around; margin-top:10px; gap:20px; }
+.mobtua-doc .mt-sig-block { text-align:center; flex:1; }
+.mobtua-doc .mt-doclist { display:grid; grid-template-columns:1fr 1fr; gap:2px 16px; font-size:12.5px; margin-top:6px; }
+.mobtua-doc .mt-doclist-item { display:flex; align-items:center; gap:5px; }
+.mobtua-doc .mt-divider { border-top:1px solid #555; margin:8px 0; }
+.mobtua-doc .mt-id-boxes { display:inline-flex; gap:2px; align-items:center; vertical-align:middle; }
+.mobtua-doc .mt-id-box { width:16px; height:20px; border:1.5px solid #333; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; }
+.mobtua-doc .mt-id-dash { width:6px; height:2px; background:#333; }
+.mobtua-doc .mt-code { text-align:right; font-size:12px; font-weight:500; margin-bottom:3px; }
+.mobtua-doc .mt-nowrap { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mobtua-doc .mobtua-page-1 { padding-bottom:10px; }
+.mobtua-doc .mobtua-page-2 { border-top:2px dashed #ccc; padding-top:10px; margin-top:10px; }
+
+/* Preview scroll area */
+.doc-preview-scroll {
+  background:#e4e4e4; padding:1.25rem; border-radius:var(--r-md);
+  max-height:68vh; overflow-y:auto; overflow-x:auto;
+}
+.doc-preview-scroll .print-document,
+.doc-preview-scroll .mobtua-doc { transform-origin:top center; }
+</style>
+</head>
+<body>
+
+<!-- ======= PAGE LOADER ======= -->
+<div id="pageLoader">
+  <div class="loader-logo"></div>
+  <p>กำลังเชื่อมต่อระบบ…</p>
+</div>
+
+<!-- ======= AUTH OVERLAY ======= -->
+<div id="authOverlay">
+  <div class="auth-card">
+    <img class="school-logo" src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="โลโก้">
+    <h2>ระบบตรวจสอบการสมัครเรียน</h2>
+    <p>สำหรับครูผู้รับสมัคร — โรงเรียนกระดุมทองวิทยา</p>
+    <label class="auth-label" for="authPassInput">รหัสผ่านครู</label>
+    <input class="auth-input" type="password" id="authPassInput" placeholder="กรอกรหัสผ่าน" autocomplete="current-password">
+    <button class="auth-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+    <p class="auth-error" id="authError">รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</p>
+  </div>
+</div>
+
+<!-- ======= NOTIFICATION PANEL ======= -->
+<div id="notifPanel">
+  <div class="notif-panel-header">
+    <h4>🔔 การแจ้งเตือน</h4>
+    <button onclick="toggleNotifPanel()">✕</button>
+  </div>
+  <div class="notif-list" id="notifList">
+    <p style="text-align:center; color:var(--text-soft); font-size:.85rem; padding:2rem 0;">ยังไม่มีการแจ้งเตือน</p>
+  </div>
+</div>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+  <div class="header-inner">
+    <img class="header-logo" src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="โลโก้">
+    <div class="header-title">
+      <h1>ระบบตรวจสอบการสมัครเรียน</h1>
+      <p>โรงเรียนกระดุมทองวิทยา — งานทะเบียนและเทียบโอนผลการเรียน</p>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,168,67,0.15);border:1.5px solid rgba(212,168,67,0.45);color:#f0c355;border-radius:6px;padding:.45rem .9rem;font-family:'Sarabun',sans-serif;font-size:.82rem;font-weight:600;text-decoration:none;transition:background .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(212,168,67,0.3)'" onmouseout="this.style.background='rgba(212,168,67,0.15)'">
+        📋 ระบบรับสมัคร
+      </a>
+      <div class="conn-badge">
+        <div class="conn-dot live" id="connDot"></div>
+        <span id="connLabel">เชื่อมต่อแล้ว</span>
+      </div>
+      <button class="notification-bell" onclick="toggleNotifPanel()" title="การแจ้งเตือน">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        <span class="notif-badge" id="notifBadge">0</span>
+      </button>
+      <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+</header>
+
+<!-- ======= TOAST AREA ======= -->
+<div id="toastArea"></div>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="main-wrap" id="mainContent" style="display:none;">
+
+  <!-- STATS -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card c-total">
+      <div class="stat-label">ใบสมัครทั้งหมด</div>
+      <div class="stat-num" id="sTotal">—</div>
+      <div class="stat-sub">รายการในระบบ</div>
+    </div>
+    <div class="stat-card c-m1">
+      <div class="stat-label">ม.1</div>
+      <div class="stat-num" id="sM1">—</div>
+      <div class="stat-sub">ใบสมัคร ม.1</div>
+    </div>
+    <div class="stat-card c-m4">
+      <div class="stat-label">ม.4</div>
+      <div class="stat-num" id="sM4">—</div>
+      <div class="stat-sub">ใบสมัคร ม.4</div>
+    </div>
+    <div class="stat-card c-mobtua">
+      <div class="stat-label">ใบมอบตัว</div>
+      <div class="stat-num" id="sMobtua">—</div>
+      <div class="stat-sub">บันทึกแล้ว</div>
+    </div>
+    <div class="stat-card c-today">
+      <div class="stat-label">วันนี้</div>
+      <div class="stat-num" id="sToday">—</div>
+      <div class="stat-sub">รายการใหม่วันนี้</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="section-tabs">
+    <button class="tab-btn active" onclick="switchTab('admission', this)">
+      📄 ใบสมัครเรียน
+      <span class="tab-count" id="tabCountAdmission">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('mobtua', this)">
+      📋 ใบมอบตัว
+      <span class="tab-count" id="tabCountMobtua">0</span>
+    </button>
+  </div>
+
+  <!-- PANEL: ใบสมัคร -->
+  <div class="tab-panel active" id="panel-admission">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="searchAdmission" placeholder="ค้นหาชื่อ, โรงเรียนเดิม, จังหวัด…" oninput="filterAdmission()">
+      </div>
+      <select class="filter-select" id="filterGrade" onchange="filterAdmission()">
+        <option value="">ทุกระดับชั้น</option>
+        <option value="m1">ม.1</option>
+        <option value="m4">ม.4</option>
+      </select>
+      <button class="btn-icon btn-refresh" onclick="loadAll()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        รีเฟรช
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ชื่อ-นามสกุล</th>
+            <th>ระดับ</th>
+            <th>โรงเรียนเดิม</th>
+            <th>วันที่สมัคร</th>
+            <th>การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody id="admissionBody">
+          <tr><td colspan="6"><div class="empty-state"><div class="icon">⏳</div><p>กำลังโหลดข้อมูล…</p></div></td></tr>
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <span id="admissionCount">— รายการ</span>
+        <span id="admissionLastUpdate"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: ใบมอบตัว -->
+  <div class="tab-panel" id="panel-mobtua">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="searchMobtua" placeholder="ค้นหาชื่อนักเรียน, ผู้ปกครอง…" oninput="filterMobtua()">
+      </div>
+      <button class="btn-icon btn-refresh" onclick="loadAll()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.182m0-4.991v4.99"/></svg>
+        รีเฟรช
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ชื่อนักเรียน</th>
+            <th>ผู้ปกครอง</th>
+            <th>ห้องเรียน</th>
+            <th>วันที่บันทึก</th>
+            <th>การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody id="mobtuaBody">
+          <tr><td colspan="6"><div class="empty-state"><div class="icon">⏳</div><p>กำลังโหลดข้อมูล…</p></div></td></tr>
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <span id="mobtuaCount">— รายการ</span>
+        <span id="mobtuaLastUpdate"></span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ======================================================
+     MODALS
+====================================================== -->
+
+<!-- VIEW: Admission Detail -->
+<div class="modal-backdrop" id="modalViewAdmission">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalViewAdmissionTitle">📄 รายละเอียดใบสมัคร</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalViewAdmission')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="admissionDetailGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalViewAdmission')">ปิด</button>
+      <button class="btn-gold" id="btnPrintAdmission" onclick="printCurrentAdmission()">🖨️ พิมพ์เอกสาร</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT: Admission -->
+<div class="modal-backdrop" id="modalEditAdmission">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>✏️ แก้ไขข้อมูลใบสมัคร</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalEditAdmission')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">คำนำหน้า</label>
+          <input class="form-control" id="eaPrefix" placeholder="นาย / นางสาว">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อ-นามสกุล <span style="color:var(--red)">*</span></label>
+          <input class="form-control" id="eaFullName" placeholder="ชื่อ นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ระดับชั้น</label>
+          <select class="form-control" id="eaGrade">
+            <option value="m1">ม.1</option>
+            <option value="m4">ม.4</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">โทรศัพท์</label>
+          <input class="form-control" id="eaPhone" type="tel">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">โรงเรียนเดิม</label>
+          <input class="form-control" id="eaPrevSchool">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อำเภอ</label>
+          <input class="form-control" id="eaDistrict">
+        </div>
+        <div class="form-group">
+          <label class="form-label">จังหวัด</label>
+          <input class="form-control" id="eaProvince">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalEditAdmission')">ยกเลิก</button>
+      <button class="btn-primary" onclick="saveEditAdmission()">💾 บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: Mobtua Detail -->
+<div class="modal-backdrop" id="modalViewMobtua">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalViewMobtuaTitle">📋 รายละเอียดใบมอบตัว</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalViewMobtua')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="mobtuaDetailGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalViewMobtua')">ปิด</button>
+      <button class="btn-gold" onclick="printCurrentMobtua()">🖨️ พิมพ์เอกสาร</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT: Mobtua -->
+<div class="modal-backdrop" id="modalEditMobtua">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>✏️ แก้ไขข้อมูลใบมอบตัว</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalEditMobtua')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ชื่อนักเรียน <span style="color:var(--red)">*</span></label>
+          <input class="form-control" id="emStudentName">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ห้องเรียน</label>
+          <input class="form-control" id="emClassRoom">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ผู้ปกครอง</label>
+          <input class="form-control" id="emGuardianName">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ปีการศึกษา</label>
+          <input class="form-control" id="emAcademicYear" type="number">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">ที่อยู่ผู้ปกครอง</label>
+          <input class="form-control" id="emGuardianAddress">
+        </div>
+        <div class="form-group">
+          <label class="form-label">โทรศัพท์ผู้ปกครอง</label>
+          <input class="form-control" id="emGuardianPhone" type="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ความสัมพันธ์</label>
+          <input class="form-control" id="emGuardianRelation">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalEditMobtua')">ยกเลิก</button>
+      <button class="btn-primary" onclick="saveEditMobtua()">💾 บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-backdrop" id="modalConfirm">
+  <div class="modal-box confirm-modal">
+    <div class="modal-header" style="background: var(--red);">
+      <h3>ยืนยันการลบ</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalConfirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">🗑️</div>
+      <div class="confirm-title">ลบรายการนี้?</div>
+      <div class="confirm-msg" id="confirmMsg">การดำเนินการนี้ไม่สามารถย้อนกลับได้</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center; gap:1rem;">
+      <button class="btn-secondary" onclick="closeModal('modalConfirm')">ยกเลิก</button>
+      <button class="btn-danger" id="confirmDeleteBtn">ยืนยันลบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT PREVIEW MODAL -->
+<div class="modal-backdrop" id="modalDocPreview">
+  <div class="modal-box" style="max-width:900px;">
+    <div class="modal-header">
+      <h3 id="docPreviewTitle">👁 ตัวอย่างเอกสาร</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalDocPreview')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:.75rem;">
+      <div class="doc-preview-scroll" id="docPreviewArea"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalDocPreview')">ปิด</button>
+      <button class="btn-gold" onclick="printFromPreview()">🖨️ สั่งพิมพ์เอกสาร</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print target -->
+<div id="printTarget"></div>
+
+<!-- ======================================================
+     FIREBASE + SCRIPTS
+====================================================== -->
+<script type="module">
+import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+  getFirestore, collection, getDocs, getDoc, doc,
+  deleteDoc, updateDoc, query, orderBy, onSnapshot,
+  serverTimestamp, Timestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+/* ── Firebase config ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY",
+  authDomain: "recruitstudents2026.firebaseapp.com",
+  projectId: "recruitstudents2026",
+  storageBucket: "recruitstudents2026.firebasestorage.app",
+  messagingSenderId: "312157707609",
+  appId: "1:312157707609:web:164adccd4f6c95af990048"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ── Expose helpers ── */
+window._db = db;
+window._fs = { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp };
+
+/* ── Password ── */
+const STAFF_PASS = 'admin1234';
+
+/* ── State ── */
+let allAdmissions = [];
+let allMobtua     = [];
+let currentEditId = '';
+let currentEditType = '';
+let currentViewRecord = null;
+let notifications = [];
+let notifUnread   = 0;
+let unsubAdmission = null;
+let unsubMobtua    = null;
+let isFirstLoadAdmission = true;
+let isFirstLoadMobtua    = true;
+
+/* ─────────────────────────────────────────────────
+   AUTH
+───────────────────────────────────────────────── */
+function doLogin() {
+  const val = document.getElementById('authPassInput').value;
+  if (val === STAFF_PASS) {
+    sessionStorage.setItem('staffAuth', '1');
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('mainContent').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+    document.getElementById('authPassInput').value = '';
+    document.getElementById('authPassInput').focus();
+  }
+}
+window.doLogin = doLogin;
+
+document.getElementById('authPassInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  sessionStorage.removeItem('staffAuth');
+  location.reload();
+}
+window.doLogout = doLogout;
+
+/* ─────────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────────── */
+function initApp() {
+  subscribeAdmissions();
+  subscribeMobtua();
+}
+
+/* ─────────────────────────────────────────────────
+   REAL-TIME LISTENERS
+───────────────────────────────────────────────── */
+function subscribeAdmissions() {
+  const q = window._fs.query(
+    window._fs.collection(window._db, 'admissions'),
+    window._fs.orderBy('createdAt', 'desc')
+  );
+  unsubAdmission = window._fs.onSnapshot(q, snap => {
+    const newRecords = [];
+    snap.forEach(d => newRecords.push({ id: d.id, ...d.data() }));
+
+    if (!isFirstLoadAdmission) {
+      // ตรวจหา record ใหม่
+      const oldIds = new Set(allAdmissions.map(r => r.id));
+      const added  = newRecords.filter(r => !oldIds.has(r.id));
+      added.forEach(r => {
+        addNotification('admission', r.studentName || 'ไม่ระบุ', r.createdAt);
+        showToast(`📄 ใบสมัครใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบสมัครเรียนเข้ามาใหม่');
+        highlightRowLater(r.id, 'admission');
+      });
+    }
+    isFirstLoadAdmission = false;
+    allAdmissions = newRecords;
+    renderAdmissions();
+    updateStats();
+  }, err => {
+    console.error('admission snapshot error:', err);
+    setConnStatus(false);
+  });
+}
+
+function subscribeMobtua() {
+  const q = window._fs.query(
+    window._fs.collection(window._db, 'mobtua'),
+    window._fs.orderBy('createdAt', 'desc')
+  );
+  unsubMobtua = window._fs.onSnapshot(q, snap => {
+    const newRecords = [];
+    snap.forEach(d => newRecords.push({ id: d.id, ...d.data() }));
+
+    if (!isFirstLoadMobtua) {
+      const oldIds = new Set(allMobtua.map(r => r.id));
+      const added  = newRecords.filter(r => !oldIds.has(r.id));
+      added.forEach(r => {
+        addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
+        showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบมอบตัวเข้ามาใหม่');
+        highlightRowLater(r.id, 'mobtua');
+      });
+    }
+    isFirstLoadMobtua = false;
+    allMobtua = newRecords;
+    renderMobtua();
+    updateStats();
+  }, err => {
+    console.error('mobtua snapshot error:', err);
+    setConnStatus(false);
+  });
+}
+
+function loadAll() {
+  isFirstLoadAdmission = true;
+  isFirstLoadMobtua    = true;
+  if (unsubAdmission) unsubAdmission();
+  if (unsubMobtua)    unsubMobtua();
+  subscribeAdmissions();
+  subscribeMobtua();
+  showToast('รีเฟรชข้อมูลแล้ว', 'success');
+}
+window.loadAll = loadAll;
+
+/* ─────────────────────────────────────────────────
+   RENDER
+───────────────────────────────────────────────── */
+function thaiDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function isToday(ts) {
+  if (!ts) return false;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
+
+function renderAdmissions() {
+  const keyword  = (document.getElementById('searchAdmission')?.value || '').trim().toLowerCase();
+  const gradeFilter = document.getElementById('filterGrade')?.value || '';
+  let rows = allAdmissions;
+  if (keyword) {
+    rows = rows.filter(r => {
+      const d = r.data || {};
+      return (r.studentName || '').toLowerCase().includes(keyword)
+          || (d.previousSchool || '').toLowerCase().includes(keyword)
+          || (d.province || '').toLowerCase().includes(keyword)
+          || (d.phone || '').includes(keyword);
+    });
+  }
+  if (gradeFilter) rows = rows.filter(r => r.gradeLevel === gradeFilter);
+
+  const tbody = document.getElementById('admissionBody');
+  document.getElementById('admissionCount').textContent = `${rows.length} รายการ`;
+  document.getElementById('tabCountAdmission').textContent = allAdmissions.length;
+  document.getElementById('admissionLastUpdate').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🔍</div><p>${keyword || gradeFilter ? 'ไม่พบข้อมูลที่ค้นหา' : 'ยังไม่มีข้อมูลใบสมัคร'}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => {
+    const d = r.data || {};
+    const gradeLabel = r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+    const gradeCls   = r.gradeLevel === 'm4' ? 'badge-m4' : 'badge-m1';
+    const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    return `<tr id="row-admission-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
+      <td class="td-muted">${i+1}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge}</td>
+      <td><span class="badge ${gradeCls}">${gradeLabel}</span></td>
+      <td class="td-muted">${d.previousSchool || '—'}</td>
+      <td class="td-muted">${thaiDate(r.createdAt)}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-sm btn-view"  onclick="viewAdmission('${r.id}')">👁 ดู</button>
+          <button class="btn-sm btn-edit"  onclick="editAdmission('${r.id}')">✏️ แก้ไข</button>
+          <button class="btn-sm btn-print" onclick="printAdmissionById('${r.id}')">🖨️</button>
+          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMobtua() {
+  const keyword = (document.getElementById('searchMobtua')?.value || '').trim().toLowerCase();
+  let rows = allMobtua;
+  if (keyword) {
+    rows = rows.filter(r =>
+      (r.studentName || '').toLowerCase().includes(keyword) ||
+      (r.guardianName || '').toLowerCase().includes(keyword) ||
+      (r.classRoom    || '').toLowerCase().includes(keyword)
+    );
+  }
+
+  const tbody = document.getElementById('mobtuaBody');
+  document.getElementById('mobtuaCount').textContent = `${rows.length} รายการ`;
+  document.getElementById('tabCountMobtua').textContent = allMobtua.length;
+  document.getElementById('mobtuaLastUpdate').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🔍</div><p>${keyword ? 'ไม่พบข้อมูลที่ค้นหา' : 'ยังไม่มีข้อมูลใบมอบตัว'}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => {
+    const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    return `<tr id="row-mobtua-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
+      <td class="td-muted">${i+1}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge}</td>
+      <td class="td-muted">${r.guardianName || '—'}</td>
+      <td class="td-muted">${r.classRoom || '—'}</td>
+      <td class="td-muted">${thaiDate(r.createdAt)}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-sm btn-view"  onclick="viewMobtua('${r.id}')">👁 ดู</button>
+          <button class="btn-sm btn-edit"  onclick="editMobtua('${r.id}')">✏️ แก้ไข</button>
+          <button class="btn-sm btn-print" onclick="printMobtuaById('${r.id}')">🖨️</button>
+          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────────────
+   STATS
+───────────────────────────────────────────────── */
+function updateStats() {
+  const m1     = allAdmissions.filter(r => r.gradeLevel === 'm1').length;
+  const m4     = allAdmissions.filter(r => r.gradeLevel === 'm4').length;
+  const today  = [...allAdmissions, ...allMobtua].filter(r => isToday(r.createdAt)).length;
+  document.getElementById('sTotal').textContent  = allAdmissions.length;
+  document.getElementById('sM1').textContent     = m1;
+  document.getElementById('sM4').textContent     = m4;
+  document.getElementById('sMobtua').textContent = allMobtua.length;
+  document.getElementById('sToday').textContent  = today;
+}
+
+/* ─────────────────────────────────────────────────
+   FILTER
+───────────────────────────────────────────────── */
+function filterAdmission() { renderAdmissions(); }
+function filterMobtua()    { renderMobtua(); }
+window.filterAdmission = filterAdmission;
+window.filterMobtua    = filterMobtua;
+
+/* ─────────────────────────────────────────────────
+   VIEW DETAIL
+───────────────────────────────────────────────── */
+function viewAdmission(id) {
+  const rec = allAdmissions.find(r => r.id === id);
+  if (!rec) return;
+  currentViewRecord = rec;
+  const d = rec.data || {};
+  const grid = document.getElementById('admissionDetailGrid');
+  const row = (label, val) => `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-val">${val || '—'}</div></div>`;
+  const section = t => `<div class="detail-section-title">${t}</div>`;
+  document.getElementById('modalViewAdmissionTitle').textContent = `📄 ${rec.studentName || 'ใบสมัคร'} (${rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1'})`;
+  grid.innerHTML = `
+    ${section('ข้อมูลนักเรียน')}
+    ${row('ชื่อ-นามสกุล', rec.studentName)}
+    ${row('ระดับชั้น', rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')}
+    ${row('เพศ', d.gender)}
+    ${row('วันเกิด', d.birthdate)}
+    ${row('เลขบัตรประชาชน', d.nationalId)}
+    ${row('โรงเรียนเดิม', d.previousSchool)}
+    ${row('อำเภอ', d.district)}
+    ${row('จังหวัด', d.province)}
+    ${section('ข้อมูลติดต่อ')}
+    ${row('โทรศัพท์', d.phone)}
+    ${row('ผู้ปกครอง', d.parentName)}
+    ${row('โทรผู้ปกครอง', d.parentPhone)}
+    ${section('ข้อมูลบันทึก')}
+    ${row('วันที่สมัคร', thaiDate(rec.createdAt))}
+    ${row('อัปเดตล่าสุด', thaiDate(rec.updatedAt))}
+  `;
+  openModal('modalViewAdmission');
+}
+
+function viewMobtua(id) {
+  const rec = allMobtua.find(r => r.id === id);
+  if (!rec) return;
+  currentViewRecord = rec;
+  const d = rec.data || {};
+  const grid = document.getElementById('mobtuaDetailGrid');
+  const row = (label, val) => `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-val">${val || '—'}</div></div>`;
+  const section = t => `<div class="detail-section-title">${t}</div>`;
+  document.getElementById('modalViewMobtuaTitle').textContent = `📋 ${rec.studentName || 'ใบมอบตัว'}`;
+  grid.innerHTML = `
+    ${section('ข้อมูลนักเรียน')}
+    ${row('ชื่อนักเรียน', rec.studentName)}
+    ${row('ห้องเรียน', rec.classRoom)}
+    ${row('ปีการศึกษา', rec.academicYear)}
+    ${row('เลขบัตรนักเรียน', d.mt_studentNationalId)}
+    ${section('ข้อมูลผู้ปกครอง')}
+    ${row('ชื่อผู้ปกครอง', rec.guardianName)}
+    ${row('ความสัมพันธ์', d.mt_guardianRelation)}
+    ${row('โทรศัพท์', d.mt_guardianPhone)}
+    ${row('ที่อยู่', d.mt_guardianAddress)}
+    ${section('ข้อมูลบิดา')}
+    ${row('ชื่อบิดา', d.mt_fatherFullName)}
+    ${row('อาชีพ', d.mt_fatherOccupation)}
+    ${row('โทรศัพท์', d.mt_fatherPhone)}
+    ${section('ข้อมูลมารดา')}
+    ${row('ชื่อมารดา', d.mt_motherFullName)}
+    ${row('อาชีพ', d.mt_motherOccupation)}
+    ${row('โทรศัพท์', d.mt_motherPhone)}
+    ${section('ข้อมูลบันทึก')}
+    ${row('วันที่บันทึก', thaiDate(rec.createdAt))}
+    ${row('อัปเดตล่าสุด', thaiDate(rec.updatedAt))}
+  `;
+  openModal('modalViewMobtua');
+}
+
+window.viewAdmission = viewAdmission;
+window.viewMobtua    = viewMobtua;
+
+/* ─────────────────────────────────────────────────
+   EDIT
+───────────────────────────────────────────────── */
+function editAdmission(id) {
+  const rec = allAdmissions.find(r => r.id === id);
+  if (!rec) return;
+  currentEditId   = id;
+  currentEditType = 'admission';
+  const d = rec.data || {};
+  const parts = (rec.studentName || '').split(' ');
+  document.getElementById('eaPrefix').value     = d.prefix || '';
+  document.getElementById('eaFullName').value   = rec.studentName || '';
+  document.getElementById('eaGrade').value      = rec.gradeLevel || 'm1';
+  document.getElementById('eaPhone').value      = d.phone || '';
+  document.getElementById('eaPrevSchool').value = d.previousSchool || '';
+  document.getElementById('eaDistrict').value   = d.district || '';
+  document.getElementById('eaProvince').value   = d.province || '';
+  openModal('modalEditAdmission');
+}
+
+async function saveEditAdmission() {
+  const fullName  = document.getElementById('eaFullName').value.trim();
+  const gradeLevel = document.getElementById('eaGrade').value;
+  if (!fullName) { showToast('กรุณากรอกชื่อ-นามสกุล', 'error'); return; }
+  const rec = allAdmissions.find(r => r.id === currentEditId);
+  const d   = rec?.data || {};
+  const updatedData = {
+    ...d,
+    prefix: document.getElementById('eaPrefix').value.trim(),
+    phone:  document.getElementById('eaPhone').value.trim(),
+    previousSchool: document.getElementById('eaPrevSchool').value.trim(),
+    district: document.getElementById('eaDistrict').value.trim(),
+    province: document.getElementById('eaProvince').value.trim(),
+  };
+  const gradeText = gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+  try {
+    await window._fs.updateDoc(
+      window._fs.doc(window._db, 'admissions', currentEditId),
+      { studentName: fullName, gradeLevel, gradeText, data: updatedData, updatedAt: window._fs.serverTimestamp() }
+    );
+    showToast('แก้ไขข้อมูลสำเร็จ', 'success');
+    closeModal('modalEditAdmission');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+}
+
+function editMobtua(id) {
+  const rec = allMobtua.find(r => r.id === id);
+  if (!rec) return;
+  currentEditId   = id;
+  currentEditType = 'mobtua';
+  const d = rec.data || {};
+  document.getElementById('emStudentName').value   = rec.studentName || '';
+  document.getElementById('emClassRoom').value     = rec.classRoom   || '';
+  document.getElementById('emGuardianName').value  = rec.guardianName || '';
+  document.getElementById('emAcademicYear').value  = rec.academicYear || '';
+  document.getElementById('emGuardianAddress').value = d.mt_guardianAddress || '';
+  document.getElementById('emGuardianPhone').value   = d.mt_guardianPhone   || '';
+  document.getElementById('emGuardianRelation').value = d.mt_guardianRelation || '';
+  openModal('modalEditMobtua');
+}
+
+async function saveEditMobtua() {
+  const studentName = document.getElementById('emStudentName').value.trim();
+  if (!studentName) { showToast('กรุณากรอกชื่อนักเรียน', 'error'); return; }
+  const rec = allMobtua.find(r => r.id === currentEditId);
+  const d   = { ...(rec?.data || {}) };
+  d.mt_guardianAddress  = document.getElementById('emGuardianAddress').value.trim();
+  d.mt_guardianPhone    = document.getElementById('emGuardianPhone').value.trim();
+  d.mt_guardianRelation = document.getElementById('emGuardianRelation').value.trim();
+  try {
+    await window._fs.updateDoc(
+      window._fs.doc(window._db, 'mobtua', currentEditId),
+      {
+        studentName,
+        classRoom:    document.getElementById('emClassRoom').value.trim(),
+        guardianName: document.getElementById('emGuardianName').value.trim(),
+        academicYear: document.getElementById('emAcademicYear').value.trim(),
+        data: d,
+        updatedAt: window._fs.serverTimestamp()
+      }
+    );
+    showToast('แก้ไขข้อมูลใบมอบตัวสำเร็จ', 'success');
+    closeModal('modalEditMobtua');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+}
+
+window.editAdmission    = editAdmission;
+window.saveEditAdmission = saveEditAdmission;
+window.editMobtua       = editMobtua;
+window.saveEditMobtua   = saveEditMobtua;
+
+/* ─────────────────────────────────────────────────
+   DELETE
+───────────────────────────────────────────────── */
+function confirmDelete(id, type, name) {
+  document.getElementById('confirmMsg').textContent = `ลบข้อมูลของ "${name}" ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้`;
+  const btn = document.getElementById('confirmDeleteBtn');
+  btn.onclick = async () => {
+    try {
+      const col = type === 'mobtua' ? 'mobtua' : 'admissions';
+      await window._fs.deleteDoc(window._fs.doc(window._db, col, id));
+      showToast('ลบข้อมูลสำเร็จ', 'success');
+      closeModal('modalConfirm');
+    } catch(e) {
+      showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+    }
+  };
+  openModal('modalConfirm');
+}
+window.confirmDelete = confirmDelete;
+
+/* ─────────────────────────────────────────────────
+   PRINT (simple window.print approach)
+───────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────
+   DOCUMENT GENERATION HELPERS (identical to index.html)
+───────────────────────────────────────────────── */
+function formatThaiDate(s) {
+  if (!s) return '....................';
+  const d = new Date(s);
+  const m = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()+543}`;
+}
+function formatIdBoxes(id) {
+  const clean = (id||'').replace(/[^0-9]/g,'');
+  const make = (digit,i) => {
+    let s = '';
+    if (i===1||i===5||i===10||i===12) s += '<span class="id-dash"></span>';
+    s += `<span class="id-box">${digit||''}</span>`;
+    return s;
+  };
+  if (clean.length!==13) {
+    return Array.from({length:13},(_,i)=>make('',i)).join('');
+  }
+  return clean.split('').map((c,i)=>make(c,i)).join('');
+}
+function checkbox(v) { return `<span class="doc-checkbox${v?' checked':''}"></span>`; }
+function val(v, w) {
+  const s = (v||'').toString().trim();
+  if (!s||s==='-') return `<span class="mt-line" style="min-width:${w||'80px'}">&nbsp;</span>`;
+  return `<span class="mt-line">${s}</span>`;
+}
+function mtCb(v) { return `<span class="mt-box">${v?'✓':''}</span>`; }
+function mtIdBoxes(id) {
+  const raw = (id||'').replace(/[^0-9]/g,'');
+  const make = (c,i) => {
+    let s = '';
+    if (i===1||i===5||i===10||i===12) s += '<span class="mt-id-dash"></span>';
+    s += `<span class="mt-id-box">${c||''}</span>`;
+    return s;
+  };
+  if (raw.length!==13) return Array.from({length:13},(_,i)=>make('',i)).join('');
+  return raw.split('').map((c,i)=>make(c,i)).join('');
+}
+
+/* ── ใบสมัคร HTML generator ── */
+function generateAdmissionDocHTML(data) {
+  const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+  const talents = data.talent || [];
+  const grade = data.gradeLevel==='m4' ? 'มัธยมศึกษาปีที่ 4' : 'มัธยมศึกษาปีที่ 1';
+  const code  = data.gradeLevel==='m4' ? 'วก.กทว.203' : 'วก.กทว.202';
+  return `<div class="print-document">
+  <div class="doc-code">${code}</div>
+  <div class="doc-header">
+    <div class="doc-logo-section"><img src="${logo}" class="doc-logo" alt="โลโก้"></div>
+    <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}</div>
+  </div>
+  <div class="doc-title-section">
+    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา ${data.academicYear||'.........................'}</div>
+    <div style="text-align:center;font-size:14px;margin:4px 0;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
+  </div>
+  <div class="doc-content">
+    <div class="field-line" style="margin-top:8px;">
+      <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span><span class="field-value">${data.prefix||''}${data.fullName||'..........................................'}</span>
+      <span class="field-label">ชื่อเล่น</span><span class="field-value">${data.nickname||'..............'}</span>
+      <span class="field-label">เกิดวันที่</span><span class="field-value">${formatThaiDate(data.birthDate)}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">อายุ</span><span class="field-value">${data.age||'............'}</span><span class="field-label">ปี</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ส่วนสูง</span><span class="field-value">${data.height||'..................'}</span><span class="field-label">เซนติเมตร</span>
+      <span class="field-label">น้ำหนัก</span><span class="field-value">${data.weight||'....................'}</span><span class="field-label">กิโลกรัม</span>
+      <span class="field-label">หมู่เลือด</span><span class="field-value">${data.bloodType||'.................................'}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">เลขประจำตัวประชาชน</span>
+      <div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">${formatIdBoxes(data.nationalIdClean||data.nationalId)}</div>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ชื่อ-สกุลบิดา</span><span class="field-value">${data.fatherName||'.....................................................................'}</span>
+      <span class="field-label">อายุ</span><span class="field-value">${data.fatherAge||'........................'}</span>
+      <span class="field-label">อาชีพ</span><span class="field-value">${data.fatherOccupation||'.....................................'}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ชื่อ-สกุลมารดา</span><span class="field-value">${data.motherName||'.....................................................................'}</span>
+      <span class="field-label">อายุ</span><span class="field-value">${data.motherAge||'........................'}</span>
+      <span class="field-label">อาชีพ</span><span class="field-value">${data.motherOccupation||'.....................................'}</span>
+    </div>
+    <div class="field-line" style="margin-top:6px;">
+      <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span><span class="field-value">${data.houseNumber||'……………'}</span>
+      <span class="field-label">หมู่ที่</span><span class="field-value">${data.moo||'………'}</span>
+      <span class="field-label">ถนน</span><span class="field-value">${data.road||'…........……………………'}</span>
+      <span class="field-label">ซอย</span><span class="field-value">${data.soi||'....................'}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">บ้าน</span><span class="field-value">${data.village||'..................................'}</span>
+      <span class="field-label">ตำบล</span><span class="field-value">${data.subdistrict||'…………………'}</span>
+      <span class="field-label">อำเภอ</span><span class="field-value">${data.district||'……………………..'}</span>
+      <span class="field-label">จังหวัด</span><span class="field-value">${data.province||'…………….....………….'}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">รหัสไปรษณีย์</span><span class="field-value">${data.postalCode||'……............……………'}</span>
+      <span class="field-label">โทรศัพท์</span><span class="field-value">${data.phone||'.…..………...........................................…....'}</span>
+      <span class="field-label">E-mail</span><span class="field-value">${data.email||'………………….………………………………………'}</span>
+    </div>
+    <div class="field-line" style="margin-top:6px;">
+      <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
+      <span class="field-value">${data.previousSchool||'……………………………………………………………………………..………..'}</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ตำบล</span><span class="field-value">${data.schoolSubdistrict||'……………………….'}</span>
+      <span class="field-label">อำเภอ</span><span class="field-value">${data.schoolDistrict||'…...…………………………..'}</span>
+      <span class="field-label">จังหวัด</span><span class="field-value">${data.schoolProvince||'…………………………………….'}</span>
+    </div>
+    <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
+    <div class="checkbox-line">${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <strong>${talents.includes('sports')?(data.sportsType||''):'................................................................................'}</strong></div>
+    <div class="checkbox-line">${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${talents.includes('music')?(data.musicType||''):'.............................................................'}</strong></div>
+    <div class="checkbox-line">${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <strong>${talents.includes('other')?(data.otherTalent||''):'........................................................................................................'}</strong></div>
+  </div>
+  <div class="signature-section" style="text-align:right;margin-top:12px;">
+    <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
+    <p style="margin-right:1cm;">(.......................................................................)</p>
+    <p>วันที่.................เดือน...............................พ.ศ................</p>
+  </div>
+  <div class="approval-section">
+    <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} ระเบียนแสดงผลการเรียน(ปพ.1)หรือใบรับรอง</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาทะเบียนบ้านของนร/บิดา/มารดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาบัตรประชาชนของนร/บิดา/มารดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} สำเนาสูติบัตรของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(false)} หลักฐานอื่นๆ………………….</div>
+    </div>
+    <div style="text-align:right;margin-top:12px;">
+      <p>ลงชื่อ.............................................................กรรมการรับสมัคร</p>
+      <p style="margin-right:3cm;">(.......................................................)</p>
+      <p>วันที่.................เดือน..............................พ.ศ...............</p>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── ใบมอบตัว HTML generator ── */
+function generateMobtuaDocHTML(d) {
+  const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+  const gr = d.mt_guardianRelation==='อื่นๆ' ? (d.mt_guardianRelationOther||'อื่นๆ') : (d.mt_guardianRelation||'');
+  const tr = Array.isArray(d.mt_transport) ? d.mt_transport : (d.mt_transport?[d.mt_transport]:[]);
+  const parentStatusCb = () => {
+    const opts = ['อยู่ร่วมกัน','แยกกันอยู่','อย่าร้าง','บิดาเสียชีวิต','มารดาเสียชีวิต'];
+    return opts.map(o=>`${mtCb(d.mt_parentStatus===o)} ${o}`).join(' &nbsp; ');
+  };
+  return `<div class="mobtua-doc">
+<div class="mobtua-page-1">
+  <div class="mt-code">วก.กทว.205</div>
+  <div class="mt-doc-header-row">
+    <img src="${logo}" class="mt-logo" alt="โลโก้">
+    <div class="mt-title-center">
+      <h2 style="font-size:17px;font-weight:700;margin:0;">ใบมอบตัวนักเรียน</h2>
+      <p style="font-size:15px;font-weight:600;margin:2px 0 0;">โรงเรียนกระดุมทองวิทยา</p>
+    </div>
+    <div class="mt-topright">
+      <div>เลขประจำตัว ${val(d.mt_studentId)}</div>
+      <div>เข้าเรียนชั้น ${val(d.mt_classRoom,'60px')}</div>
+      <div>ปีการศึกษา ${val(d.mt_academicYear)}</div>
+    </div>
+  </div>
+  <p class="mt-section-title">ข้อมูลนักเรียน <span style="font-weight:400;font-size:12px;">(กรอกข้อมูลด้วยลายมือบรรจง)</span></p>
+  <p class="mt-para mt-nowrap">ข้าพเจ้า(ชื่อผู้ปกครอง) ${val(d.mt_guardianName,'150px')} เลขประจำตัวประชาชน ${val(d.mt_guardianNationalId,'130px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_guardianOccupation,'100px')} สถานที่ทำงาน ${val(d.mt_guardianWorkplace,'180px')}</p>
+  <p class="mt-para mt-nowrap">ที่อยู่ปัจจุบัน บ้านเลขที่ ${val(d.mt_guardianHouseNo,'35px')} หมู่ ${val(d.mt_guardianMoo,'25px')} ตำบล ${val(d.mt_guardianSubdistrict,'80px')} อำเภอ ${val(d.mt_guardianDistrict,'80px')} จังหวัด ${val(d.mt_guardianProvince,'70px')}</p>
+  <p class="mt-para mt-nowrap">รหัสไปรษณีย์ ${val(d.mt_guardianPostal,'45px')} โทรศัพท์บ้าน ${val(d.mt_guardianHomePhone,'90px')} โทรศัพท์มือถือ ${val(d.mt_guardianMobile,'90px')}</p>
+  <p class="mt-para mt-nowrap">เกี่ยวข้องกับนักเรียนโดยเป็น ${mtCb(gr==='บิดา')} บิดา &nbsp; ${mtCb(gr==='มารดา')} มารดา &nbsp; อื่นๆ ระบุ ${val(gr!=='บิดา'&&gr!=='มารดา'?gr:'','70px')} &nbsp; รายได้ต่อเดือน ${val(d.mt_guardianIncome,'55px')} บาท</p>
+  <p class="mt-section-title" style="margin-top:6px;">ขอทำใบมอบตัวนักเรียนให้ไว้ต่อผู้อำนวยการโรงเรียนกระดุมทองวิทยา</p>
+  <p class="mt-para mt-nowrap">ด้วย (ชื่อ–สกุลนักเรียน) ${val(d.mt_studentFullName,'200px')} ชื่อเล่น ${val(d.mt_studentNickname,'70px')}</p>
+  <p class="mt-para mt-nowrap">เกิดวันที่ ${val(d.mt_birthDay,'22px')} เดือน ${val(d.mt_birthMonth,'70px')} พ.ศ. ${val(d.mt_birthYear,'42px')} สัญชาติ ${val(d.mt_nationality,'55px')} เชื้อชาติ ${val(d.mt_ethnicity,'55px')}</p>
+  <p class="mt-para mt-nowrap">ศาสนา ${val(d.mt_religion,'48px')} ส่วนสูง ${val(d.mt_height,'35px')} ซ.ม. น้ำหนัก ${val(d.mt_weight,'35px')} ก.ก. โรคประจำตัว (ถ้ามี) ${val(d.mt_disease,'90px')}</p>
+  <p class="mt-para">เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="mt-id-boxes">${mtIdBoxes(d.mt_studentNationalId)}</span></p>
+  <p class="mt-section-title">ที่อยู่นักเรียน(ตามทะเบียนบ้าน)</p>
+  <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${val(d.mt_houseCode,'100px')} บ้านเลขที่ ${val(d.mt_houseNo,'30px')} หมู่ ${val(d.mt_moo,'25px')} ตำบล ${val(d.mt_subdistrict,'80px')}</p>
+  <p class="mt-para mt-nowrap">อำเภอ ${val(d.mt_district,'75px')} จังหวัด ${val(d.mt_province,'75px')} รหัสไปรษณีย์ ${val(d.mt_postal,'45px')} โทรศัพท์มือถือ ${val(d.mt_mobile,'85px')}</p>
+  <p class="mt-section-title">ที่อยู่นักเรียน(ปัจจุบัน)</p>
+  <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${val(d.mt_curHouseCode,'100px')} บ้านเลขที่ ${val(d.mt_curHouseNo,'30px')} หมู่ ${val(d.mt_curMoo,'25px')} ตำบล ${val(d.mt_curSubdistrict,'80px')}</p>
+  <p class="mt-para mt-nowrap">อำเภอ ${val(d.mt_curDistrict,'75px')} จังหวัด ${val(d.mt_curProvince,'75px')} รหัสไปรษณีย์ ${val(d.mt_curPostal,'45px')} โทรศัพท์มือถือ ${val(d.mt_curMobile,'85px')}</p>
+  <p class="mt-para mt-nowrap">การพักนอนของนักเรียน ${mtCb(d.mt_sleeping==='อาศัยอยู่กับญาติ')} อาศัยอยู่กับญาติ &nbsp; ${mtCb(d.mt_sleeping==='อาศัยอยู่กับบิดามารดา')} อาศัยอยู่กับบิดามารดา &nbsp; ${mtCb(d.mt_sleeping==='อื่นๆ')} อื่นๆ ระบุ ${val(d.mt_sleepingOther,'70px')}</p>
+  <p class="mt-para mt-nowrap">ความด้อยโอกาส &nbsp; ${mtCb(d.mt_disadvantaged==='ด้อยโอกาส')} ด้อยโอกาส &nbsp;&nbsp; ${mtCb(d.mt_disadvantaged==='ไม่ด้อยโอกาส')} ไม่ด้อยโอกาส</p>
+  <p class="mt-para mt-nowrap">การเดินทางมาโรงเรียน &nbsp; ${mtCb(tr.includes('เดินเท้า'))} เดินเท้า &nbsp; ${mtCb(tr.includes('จักรยาน'))} จักรยาน &nbsp; ${mtCb(tr.includes('รถรับส่ง'))} รถรับส่ง &nbsp; ${mtCb(tr.includes('รถจักรยานยนต์'))} รถจักรยานยนต์ &nbsp; ${mtCb(tr.includes('อื่นๆ'))} อื่นๆ ระบุ ${val(d.mt_transportOther,'60px')}</p>
+  <p class="mt-para mt-nowrap">เวลาในการเดินทางมาโรงเรียน ${val(d.mt_travelTime,'35px')} นาที &nbsp; ระยะทางจากบ้านมาโรงเรียน ${val(d.mt_travelDistance,'90px')}</p>
+  <p class="mt-para mt-nowrap">นักเรียนมีจำนวนพี่น้อง ${val(d.mt_siblings,'28px')} คน (รวมตัวนักเรียนด้วย) &nbsp; จำนวนพี่ชาย ${val(d.mt_olderBrothers,'22px')} คน &nbsp; จำนวนน้องชาย ${val(d.mt_youngerBrothers,'22px')} คน</p>
+  <p class="mt-para mt-nowrap">จำนวนพี่สาว ${val(d.mt_olderSisters,'22px')} คน &nbsp; จำนวนน้องสาว ${val(d.mt_youngerSisters,'22px')} คน &nbsp; จำนวนพี่น้องที่กำลังศึกษาอยู่ ${val(d.mt_siblingsStudying,'30px')} คน</p>
+  <p class="mt-para mt-nowrap">นักเรียนเป็นบุตรคนที่ ${val(d.mt_birthOrder,'28px')} ในจำนวนพี่น้อง ${val(d.mt_siblings,'28px')} คน (รวมตัวนักเรียนด้วย)</p>
+  <p class="mt-section-title">ข้อมูลของบิดามารดา</p>
+  <p class="mt-para mt-nowrap"><strong>บิดา</strong> ${val(d.mt_fatherFullName,'180px')} เลขประจำตัวประชาชน ${val(d.mt_fatherNationalId,'115px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_fatherNationality,'42px')} เชื้อชาติ ${val(d.mt_fatherEthnicity,'42px')} ศาสนา ${val(d.mt_fatherReligion,'42px')} &nbsp;
+    ( ${d.mt_fatherAlive==='มีชีวิตอยู่'?'✓':'&nbsp;'} ) มีชีวิตอยู่ &nbsp; ( ${d.mt_fatherAlive==='เสียชีวิต'?'✓':'&nbsp;'} ) เสียชีวิต &nbsp; การศึกษา ${val(d.mt_fatherEducation,'55px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_fatherOccupation,'75px')} สถานที่ทำงาน ${val(d.mt_fatherWorkplace,'85px')} ตำบล ${val(d.mt_fatherSubdistrict,'65px')} อำเภอ ${val(d.mt_fatherDistrict,'65px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_fatherProvince,'65px')} รายได้/เดือน ${val(d.mt_fatherIncome,'48px')} บาท &nbsp; โทรศัพท์มือถือ ${val(d.mt_fatherMobile,'85px')}</p>
+  <p class="mt-para mt-nowrap" style="margin-top:5px;"><strong>มารดา</strong> ${val(d.mt_motherFullName,'180px')} เลขประจำตัวประชาชน ${val(d.mt_motherNationalId,'115px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_motherNationality,'42px')} เชื้อชาติ ${val(d.mt_motherEthnicity,'42px')} ศาสนา ${val(d.mt_motherReligion,'42px')} &nbsp;
+    ( ${d.mt_motherAlive==='มีชีวิตอยู่'?'✓':'&nbsp;'} ) มีชีวิตอยู่ &nbsp; ( ${d.mt_motherAlive==='เสียชีวิต'?'✓':'&nbsp;'} ) เสียชีวิต &nbsp; การศึกษา ${val(d.mt_motherEducation,'55px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${val(d.mt_motherOccupation,'75px')} สถานที่ทำงาน ${val(d.mt_motherWorkplace,'85px')} ตำบล ${val(d.mt_motherSubdistrict,'65px')} อำเภอ ${val(d.mt_motherDistrict,'65px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_motherProvince,'65px')} รายได้/เดือน ${val(d.mt_motherIncome,'48px')} บาท &nbsp; โทรศัพท์มือถือ ${val(d.mt_motherMobile,'85px')}</p>
+</div>
+<div class="mobtua-page-2">
+  <div class="mt-code" style="margin-top:4px;">วก.กทว.205</div>
+  <p class="mt-para mt-nowrap" style="margin-top:4px;">สถานภาพของบิดา มารดา &nbsp; ${parentStatusCb()} &nbsp; อื่นๆ ระบุ ${val(d.mt_parentStatus==='อื่นๆ'?d.mt_parentStatusOther:'','70px')}</p>
+  <p class="mt-section-title">ข้อมูลผู้ปกครอง (กรณีที่นักเรียนไม่ได้อยู่กับบิดา/มารดา)</p>
+  <p class="mt-para mt-nowrap">ชื่อ-สกุล ${val(d.mt_altGuardianName,'180px')} เกี่ยวข้องกับนักเรียนเป็น ${val(d.mt_altGuardianRelation,'80px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${val(d.mt_altGuardianNationality,'48px')} เชื้อชาติ ${val(d.mt_altGuardianEthnicity,'48px')} ศาสนา ${val(d.mt_altGuardianReligion,'48px')} อาชีพ ${val(d.mt_altGuardianOccupation,'75px')} รายได้/เดือน ${val(d.mt_altGuardianIncome,'48px')} บาท</p>
+  <p class="mt-para mt-nowrap">อยู่บ้านเลขที่ ${val(d.mt_altGuardianHouseNo,'30px')} หมู่ที่ ${val(d.mt_altGuardianMoo,'22px')} ถนน ${val(d.mt_altGuardianRoad,'75px')} ตำบล ${val(d.mt_altGuardianSubdistrict,'75px')} อำเภอ ${val(d.mt_altGuardianDistrict,'75px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${val(d.mt_altGuardianProvince,'65px')} สถานที่ทำงาน ${val(d.mt_altGuardianWorkplace,'95px')} โทรศัพท์มือถือ ${val(d.mt_altGuardianMobile,'90px')}</p>
+  <p class="mt-para" style="margin-top:10px;">บัดนี้ <strong>${val(d.mt_studentFullName,'200px')}</strong> ได้เข้าเป็นนักเรียนโรงเรียนกระดุมทองวิทยาเรียบร้อยแล้ว</p>
+  <p class="mt-para">ข้าพเจ้าขอสัญญาว่าจะเป็นผู้ปกครอง คอยกำกับ ดูแล และเอาใจใส่ <strong>${val(d.mt_studentFullName,'200px')}</strong> ตั้งใจศึกษา</p>
+  <p class="mt-para">เอาใจใส่ต่อการเรียนให้ดีอย่างสม่ำเสมอและจะอบรม ตักเตือน สั่งสอนให้ประพฤติและปฏิบัติตนตามกฎระเบียบ วินัย และข้อบังคับของทางโรงเรียนอย่างดีทุกประการ</p>
+  <p class="mt-para">ทั้งจะเป็นผู้อุปถัมภ์ค่าใช้จ่ายต่างๆ อุปกรณ์การเรียนให้เพียงพอตามระเบียบของโรงเรียนนี้ ข้าพเจ้ายินดีมอบนักเรียนในความปกครอง</p>
+  <p class="mt-para">ของข้าพเจ้าให้ดำเนินการตามระเบียบข้อบังคับทุกประการ หากกระทำผิดกฎระเบียบวินัย ข้อบังคับของโรงเรียน ขอให้โรงเรียน</p>
+  <p class="mt-para">ได้ดำเนินการลงโทษตามกฎระเบียบของโรงเรียน ตามควรแก่กรณี ข้าพเจ้าได้อ่านความทั้งหมดถูกต้อง ครบถ้วนสมบูรณ์แล้ว</p>
+  <p class="mt-para">จึงลงลายมือชื่อไว้เป็นหลักฐาน</p>
+  <div class="mt-sig-row">
+    <div class="mt-sig-block">
+      <p>ลงชื่อ......................................................................ผู้ปกครอง</p>
+      <p>(${val(d.mt_guardianName,'150px')})</p>
+      <p>วันที่..............เดือน.....................พ.ศ..............</p>
+    </div>
+    <div class="mt-sig-block">
+      <p>ลงชื่อ......................................................................ผู้รับมอบตัว</p>
+      <p>(...........................................................................)</p>
+      <p>วันที่..............เดือน.....................พ.ศ..............</p>
+    </div>
+  </div>
+  <div class="mt-divider" style="margin-top:14px;"></div>
+  <p class="mt-section-title">เอกสารที่ต้องยื่นวันมอบตัว</p>
+  <div class="mt-doclist">
+    <div class="mt-doclist-item">${mtCb(false)} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของบิดา</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของมารดา</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของบิดา</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาสูติบัตรของนักเรียน</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของมารดา</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+    <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของนักเรียน</div>
+  </div>
+  <p style="font-size:12px;font-weight:700;margin-top:6px;">***เอกสารทุกฉบับ รับรองสำเนาถูกต้อง</p>
+</div>
+</div>`;
+}
+
+/* ─────────────────────────────────────────────────
+   PRINT — preview modal + window.print()
+───────────────────────────────────────────────── */
+let _printHTML = '';
+
+function openDocPreview(html, title) {
+  _printHTML = html;
+  document.getElementById('docPreviewTitle').textContent = '👁 ' + title;
+  document.getElementById('docPreviewArea').innerHTML = html;
+  openModal('modalDocPreview');
+}
+
+function printFromPreview() {
+  document.getElementById('printTarget').innerHTML = _printHTML;
+  closeModal('modalDocPreview');
+  setTimeout(() => { window.print(); }, 150);
+}
+window.printFromPreview = printFromPreview;
+
+function printAdmissionById(id) {
+  const rec = allAdmissions.find(r => r.id === id);
+  if (!rec) return;
+  const html = generateAdmissionDocHTML(rec.data || {});
+  const grade = rec.gradeLevel==='m4' ? 'ม.4' : 'ม.1';
+  openDocPreview(html, `ใบสมัคร — ${rec.studentName||'ไม่ระบุ'} (${grade})`);
+}
+
+function printMobtuaById(id) {
+  const rec = allMobtua.find(r => r.id === id);
+  if (!rec) return;
+  const html = generateMobtuaDocHTML(rec.data || {});
+  openDocPreview(html, `ใบมอบตัว — ${rec.studentName||'ไม่ระบุ'}`);
+}
+
+function printCurrentAdmission() {
+  if (!currentViewRecord) return;
+  closeModal('modalViewAdmission');
+  setTimeout(() => printAdmissionById(currentViewRecord.id), 100);
+}
+function printCurrentMobtua() {
+  if (!currentViewRecord) return;
+  closeModal('modalViewMobtua');
+  setTimeout(() => printMobtuaById(currentViewRecord.id), 100);
+}
+
+window.printAdmissionById    = printAdmissionById;
+window.printMobtuaById       = printMobtuaById;
+window.printCurrentAdmission = printCurrentAdmission;
+window.printCurrentMobtua    = printCurrentMobtua;
+
+/* ─────────────────────────────────────────────────
+   NOTIFICATIONS
+───────────────────────────────────────────────── */
+function addNotification(type, name, ts) {
+  notifUnread++;
+  const item = { type, name, ts, id: Date.now() };
+  notifications.unshift(item);
+  renderNotifBadge();
+  renderNotifList();
+}
+
+function renderNotifBadge() {
+  const badge = document.getElementById('notifBadge');
+  if (notifUnread > 0) {
+    badge.textContent = notifUnread > 9 ? '9+' : notifUnread;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+function renderNotifList() {
+  const list = document.getElementById('notifList');
+  if (!notifications.length) {
+    list.innerHTML = `<p style="text-align:center; color:var(--text-soft); font-size:.85rem; padding:2rem 0;">ยังไม่มีการแจ้งเตือน</p>`;
+    return;
+  }
+  list.innerHTML = notifications.slice(0, 30).map(n => {
+    const icon = n.type === 'admission' ? '📄' : '📋';
+    const label = n.type === 'admission' ? 'ใบสมัครใหม่' : 'ใบมอบตัวใหม่';
+    const d = n.ts ? (n.ts.toDate ? n.ts.toDate() : new Date(n.ts)) : new Date();
+    const time = d.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' });
+    return `<div class="notif-item unread">
+      <div class="notif-type">${icon} ${label}</div>
+      <div class="notif-name">${n.name}</div>
+      <div class="notif-time">${time}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    notifUnread = 0;
+    renderNotifBadge();
+    // mark all as read
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+  }
+}
+window.toggleNotifPanel = toggleNotifPanel;
+
+/* ─────────────────────────────────────────────────
+   HIGHLIGHT
+───────────────────────────────────────────────── */
+function highlightRowLater(id, type) {
+  setTimeout(() => {
+    const row = document.getElementById(`row-${type}-${id}`);
+    if (row) {
+      row.classList.add('new-row');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 300);
+}
+
+/* ─────────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────────── */
+function showToast(title, type = 'info', msg = '') {
+  const area = document.getElementById('toastArea');
+  const icons = { success:'✅', error:'❌', info:'ℹ️', 'new-data':'🔔' };
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.innerHTML = `
+    <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+    <div class="toast-body">
+      <div class="toast-title">${title}</div>
+      ${msg ? `<div class="toast-msg">${msg}</div>` : ''}
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+  `;
+  area.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='.3s'; setTimeout(()=>el.remove(), 300); }, 5000);
+}
+window.showToast = showToast;
+
+/* ─────────────────────────────────────────────────
+   MODAL HELPERS
+───────────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.openModal  = openModal;
+window.closeModal = closeModal;
+// close on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+/* ─────────────────────────────────────────────────
+   TAB
+───────────────────────────────────────────────── */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`panel-${name}`).classList.add('active');
+}
+window.switchTab = switchTab;
+
+/* ─────────────────────────────────────────────────
+   CONN STATUS
+───────────────────────────────────────────────── */
+function setConnStatus(online) {
+  const dot   = document.getElementById('connDot');
+  const label = document.getElementById('connLabel');
+  dot.className   = `conn-dot ${online ? 'live' : 'offline'}`;
+  label.textContent = online ? 'เชื่อมต่อแล้ว' : 'ออฟไลน์';
+}
+
+/* ─────────────────────────────────────────────────
+   BOOT
+───────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Dismiss loader after short delay
+  setTimeout(() => document.getElementById('pageLoader').classList.add('done'), 600);
+
+  // Auto-login if session exists
+  if (sessionStorage.getItem('staffAuth') === '1') {
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('mainContent').style.display = 'block';
+    initApp();
+  }
+});
+</script>
+
+</body>
+</html>

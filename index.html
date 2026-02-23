@@ -3708,9 +3708,14 @@
                         <input type="text" id="newChecklistItem" class="form-control" placeholder="พิมพ์รายการหลักฐานใหม่..." style="flex:1;">
                         <button class="btn btn-primary" onclick="addChecklistItem()" style="flex-shrink:0;">+ เพิ่ม</button>
                     </div>
-                    <button class="btn btn-success" onclick="saveChecklistItems()" style="width:100%; margin-top:0.75rem;">
-                        💾 บันทึกรายการหลักฐาน
-                    </button>
+                    <div style="display:flex;gap:8px;margin-top:0.75rem;">
+                        <button class="btn btn-success" onclick="saveChecklistItems()" style="flex:1;">
+                            💾 บันทึกรายการหลักฐาน
+                        </button>
+                        <button class="btn" onclick="resetChecklistToDefault()" style="flex-shrink:0;background:#f1f5f9;border:1px solid var(--border);color:#475569;" title="คืนค่ารายการเริ่มต้น">
+                            🔄 คืนค่าเริ่มต้น
+                        </button>
+                    </div>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
@@ -4104,7 +4109,8 @@
             return `<span class="doc-checkbox${isChecked ? ' checked' : ''}"></span>`;
         }
 
-        function generateDocumentHTML(data) {
+        function generateDocumentHTML(data, docChecks, docVerified) {
+            docChecks = docChecks || {}; docVerified = docVerified || false;
             const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
             const talents = data.talent || [];
             
@@ -4257,28 +4263,17 @@
 
                     <div class="approval-section">
                         <p style="font-weight: 600; margin-bottom: 6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} ใบสมัครพร้อมรูปถ่าย 2 แผ่น
-                            </div>
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} ระเบียนแสดงผลการเรียน(ปพ.1)หรือใบรับรอง
-                            </div>
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} สำเนาทะเบียนบ้านของนร/บิดา/มารดา
-                            </div>
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} สำเนาบัตรประชาชนของนร/บิดา/มารดา
-                            </div>
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} สำเนาสูติบัตรของนักเรียน
-                            </div>
-                            <div class="checkbox-line" style="margin: 2px 0;">
-                                ${checkbox(false)} หลักฐานอื่นๆ……………….
-                            </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px;">
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของบิดา'])} สำเนาทะเบียนบ้านของบิดา</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของบิดา'])} สำเนาบัตรประชาชนของบิดา</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของมารดา'])} สำเนาทะเบียนบ้านของมารดา</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของมารดา'])} สำเนาบัตรประชาชนของมารดา</div>
                         </div>
-
                         <div style="text-align: right; margin-top: 12px;">
                             <p>ลงชื่อ.............................................................กรรมการรับสมัคร</p>
                             <p style="margin-right: 3cm;">(.......................................................)</p>
@@ -4297,7 +4292,7 @@
                     return;
                 }
                 const data = getFormData();
-                const html = generateDocumentHTML(data);
+                const html = generateDocumentHTML(data, {}, false);
                 const previewArea = document.getElementById('previewArea');
                 const printArea   = document.getElementById('printArea');
                 const modal       = document.getElementById('previewModal');
@@ -4323,7 +4318,7 @@
                 }
                 const data = getFormData();
                 await saveToFirestore(data);
-                const html = generateDocumentHTML(data);
+                const html = generateDocumentHTML(data, {}, false);
                 const previewArea = document.getElementById('previewArea');
                 const printArea   = document.getElementById('printArea');
                 const modal       = document.getElementById('previewModal');
@@ -4389,10 +4384,9 @@
                 const history = [];
 
                 querySnapshot.forEach((doc) => {
-                    history.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
+                    const data = doc.data();
+                    _admissionRecords[doc.id] = data;  // cache สำหรับ checklist
+                    history.push({ id: doc.id, ...data });
                 });
 
                 const historyList = document.getElementById('historyList');
@@ -4470,7 +4464,7 @@
                 
                 if (docSnap.exists()) {
                     const record = docSnap.data();
-                    const html = generateDocumentHTML(record.data || {});
+                    const html = generateDocumentHTML(record.data || {}, record.docChecks || {}, record.docVerified || false);
                     
                     const previewArea = document.getElementById('previewArea');
                     const printArea   = document.getElementById('printArea');
@@ -4711,15 +4705,43 @@
         const DEFAULT_CHECKLIST = [
             'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
             'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
-            'สำเนาทะเบียนบ้านของนร/บิดา/มารดา',
-            'สำเนาบัตรประชาชนของนร/บิดา/มารดา',
+            'สำเนาทะเบียนบ้านของนักเรียน',
+            'สำเนาบัตรประชาชนของนักเรียน',
             'สำเนาสูติบัตรของนักเรียน',
+            'สำเนาทะเบียนบ้านของบิดา',
+            'สำเนาบัตรประชาชนของบิดา',
+            'สำเนาทะเบียนบ้านของมารดา',
+            'สำเนาบัตรประชาชนของมารดา',
         ];
+        const MOBTUA_CHECKLIST = [
+            'สำเนา ปพ.1 (ฉบับจบการศึกษา)',
+            'สำเนาทะเบียนบ้านของนักเรียน',
+            'สำเนาบัตรประชาชนของนักเรียน',
+            'สำเนาสูติบัตรของนักเรียน',
+            'สำเนาทะเบียนบ้านของบิดา',
+            'สำเนาบัตรประชาชนของบิดา',
+            'สำเนาทะเบียนบ้านของมารดา',
+            'สำเนาบัตรประชาชนของมารดา',
+            'สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
+            'สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
+        ];
+        // Cache ข้อมูลจาก Firebase เพื่อให้ checklist อ่านได้ทันที
+        let _admissionRecords = {}; // id → record
+        let _mobtuaRecords    = {}; // id → record
 
         function getChecklistItems() {
+            // ล้าง localStorage เดิมถ้ายังมีรายการเก่า (แยกบิดา/มารดา)
             const saved = localStorage.getItem('checklistItems');
             if (saved) {
-                try { return JSON.parse(saved); } catch(e) {}
+                try {
+                    const parsed = JSON.parse(saved);
+                    // ถ้ารายการเก่ายังไม่แยกบิดา/มารดา ให้ reset
+                    if (!parsed.some(i => i.includes('ของบิดา') || i.includes('ของมารดา'))) {
+                        localStorage.removeItem('checklistItems');
+                        return [...DEFAULT_CHECKLIST];
+                    }
+                    return parsed;
+                } catch(e) {}
             }
             return [...DEFAULT_CHECKLIST];
         }
@@ -4757,63 +4779,86 @@
         }
 
         function saveChecklistItems() {
-            // ค่าปัจจุบันถูกบันทึกแบบ real-time แล้ว แค่แจ้งผู้ใช้
             showToast('💾 บันทึกรายการหลักฐานแล้ว');
-            loadHistory(); // reload history เพื่อ re-render checklist
+            loadHistory();
         }
 
-        // บันทึก/โหลด doc checklist ต่อรายการ จาก localStorage key: docs_{recordId}
+        function resetChecklistToDefault() {
+            if (!confirm('คืนค่ารายการหลักฐานเป็นค่าเริ่มต้น? รายการที่เพิ่มเองจะถูกลบ')) return;
+            localStorage.removeItem('checklistItems');
+            renderChecklistAdmin();
+            showToast('🔄 คืนค่ารายการเริ่มต้นแล้ว');
+            loadHistory();
+        }
+
+        // บันทึก/โหลด doc checklist ต่อรายการ — อ่านจาก Firebase cache
         function getRecordDocs(recordId) {
-            const saved = localStorage.getItem('docs_' + recordId);
-            if (saved) {
-                try { return JSON.parse(saved); } catch(e) {}
-            }
-            return {};  // key = item text, value = true/false
+            return (_admissionRecords[recordId] || {}).docChecks || {};
+        }
+        function getMobtuaRecordDocs(recordId) {
+            return (_mobtuaRecords[recordId] || {}).docChecks || {};
         }
 
-        function toggleDocItem(recordId, itemText, checkbox) {
-            const docs = getRecordDocs(recordId);
-            docs[itemText] = checkbox.checked;
-            localStorage.setItem('docs_' + recordId, JSON.stringify(docs));
-            // อัพเดตสี history-item
-            const histItem = document.getElementById('hist_' + recordId);
+        async function toggleDocItem(recordId, itemText, cbEl, collection) {
+            collection = collection || 'admissions';
+            const isAdmission = collection === 'admissions';
+            const docs = isAdmission ? getRecordDocs(recordId) : getMobtuaRecordDocs(recordId);
+            docs[itemText] = cbEl.checked;
+            // อัปเดต cache ทันที
+            if (isAdmission) {
+                if (_admissionRecords[recordId]) _admissionRecords[recordId].docChecks = { ...docs };
+            } else {
+                if (_mobtuaRecords[recordId]) _mobtuaRecords[recordId].docChecks = { ...docs };
+            }
+            // บันทึกไปยัง Firebase
+            try {
+                await window.firestore.updateDoc(
+                    window.firestore.doc(window.db, collection, recordId),
+                    { docChecks: docs }
+                );
+            } catch(e) {
+                console.error('toggleDocItem error:', e);
+                showToast('บันทึกไม่สำเร็จ', 'error');
+            }
+            // อัพเดต UI
+            const histId = 'hist_' + (isAdmission ? '' : 'mt_') + recordId;
+            const histItem = document.getElementById(histId);
             if (histItem) {
-                const items = getChecklistItems();
+                const items = isAdmission ? getChecklistItems() : MOBTUA_CHECKLIST;
                 const allChecked = items.every(it => docs[it] === true);
-                histItem.className = 'history-item ' + (allChecked ? 'docs-complete' : 'docs-incomplete');
-                // อัพเดต badge
+                histItem.className = histItem.className.replace(/\bdocs-complete\b|\bdocs-incomplete\b/g, '').trim()
+                    + ' ' + (allChecked ? 'docs-complete' : 'docs-incomplete');
                 const badge = histItem.querySelector('.docs-status-badge');
                 if (badge) {
-                    const checkedCount = items.filter(it => docs[it]).length;
-                    if (allChecked) {
-                        badge.className = 'docs-status-badge complete';
-                        badge.textContent = '✅ ครบ';
-                    } else {
-                        badge.className = 'docs-status-badge incomplete';
-                        badge.textContent = `⚠️ ${checkedCount}/${items.length}`;
-                    }
+                    const cnt = items.filter(it => docs[it]).length;
+                    badge.className = 'docs-status-badge ' + (allChecked ? 'complete' : 'incomplete');
+                    badge.textContent = allChecked ? '✅ ครบ' : `⚠️ ${cnt}/${items.length}`;
                 }
-                // อัพเดต label ของแต่ละ check item
                 histItem.querySelectorAll('.doc-check-item').forEach(el => {
                     const cb = el.querySelector('input[type="checkbox"]');
-                    if (cb) {
-                        el.className = 'doc-check-item ' + (cb.checked ? 'checked' : 'unchecked');
-                    }
+                    if (cb) el.className = 'doc-check-item ' + (cb.checked ? 'checked' : 'unchecked');
                 });
             }
         }
 
-        function buildChecklistHTML(recordId) {
-            const items = getChecklistItems();
-            const docs  = getRecordDocs(recordId);
+        function buildChecklistHTML(recordId, collection) {
+            collection = collection || 'admissions';
+            const isAdm = collection === 'admissions';
+            const items = isAdm ? getChecklistItems() : MOBTUA_CHECKLIST;
+            const docs  = isAdm ? getRecordDocs(recordId) : getMobtuaRecordDocs(recordId);
+            const rec = isAdm ? _admissionRecords[recordId] : _mobtuaRecords[recordId];
+            const verified = rec?.docVerified === true;
+            const verifiedBadge = verified
+                ? `<span style="background:#16a34a;color:white;border-radius:4px;font-size:11px;padding:2px 7px;font-weight:700;margin-left:6px;">✅ ยืนยันแล้ว</span>`
+                : '';
             return `<div class="doc-checklist">
-                <span class="doc-checklist-label">📋 หลักฐานการสมัคร:</span>
+                <span class="doc-checklist-label">📋 หลักฐาน:${verifiedBadge}</span>
                 ${items.map(item => {
                     const checked = docs[item] === true;
-                    const safeItem = item.replace(/'/g, '\\x27').replace(/"/g, '&quot;');
+                    const safeItem = item.replace(/'/g, '\x27').replace(/"/g, '&quot;');
                     return `<label class="doc-check-item ${checked ? 'checked' : 'unchecked'}">
                         <input type="checkbox" ${checked ? 'checked' : ''}
-                            onchange="toggleDocItem('${recordId}', '${safeItem}', this)"
+                            onchange="toggleDocItem('${recordId}', '${safeItem}', this, '${collection}')"
                             onclick="event.stopPropagation()">
                         ${item}
                     </label>`;
@@ -4821,24 +4866,24 @@
             </div>`;
         }
 
-        function getDocsStatusClass(recordId) {
-            const items = getChecklistItems();
+        function getDocsStatusClass(recordId, collection) {
+            collection = collection || 'admissions';
+            const items = collection === 'admissions' ? getChecklistItems() : MOBTUA_CHECKLIST;
             if (items.length === 0) return '';
-            const docs = getRecordDocs(recordId);
-            const checkedCount = items.filter(it => docs[it]).length;
-            if (checkedCount === 0) return 'docs-incomplete';
-            return checkedCount === items.length ? 'docs-complete' : 'docs-incomplete';
+            const docs = collection === 'admissions' ? getRecordDocs(recordId) : getMobtuaRecordDocs(recordId);
+            const cnt = items.filter(it => docs[it]).length;
+            if (cnt === 0) return 'docs-incomplete';
+            return cnt === items.length ? 'docs-complete' : 'docs-incomplete';
         }
 
-        function getDocsStatusBadge(recordId) {
-            const items = getChecklistItems();
+        function getDocsStatusBadge(recordId, collection) {
+            collection = collection || 'admissions';
+            const items = collection === 'admissions' ? getChecklistItems() : MOBTUA_CHECKLIST;
             if (items.length === 0) return '';
-            const docs = getRecordDocs(recordId);
-            const checkedCount = items.filter(it => docs[it]).length;
-            const allDone = checkedCount === items.length;
-            return `<span class="docs-status-badge ${allDone ? 'complete' : 'incomplete'}">
-                ${allDone ? '✅ ครบ' : `⚠️ ${checkedCount}/${items.length}`}
-            </span>`;
+            const docs = collection === 'admissions' ? getRecordDocs(recordId) : getMobtuaRecordDocs(recordId);
+            const cnt = items.filter(it => docs[it]).length;
+            const all = cnt === items.length;
+            return `<span class="docs-status-badge ${all ? 'complete' : 'incomplete'}">${all ? '✅ ครบ' : `⚠️ ${cnt}/${items.length}`}</span>`;
         }
 
         function toggleMobtuaLock() {
@@ -5323,7 +5368,8 @@
             return `<span class="mt-line">${str}</span>`;
         }
 
-        function generateMobtuaDocumentHTML(d) {
+        function generateMobtuaDocumentHTML(d, docChecks, docVerified) {
+            docChecks = docChecks || {}; docVerified = docVerified || false;
             const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
             const guardianRelation = d.mt_guardianRelation === 'อื่นๆ' ? (d.mt_guardianRelationOther || 'อื่นๆ') : (d.mt_guardianRelation || '');
             const transports = Array.isArray(d.mt_transport) ? d.mt_transport : (d.mt_transport ? [d.mt_transport] : []);
@@ -5452,16 +5498,16 @@
     <div class="mt-divider" style="margin-top:14px;"></div>
     <p class="mt-section-title">เอกสารที่ต้องยื่นวันมอบตัว</p>
     <div class="mt-doclist">
-        <div class="mt-doclist-item">${mtCb(false)} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของบิดา</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของนักเรียน</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของมารดา</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของบิดา</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาสูติบัตรของนักเรียน</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของมารดา</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
-        <div class="mt-doclist-item">${mtCb(false)} สำเนาทะเบียนบ้านของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนา ปพ.1 (ฉบับจบการศึกษา)'])} สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของบิดา'])} สำเนาทะเบียนบ้านของบิดา</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของบิดา'])} สำเนาบัตรประชาชนของบิดา</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของมารดา'])} สำเนาทะเบียนบ้านของมารดา</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของมารดา'])} สำเนาบัตรประชาชนของมารดา</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)'])} สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
+        <div class="mt-doclist-item">${mtCb(docChecks['สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)'])} สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)</div>
     </div>
     <p style="font-size:12px; font-weight:700; margin-top:6px;">***เอกสารทุกฉบับ รับรองสำเนาถูกต้อง</p>
   </div>
@@ -5477,7 +5523,7 @@
                 return;
             }
             const d = getMobtuaFormData();
-            const html = generateMobtuaDocumentHTML(d);
+            const html = generateMobtuaDocumentHTML(d, {}, false);
             document.getElementById('mobtuaPreviewArea').innerHTML = html;
             document.getElementById('mobtuaPrintArea').innerHTML = html;
             document.getElementById('mobtuaPreviewModal').classList.add('active');
@@ -5509,7 +5555,7 @@
                     record
                 );
                 showToast('บันทึกใบมอบตัวสำเร็จ');
-                const html = generateMobtuaDocumentHTML(d);
+                const html = generateMobtuaDocumentHTML(d, {}, false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
                 document.getElementById('mobtuaPreviewModal').classList.add('active');
@@ -5537,7 +5583,11 @@
                 );
                 const snap = await window.firestore.getDocs(q);
                 const records = [];
-                snap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    _mobtuaRecords[doc.id] = data;  // cache สำหรับ checklist
+                    records.push({ id: doc.id, ...data });
+                });
 
                 const list = document.getElementById('mobtuaHistoryList');
                 const count = document.getElementById('mobtuaHistoryCount');
@@ -5568,13 +5618,17 @@
                         : `<button class="btn btn-edit btn-sm" onclick="openMobtuaEditRecord('${rec.id}')">✏️ แก้ไข</button>
                            <button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
 
-                    return `<div class="history-item" style="border-left: 3px solid #9c4dcc;">
+                    return `<div class="history-item ${getDocsStatusClass(rec.id,'mobtua')}" id="hist_mt_${rec.id}" style="border-left: 3px solid #9c4dcc;">
                         <div class="history-item-header">
                             <span class="history-item-type" style="background:#7b3f9e;">มอบตัว</span>
                             <span class="history-item-date">${dateStr}</span>
                         </div>
-                        <div class="history-item-name">${rec.studentName || '-'}</div>
+                        <div class="history-item-name">
+                            ${rec.studentName || '-'}
+                            ${getDocsStatusBadge(rec.id,'mobtua')}
+                        </div>
                         <div class="history-item-detail">ปีการศึกษา ${rec.academicYear || '-'} | ${rec.classRoom || '-'} | ผู้ปกครอง: ${rec.guardianName || '-'}</div>
+                        ${buildChecklistHTML(rec.id,'mobtua')}
                         <div class="history-item-actions">
                             <button class="btn btn-primary btn-sm" style="background:#7b3f9e;" onclick="viewMobtuaRecord('${rec.id}')">👁️ ดู</button>
                             ${actionBtns}
@@ -5591,7 +5645,8 @@
                 showLoading(true);
                 const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
                 if (!snap.exists()) { showToast('ไม่พบข้อมูล', 'error'); return; }
-                const html = generateMobtuaDocumentHTML(snap.data().data);
+                const rec = snap.data();
+                const html = generateMobtuaDocumentHTML(rec.data, rec.docChecks || {}, rec.docVerified || false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
                 document.getElementById('mobtuaPreviewModal').classList.add('active');
@@ -6449,7 +6504,7 @@ ${lines}
 
                 snap.forEach(doc => {
                     const rec = doc.data();
-                    const docs = getRecordDocs(doc.id);
+                    const docs = rec.docChecks || {};
                     const checkedCount = items.filter(it => docs[it] === true).length;
                     const isComplete = checkedCount === items.length;
                     if (!isComplete) {

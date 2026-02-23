@@ -1669,7 +1669,7 @@ function viewAdmission(id) {
         tr('โทรผู้ปกครอง', d.parentPhone)
       )}
       ${table(section('📋 สถานะหลักฐาน') +
-        \`<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: \${docStatusBadge(rec)}</div><table style="width:100%;">\${docRows}</table></td></tr>\`
+        `<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: ${docStatusBadge(rec)}</div><table style="width:100%;">${docRows}</table></td></tr>`
       )}
       ${table(section('🕐 ข้อมูลระบบ') +
         tr('วันที่สมัคร', thaiDate(rec.createdAt)) +
@@ -1782,10 +1782,16 @@ async function saveEditAdmission() {
   if (!fullName) { showToast('กรุณากรอกชื่อ-นามสกุล', 'error'); return; }
   const rec = allAdmissions.find(r => r.id === currentEditId);
   // sync ทุก field กลับเข้า data object ให้ตรงกับ key ที่ generator ใช้
+  // แยก firstName / lastName จาก fullName เพื่อให้ signature ทำงานถูก
+  const nameParts   = fullName.trim().split(/\s+/);
+  const firstName   = nameParts[0] || '';
+  const lastName    = nameParts.slice(1).join(' ');
   const updatedData = {
     ...(rec?.data || {}),
     prefix,
     fullName,
+    firstName,
+    lastName,
     gradeLevel,
     nickname:        document.getElementById('eaNickname').value.trim(),
     age:             document.getElementById('eaAge').value.trim(),
@@ -2048,7 +2054,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
   </div>
   <div class="signature-section" style="text-align:right;margin-top:12px;">
     <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
-    <p style="margin-right:1cm;">( ${(data.prefix||'') + (data.firstName||'') + ' ' + (data.lastName||'')} )</p>
+    <p style="margin-right:1cm;">( ${(data.prefix||'') + ((data.firstName||'') + ' ' + (data.lastName||'')).trim() || (data.fullName||'')} )</p>
     <p>วันที่.................เดือน...............................พ.ศ................</p>
   </div>
   <div class="approval-section">

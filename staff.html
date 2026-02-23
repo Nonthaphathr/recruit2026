@@ -2507,26 +2507,40 @@ function openStudentDetailFromVerify() {
     document.getElementById('sdc-name').textContent = `👤 ${rec.studentName || 'รายละเอียดนักเรียน'}`;
     document.getElementById('sdc-grade-badge').textContent = gradeLabel;
 
-    // Build content rows
+    // helpers
+    const dash = '<span style="color:#94a3b8">—</span>';
     const row = (label, val, hl = false) =>
         `<div class="sdc-row">
             <span class="sdc-label">${label}</span>
-            <span class="sdc-val${hl ? ' highlight' : ''}">${val || '<span style="color:#94a3b8">—</span>'}</span>
+            <span class="sdc-val${hl ? ' highlight' : ''}">${val || dash}</span>
+        </div>`;
+    const rowId = (label, val) =>
+        // เลขบัตร — mono font, highlight red for easy verify
+        `<div class="sdc-row">
+            <span class="sdc-label">${label}</span>
+            <span class="sdc-val" style="font-family:monospace;font-size:.82rem;letter-spacing:.05em;color:#c2185b;font-weight:700;">${val || dash}</span>
         </div>`;
     const sec = t => `<div class="sdc-section-title">${t}</div>`;
+    const addrStr = (parts) => parts.filter(Boolean).join(' ') || dash;
 
     let html = '';
 
     if (col === 'admissions') {
         const birthStr = d.birthDay && d.birthMonth
             ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}`.trim() : (d.birthDate || '');
-        const addrParts = [
-            d.houseNumber ? d.houseNumber : '',
-            d.moo ? `หมู่ ${d.moo}` : '',
+
+        const studentAddr = addrStr([
+            d.houseNumber,
+            d.moo        ? `หมู่ ${d.moo}` : '',
+            d.village    ? `บ้าน${d.village}` : '',
             d.subdistrict ? `ต.${d.subdistrict}` : '',
-            d.district ? `อ.${d.district}` : '',
-            d.province ? `จ.${d.province}` : ''
-        ].filter(Boolean);
+            d.district   ? `อ.${d.district}` : '',
+            d.province   ? `จ.${d.province}` : '',
+            d.postalCode ? `${d.postalCode}` : '',
+        ]);
+
+        const fatherFull = `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim();
+        const motherFull = `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim();
 
         html =
             sec('👤 ข้อมูลนักเรียน') +
@@ -2537,66 +2551,130 @@ function openStudentDetailFromVerify() {
             row('อายุ', d.age ? d.age + ' ปี' : '') +
             row('หมู่เลือด', d.bloodType) +
             row('ส่วนสูง / น้ำหนัก', `${d.height || '—'} cm / ${d.weight || '—'} kg`) +
-            row('เลขบัตรประชาชน', d.nationalId) +
-            sec('📞 ติดต่อ & ที่อยู่') +
+            rowId('เลขบัตรประชาชนนักเรียน', d.nationalId) +
             row('โทรศัพท์', d.phone) +
-            row('ที่อยู่', addrParts.join(' ')) +
+
+            sec('🏠 ที่อยู่ตามทะเบียนบ้านนักเรียน') +
+            row('บ้านเลขที่', d.houseNumber) +
+            row('หมู่', d.moo) +
+            row('หมู่บ้าน', d.village) +
+            row('ตำบล', d.subdistrict) +
+            row('อำเภอ', d.district) +
+            row('จังหวัด', d.province) +
+            row('รหัสไปรษณีย์', d.postalCode) +
+            row('ที่อยู่เต็ม', studentAddr) +
+
             sec('🏫 การศึกษาเดิม') +
             row('โรงเรียนเดิม', d.previousSchool) +
-            row('จังหวัด', d.previousSchoolProvince || d.schoolProvince || d.province) +
+            row('อำเภอ', d.schoolSubdistrict || d.schoolDistrict) +
+            row('จังหวัด', d.schoolProvince || d.previousSchoolProvince) +
             row('เกรดเฉลี่ย', d.gpa) +
-            sec('👨‍👩‍👧 ผู้ปกครอง') +
-            row('บิดา', d.fatherName) +
+
+            sec('👨 บิดา') +
+            row('ชื่อบิดา', fatherFull) +
             row('อาชีพบิดา', d.fatherOccupation) +
-            row('มารดา', d.motherName) +
+            row('อายุบิดา', d.fatherAge ? d.fatherAge + ' ปี' : '') +
+
+            sec('👩 มารดา') +
+            row('ชื่อมารดา', motherFull) +
             row('อาชีพมารดา', d.motherOccupation) +
-            row('ผู้ปกครอง', d.parentName) +
-            row('โทรผู้ปกครอง', d.parentPhone) +
+            row('อายุมารดา', d.motherAge ? d.motherAge + ' ปี' : '') +
+
             sec('🕐 ข้อมูลระบบ') +
             row('วันที่สมัคร', thaiDate(rec.createdAt)) +
             row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+
     } else {
-        // mobtua
+        // ── mobtua ──
         const birthStr = d.mt_birthDay && d.mt_birthMonth
             ? `${d.mt_birthDay} ${d.mt_birthMonth} ${d.mt_birthYear || ''}`.trim() : '';
-        const addrParts = [
-            d.mt_houseNo ? d.mt_houseNo : '',
-            d.mt_moo ? `หมู่ ${d.mt_moo}` : '',
-            d.mt_subdistrict ? `ต.${d.mt_subdistrict}` : '',
-            d.mt_district ? `อ.${d.mt_district}` : '',
-            d.mt_province ? `จ.${d.mt_province}` : ''
-        ].filter(Boolean);
 
-        const guardianAddr = [
-            d.mt_guardianHouseNo || '',
-            d.mt_guardianMoo ? `หมู่ ${d.mt_guardianMoo}` : '',
+        const studentAddr = addrStr([
+            d.mt_houseNo,
+            d.mt_moo        ? `หมู่ ${d.mt_moo}` : '',
+            d.mt_subdistrict ? `ต.${d.mt_subdistrict}` : '',
+            d.mt_district   ? `อ.${d.mt_district}` : '',
+            d.mt_province   ? `จ.${d.mt_province}` : '',
+            d.mt_postalCode ? d.mt_postalCode : '',
+        ]);
+
+        const guardianAddr = addrStr([
+            d.mt_guardianHouseNo,
+            d.mt_guardianMoo        ? `หมู่ ${d.mt_guardianMoo}` : '',
             d.mt_guardianSubdistrict ? `ต.${d.mt_guardianSubdistrict}` : '',
-            d.mt_guardianDistrict ? `อ.${d.mt_guardianDistrict}` : '',
-            d.mt_guardianProvince ? `จ.${d.mt_guardianProvince}` : ''
-        ].filter(Boolean);
+            d.mt_guardianDistrict   ? `อ.${d.mt_guardianDistrict}` : '',
+            d.mt_guardianProvince   ? `จ.${d.mt_guardianProvince}` : '',
+        ]);
+
+        const fatherFull = `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim();
+        const motherFull = `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim();
+        const guardianFull = `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim();
+
+        const fatherAddr = addrStr([
+            d.mt_fatherSubdistrict ? `ต.${d.mt_fatherSubdistrict}` : '',
+            d.mt_fatherDistrict   ? `อ.${d.mt_fatherDistrict}` : '',
+            d.mt_fatherProvince   ? `จ.${d.mt_fatherProvince}` : '',
+        ]);
+        const motherAddr = addrStr([
+            d.mt_motherSubdistrict ? `ต.${d.mt_motherSubdistrict}` : '',
+            d.mt_motherDistrict   ? `อ.${d.mt_motherDistrict}` : '',
+            d.mt_motherProvince   ? `จ.${d.mt_motherProvince}` : '',
+        ]);
 
         html =
             sec('👤 ข้อมูลนักเรียน') +
             row('ชื่อ-นามสกุล', `${d.mt_studentPrefix||''}${d.mt_studentFirstName||''} ${d.mt_studentLastName||''}`.trim(), true) +
+            row('ชื่อเล่น', d.mt_studentNickname) +
             row('ห้องเรียน', d.mt_classRoom) +
             row('ปีการศึกษา', d.mt_academicYear) +
             row('วันเกิด', birthStr) +
             row('หมู่เลือด', d.mt_bloodType) +
+            row('สัญชาติ / เชื้อชาติ', `${d.mt_nationality||'—'} / ${d.mt_ethnicity||'—'}`) +
+            row('ศาสนา', d.mt_religion) +
             row('ส่วนสูง / น้ำหนัก', `${d.mt_height || '—'} cm / ${d.mt_weight || '—'} kg`) +
-            row('เลขบัตรประชาชน', d.mt_studentNationalId) +
-            row('ที่อยู่ตามทะเบียนบ้าน', addrParts.join(' ')) +
-            sec('👤 ผู้ปกครอง') +
-            row('ผู้ปกครอง', `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim(), true) +
+            rowId('เลขบัตรประชาชนนักเรียน', d.mt_studentNationalId) +
+
+            sec('🏠 ที่อยู่ตามทะเบียนบ้านนักเรียน') +
+            row('บ้านเลขที่', d.mt_houseNo) +
+            row('หมู่', d.mt_moo) +
+            row('ตำบล', d.mt_subdistrict) +
+            row('อำเภอ', d.mt_district) +
+            row('จังหวัด', d.mt_province) +
+            row('รหัสไปรษณีย์', d.mt_postalCode) +
+            row('ที่อยู่เต็ม', studentAddr) +
+
+            sec('🧑‍🤝‍🧑 ผู้ปกครอง') +
+            row('ชื่อผู้ปกครอง', guardianFull, true) +
             row('ความสัมพันธ์', d.mt_guardianRelation) +
+            rowId('เลขบัตรผู้ปกครอง', d.mt_guardianNationalId) +
             row('อาชีพ', d.mt_guardianOccupation) +
+            row('รายได้/เดือน', d.mt_guardianIncome ? `${Number(d.mt_guardianIncome).toLocaleString()} บาท` : '') +
             row('โทรมือถือ', d.mt_guardianMobile) +
             row('โทรบ้าน', d.mt_guardianHomePhone) +
-            row('ที่อยู่ผู้ปกครอง', guardianAddr.join(' ')) +
-            sec('👨‍👩‍👧 บิดา / มารดา') +
-            row('บิดา', `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim()) +
+            row('ที่อยู่ผู้ปกครอง', guardianAddr) +
+
+            sec('👨 บิดา') +
+            row('ชื่อบิดา', fatherFull) +
+            rowId('เลขบัตรบิดา', d.mt_fatherNationalId) +
             row('อาชีพบิดา', d.mt_fatherOccupation) +
-            row('มารดา', `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim()) +
+            row('ที่ทำงาน', d.mt_fatherWorkplace) +
+            row('การศึกษา', d.mt_fatherEducation) +
+            row('รายได้/เดือน', d.mt_fatherIncome ? `${Number(d.mt_fatherIncome).toLocaleString()} บาท` : '') +
+            row('โทรมือถือ', d.mt_fatherMobile) +
+            row('สถานะ', d.mt_fatherAlive) +
+            row('ที่อยู่', fatherAddr) +
+
+            sec('👩 มารดา') +
+            row('ชื่อมารดา', motherFull) +
+            rowId('เลขบัตรมารดา', d.mt_motherNationalId) +
             row('อาชีพมารดา', d.mt_motherOccupation) +
+            row('ที่ทำงาน', d.mt_motherWorkplace) +
+            row('การศึกษา', d.mt_motherEducation) +
+            row('รายได้/เดือน', d.mt_motherIncome ? `${Number(d.mt_motherIncome).toLocaleString()} บาท` : '') +
+            row('โทรมือถือ', d.mt_motherMobile) +
+            row('สถานะ', d.mt_motherAlive) +
+            row('ที่อยู่', motherAddr) +
+
             sec('🕐 ข้อมูลระบบ') +
             row('วันที่บันทึก', thaiDate(rec.createdAt)) +
             row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));

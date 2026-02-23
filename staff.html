@@ -925,7 +925,7 @@ body {
 
 <!-- VIEW: Admission Detail -->
 <div class="modal-backdrop" id="modalViewAdmission">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:680px;">
     <div class="modal-header">
       <h3 id="modalViewAdmissionTitle">📄 รายละเอียดใบสมัคร</h3>
       <button class="modal-close-btn" onclick="closeModal('modalViewAdmission')">✕</button>
@@ -1069,7 +1069,7 @@ body {
 
 <!-- VIEW: Mobtua Detail -->
 <div class="modal-backdrop" id="modalViewMobtua">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:680px;">
     <div class="modal-header">
       <h3 id="modalViewMobtuaTitle">📋 รายละเอียดใบมอบตัว</h3>
       <button class="modal-close-btn" onclick="closeModal('modalViewMobtua')">✕</button>
@@ -1263,9 +1263,15 @@ body {
       <button onclick="dismissNewDataAlert()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#fff;font-size:.9rem;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div class="new-data-alert-body" id="newDataAlertBody"></div>
+    <div style="padding:.5rem 1.25rem;background:rgba(234,179,8,.08);border-top:1px solid rgba(234,179,8,.2);">
+      <p style="font-size:.75rem;color:#92400e;margin:0;text-align:center;">⚠️ กรุณาตรวจสอบเอกสารหลักฐานแนบแล้วสั่งพิมพ์</p>
+    </div>
     <div class="new-data-alert-footer">
       <button class="btn-secondary" style="font-size:.82rem;padding:.35rem .8rem;" onclick="dismissNewDataAlert()">ปิด</button>
-      <button class="btn-gold" style="font-size:.82rem;padding:.35rem .9rem;" onclick="goToNewDataAndDismiss()">ไปดูรายการ →</button>
+      <button class="btn-sm btn-verify" style="font-size:.82rem;padding:.4rem .9rem;display:inline-flex;align-items:center;gap:5px;" onclick="dismissAndVerifyLatest()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        ตรวจสอบยืนยันเอกสาร
+      </button>
     </div>
   </div>
 </div>
@@ -1589,27 +1595,55 @@ function viewAdmission(id) {
   currentViewRecord = rec;
   const d = rec.data || {};
   const grid = document.getElementById('admissionDetailGrid');
-  const row = (label, val) => `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-val">${val || '—'}</div></div>`;
-  const section = t => `<div class="detail-section-title">${t}</div>`;
   document.getElementById('modalViewAdmissionTitle').textContent = `📄 ${rec.studentName || 'ใบสมัคร'} (${rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1'})`;
+
+  const tr = (label, val, highlight) => `
+    <tr>
+      <td style="width:38%;padding:7px 10px;font-weight:600;color:var(--text-soft);font-size:.8rem;vertical-align:top;background:rgba(0,0,0,.02);border-bottom:1px solid var(--border);">${label}</td>
+      <td style="padding:7px 10px;font-size:.88rem;color:var(--text);border-bottom:1px solid var(--border);${highlight?'font-weight:700;color:var(--gold);':''}"> ${val || '<span style="color:#94a3b8;">—</span>'}</td>
+    </tr>`;
+  const section = t => `<tr><td colspan="2" style="padding:8px 10px 4px;font-weight:700;font-size:.78rem;letter-spacing:.06em;color:var(--gold);background:rgba(var(--gold-rgb,212,160,23),.07);border-bottom:1px solid var(--border);">${t}</td></tr>`;
+  const table = (rows) => `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;">${rows}</table>`;
+
+  const sv = rec.staffVerified || {};
+  const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+  const docRows = KEYS.map(k => `<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${sv[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${k}</td></tr>`).join('');
+
   grid.innerHTML = `
-    ${section('ข้อมูลนักเรียน')}
-    ${row('ชื่อ-นามสกุล', rec.studentName)}
-    ${row('ระดับชั้น', rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')}
-    ${row('เพศ', d.gender)}
-    ${row('วันเกิด', d.birthdate)}
-    ${row('เลขบัตรประชาชน', d.nationalId)}
-    ${row('โรงเรียนเดิม', d.previousSchool)}
-    ${row('อำเภอ', d.district)}
-    ${row('จังหวัด', d.province)}
-    ${section('ข้อมูลติดต่อ')}
-    ${row('โทรศัพท์', d.phone)}
-    ${row('ผู้ปกครอง', d.parentName)}
-    ${row('โทรผู้ปกครอง', d.parentPhone)}
-    ${section('ข้อมูลบันทึก')}
-    ${row('วันที่สมัคร', thaiDate(rec.createdAt))}
-    ${row('อัปเดตล่าสุด', thaiDate(rec.updatedAt))}
-  `;
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      ${table(section('👤 ข้อมูลนักเรียน') +
+        tr('ชื่อ-นามสกุล', rec.studentName, true) +
+        tr('ระดับชั้นที่สมัคร', rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1') +
+        tr('เพศ', d.gender) +
+        tr('วันเกิด', d.birthdate) +
+        tr('อายุ', d.age ? d.age + ' ปี' : '') +
+        tr('เลขบัตรประชาชน', d.nationalId) +
+        tr('สัญชาติ / เชื้อชาติ / ศาสนา', [d.nationality, d.ethnicity, d.religion].filter(Boolean).join(' / '))
+      )}
+      ${table(section('🏫 การศึกษาเดิม') +
+        tr('โรงเรียนเดิม', d.previousSchool) +
+        tr('อำเภอ', d.district) +
+        tr('จังหวัด', d.province) +
+        tr('GPA/เกรดเฉลี่ย', d.gpa)
+      )}
+      ${table(section('🏠 ที่อยู่') +
+        tr('ที่อยู่ตามทะเบียนบ้าน', [d.houseNumber, d.moo, d.subdistrict, d.districtAddr, d.provinceAddr].filter(Boolean).join(' ')) +
+        tr('โทรศัพท์', d.phone)
+      )}
+      ${table(section('👨‍👩‍👧 ผู้ปกครอง') +
+        tr('ชื่อผู้ปกครอง', d.parentName) +
+        tr('โทรผู้ปกครอง', d.parentPhone) +
+        tr('บิดา', d.fatherName) +
+        tr('มารดา', d.motherName)
+      )}
+      ${table(section('📋 สถานะหลักฐาน') +
+        `<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: ${docStatusBadge(rec)}</div><table style="width:100%;">${docRows}</table></td></tr>`
+      )}
+      ${table(section('🕐 ข้อมูลระบบ') +
+        tr('วันที่สมัคร', thaiDate(rec.createdAt)) +
+        tr('อัปเดตล่าสุด', thaiDate(rec.updatedAt))
+      )}
+    </div>`;
   openModal('modalViewAdmission');
 }
 
@@ -1619,32 +1653,54 @@ function viewMobtua(id) {
   currentViewRecord = rec;
   const d = rec.data || {};
   const grid = document.getElementById('mobtuaDetailGrid');
-  const row = (label, val) => `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-val">${val || '—'}</div></div>`;
-  const section = t => `<div class="detail-section-title">${t}</div>`;
   document.getElementById('modalViewMobtuaTitle').textContent = `📋 ${rec.studentName || 'ใบมอบตัว'}`;
+
+  const tr = (label, val, highlight) => `
+    <tr>
+      <td style="width:38%;padding:7px 10px;font-weight:600;color:var(--text-soft);font-size:.8rem;vertical-align:top;background:rgba(0,0,0,.02);border-bottom:1px solid var(--border);">${label}</td>
+      <td style="padding:7px 10px;font-size:.88rem;color:var(--text);border-bottom:1px solid var(--border);${highlight?'font-weight:700;color:var(--gold);':''}"> ${val || '<span style="color:#94a3b8;">—</span>'}</td>
+    </tr>`;
+  const section = t => `<tr><td colspan="2" style="padding:8px 10px 4px;font-weight:700;font-size:.78rem;letter-spacing:.06em;color:var(--gold);background:rgba(var(--gold-rgb,212,160,23),.07);border-bottom:1px solid var(--border);">${t}</td></tr>`;
+  const table = (rows) => `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;">${rows}</table>`;
+
+  const sv = rec.staffVerified || {};
+  const MT_KEYS = ['สำเนา ปพ.1 (ฉบับจบการศึกษา)','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา','สำเนาทะเบียนบ้านของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)','สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)'];
+  const docRows = MT_KEYS.map(k => `<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${sv[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${k}</td></tr>`).join('');
+
   grid.innerHTML = `
-    ${section('ข้อมูลนักเรียน')}
-    ${row('ชื่อนักเรียน', rec.studentName)}
-    ${row('ห้องเรียน', rec.classRoom)}
-    ${row('ปีการศึกษา', rec.academicYear)}
-    ${row('เลขบัตรนักเรียน', d.mt_studentNationalId)}
-    ${section('ข้อมูลผู้ปกครอง')}
-    ${row('ชื่อผู้ปกครอง', rec.guardianName)}
-    ${row('ความสัมพันธ์', d.mt_guardianRelation)}
-    ${row('โทรศัพท์', d.mt_guardianPhone)}
-    ${row('ที่อยู่', d.mt_guardianAddress)}
-    ${section('ข้อมูลบิดา')}
-    ${row('ชื่อบิดา', d.mt_fatherFullName)}
-    ${row('อาชีพ', d.mt_fatherOccupation)}
-    ${row('โทรศัพท์', d.mt_fatherPhone)}
-    ${section('ข้อมูลมารดา')}
-    ${row('ชื่อมารดา', d.mt_motherFullName)}
-    ${row('อาชีพ', d.mt_motherOccupation)}
-    ${row('โทรศัพท์', d.mt_motherPhone)}
-    ${section('ข้อมูลบันทึก')}
-    ${row('วันที่บันทึก', thaiDate(rec.createdAt))}
-    ${row('อัปเดตล่าสุด', thaiDate(rec.updatedAt))}
-  `;
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      ${table(section('👤 ข้อมูลนักเรียน') +
+        tr('ชื่อ-นามสกุล', rec.studentName, true) +
+        tr('ห้องเรียน', rec.classRoom) +
+        tr('ปีการศึกษา', rec.academicYear) +
+        tr('เลขบัตรประชาชน', d.mt_studentNationalId)
+      )}
+      ${table(section('🏠 ผู้ปกครอง') +
+        tr('ชื่อผู้ปกครอง', rec.guardianName) +
+        tr('ความสัมพันธ์', d.mt_guardianRelation) +
+        tr('โทรศัพท์', d.mt_guardianPhone) +
+        tr('ที่อยู่', d.mt_guardianAddress)
+      )}
+      ${table(section('👨 ข้อมูลบิดา') +
+        tr('ชื่อบิดา', d.mt_fatherFullName) +
+        tr('อาชีพ', d.mt_fatherOccupation) +
+        tr('โทรศัพท์', d.mt_fatherPhone) +
+        tr('รายได้/เดือน', d.mt_fatherIncome ? d.mt_fatherIncome + ' บาท' : '')
+      )}
+      ${table(section('👩 ข้อมูลมารดา') +
+        tr('ชื่อมารดา', d.mt_motherFullName) +
+        tr('อาชีพ', d.mt_motherOccupation) +
+        tr('โทรศัพท์', d.mt_motherPhone) +
+        tr('รายได้/เดือน', d.mt_motherIncome ? d.mt_motherIncome + ' บาท' : '')
+      )}
+      ${table(section('📋 สถานะหลักฐาน') +
+        `<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: ${docStatusBadge(rec)}</div><table style="width:100%;">${docRows}</table></td></tr>`
+      )}
+      ${table(section('🕐 ข้อมูลระบบ') +
+        tr('วันที่บันทึก', thaiDate(rec.createdAt)) +
+        tr('อัปเดตล่าสุด', thaiDate(rec.updatedAt))
+      )}
+    </div>`;
   openModal('modalViewMobtua');
 }
 
@@ -2290,6 +2346,15 @@ async function confirmDocVerification() {
         closeModal('modalVerifyDocs');
         if (col === 'admissions') renderAdmissions();
         else renderMobtua();
+        // เด้ง modal สั่งพิมพ์ทันที
+        setTimeout(() => {
+            const recArr = col === 'admissions' ? allAdmissions : allMobtua;
+            const latestRec = recArr.find(r => r.id === id);
+            if (latestRec) {
+                if (col === 'admissions') printAdmissionById(id);
+                else printMobtuaById(id);
+            }
+        }, 350);
     } catch(e) {
         showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
     } finally {
@@ -2358,10 +2423,19 @@ function dismissNewDataAlert() {
 }
 function goToNewDataAndDismiss() {
     dismissNewDataAlert();
-    // Switch to the tab with new data (notifications already listed)
+}
+// Open verify for most recent new record
+function dismissAndVerifyLatest() {
+    dismissNewDataAlert();
+    // Try latest admission first, then mobtua
+    const latest = allAdmissions[0] || allMobtua[0];
+    if (!latest) return;
+    const col = allAdmissions[0] ? 'admissions' : 'mobtua';
+    setTimeout(() => openVerifyDocs(latest.id, col), 150);
 }
 window.dismissNewDataAlert   = dismissNewDataAlert;
 window.goToNewDataAndDismiss = goToNewDataAndDismiss;
+window.dismissAndVerifyLatest = dismissAndVerifyLatest;
 
 function renderNotifBadge() {
   const badge = document.getElementById('notifBadge');

@@ -1878,6 +1878,7 @@
             display: grid;
             grid-template-columns: 140px 1fr 1fr;
             gap: var(--space-md);
+            align-items: end;
         }
         @media (max-width: 768px) {
             .form-row-prefix {
@@ -1886,6 +1887,62 @@
             .form-row-prefix .form-group:first-child {
                 grid-column: 1 / -1;
             }
+        }
+
+        /* ── pre-filled from admission ── */
+        .prefilled-field .form-control,
+        .prefilled-field select.form-control {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e9fbe9 100%);
+            border-color: #a7f3c2;
+            transition: background .2s, border-color .2s, box-shadow .2s;
+        }
+        .prefilled-field .form-control:focus,
+        .prefilled-field select.form-control:focus {
+            background: #f0fdf4;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+        }
+        .prefilled-label-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: .65rem;
+            font-weight: 700;
+            color: #15803d;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            border-radius: 99px;
+            padding: 1px 6px;
+            margin-left: 5px;
+            vertical-align: middle;
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+        .prefilled-label-badge.visible {
+            opacity: 1;
+        }
+
+        /* ── grade badge in history items ── */
+        .grade-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: .7rem;
+            font-weight: 800;
+            padding: 2px 9px;
+            border-radius: 6px;
+            letter-spacing: .03em;
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+        .grade-badge.m1 {
+            background: #fce4ec;
+            color: #c2185b;
+            border: 1.5px solid #f48fb1;
+        }
+        .grade-badge.m4 {
+            background: #ede7f6;
+            color: #5e35b1;
+            border: 1.5px solid #ce93d8;
         }
 
         .section-divider {
@@ -2859,12 +2916,12 @@
                             <label>เลขประจำตัวนักเรียน</label>
                             <input type="text" class="form-control" name="mt_studentId" placeholder="เลขประจำตัว">
                         </div>
-                        <div class="form-group">
-                            <label>เข้าเรียนชั้น / ห้อง</label>
+                        <div class="form-group prefilled-field">
+                            <label>เข้าเรียนชั้น / ห้อง<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_classRoom" placeholder="เช่น ม.1/2">
                         </div>
-                        <div class="form-group">
-                            <label>ปีการศึกษา</label>
+                        <div class="form-group prefilled-field">
+                            <label>ปีการศึกษา<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_academicYear" placeholder="เช่น 2568" id="mt_academicYear">
                         </div>
                     </div>
@@ -2967,7 +3024,7 @@
                     <!-- ข้อมูลนักเรียน -->
                     <h3 class="section-divider">🎒 ข้อมูลนักเรียน</h3>
                     <div class="form-row-prefix">
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>คำนำหน้านักเรียน <span class="required">*</span></label>
                             <select class="form-control" name="mt_studentPrefix" required>
                                 <option value="">-- เลือก --</option>
@@ -2977,28 +3034,28 @@
                                 <option value="นางสาว">นางสาว</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>ชื่อนักเรียน <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>ชื่อนักเรียน <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_studentFirstName" required placeholder="ชื่อ">
                         </div>
-                        <div class="form-group">
-                            <label>นามสกุลนักเรียน <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>นามสกุลนักเรียน <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_studentLastName" required placeholder="นามสกุล">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>ชื่อเล่น</label>
+                        <div class="form-group prefilled-field">
+                            <label>ชื่อเล่น<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_studentNickname" placeholder="เช่น เก่ง">
                         </div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label>วันเกิด (วัน)</label>
+                        <div class="form-group prefilled-field">
+                            <label>วันเกิด (วัน)<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="number" class="form-control" name="mt_birthDay" min="1" max="31" placeholder="1-31" id="mt_birthDay">
                         </div>
-                        <div class="form-group">
-                            <label>เดือนเกิด</label>
+                        <div class="form-group prefilled-field">
+                            <label>เดือนเกิด<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <select class="form-control" name="mt_birthMonth" id="mt_birthMonth">
                                 <option value="">-- เลือก --</option>
                                 <option value="มกราคม">มกราคม</option>
@@ -3015,32 +3072,32 @@
                                 <option value="ธันวาคม">ธันวาคม</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>ปีเกิด พ.ศ.</label>
+                        <div class="form-group prefilled-field">
+                            <label>ปีเกิด พ.ศ.<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="number" class="form-control" name="mt_birthYear" min="2500" max="2570" placeholder="เช่น 2555" id="mt_birthYear">
                         </div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>สัญชาติ</label>
                             <input type="text" class="form-control" name="mt_nationality" placeholder="ไทย" value="ไทย">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>เชื้อชาติ</label>
                             <input type="text" class="form-control" name="mt_ethnicity" placeholder="ไทย" value="ไทย">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>ศาสนา</label>
                             <input type="text" class="form-control" name="mt_religion" placeholder="พุทธ" value="พุทธ">
                         </div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label>ส่วนสูง (ซม.)</label>
+                        <div class="form-group prefilled-field">
+                            <label>ส่วนสูง (ซม.)<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="number" class="form-control" name="mt_height" placeholder="เช่น 155">
                         </div>
-                        <div class="form-group">
-                            <label>น้ำหนัก (กก.)</label>
+                        <div class="form-group prefilled-field">
+                            <label>น้ำหนัก (กก.)<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="number" class="form-control" name="mt_weight" placeholder="เช่น 45">
                         </div>
                         <div class="form-group">
@@ -3048,8 +3105,8 @@
                             <input type="text" class="form-control" name="mt_disease" placeholder="ถ้าไม่มีใส่ -">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="required">*</span></label>
+                    <div class="form-group prefilled-field">
+                        <label>เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                         <input type="text" class="form-control" name="mt_studentNationalId" required maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="mt_studentNationalIdInput">
                     </div>
 
@@ -3060,28 +3117,28 @@
                             <label>รหัสประจำบ้าน</label>
                             <input type="text" class="form-control" name="mt_houseCode" placeholder="รหัสประจำบ้าน 11 หลัก">
                         </div>
-                        <div class="form-group">
-                            <label>บ้านเลขที่ <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>บ้านเลขที่ <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_houseNo" required placeholder="เช่น 14">
                         </div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label>หมู่ที่ <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>หมู่ที่ <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_moo" required placeholder="เช่น 2">
                         </div>
-                        <div class="form-group">
-                            <label>ตำบล <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>ตำบล <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_subdistrict" required placeholder="เช่น หนองหัวช้าง">
                         </div>
-                        <div class="form-group">
-                            <label>อำเภอ <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>อำเภอ <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_district" required placeholder="เช่น กันทรารมย์">
                         </div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label>จังหวัด <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>จังหวัด <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_province" required placeholder="เช่น ศรีสะเกษ">
                         </div>
                         <div class="form-group">
@@ -3248,7 +3305,7 @@
                     <!-- ข้อมูลบิดา -->
                     <h3 class="section-divider">👨 ข้อมูลบิดา</h3>
                     <div class="form-row-prefix">
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>คำนำหน้าบิดา</label>
                             <select class="form-control" name="mt_fatherPrefix">
                                 <option value="">-- เลือก --</option>
@@ -3257,12 +3314,12 @@
                                 <option value="นางสาว">นางสาว</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>ชื่อบิดา <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>ชื่อบิดา <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_fatherFirstName" required placeholder="ชื่อ">
                         </div>
-                        <div class="form-group">
-                            <label>นามสกุลบิดา <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>นามสกุลบิดา <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_fatherLastName" required placeholder="นามสกุล">
                         </div>
                     </div>
@@ -3306,8 +3363,8 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>อาชีพบิดา</label>
+                        <div class="form-group prefilled-field">
+                            <label>อาชีพบิดา<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_fatherOccupation" placeholder="เช่น เกษตรกร">
                         </div>
                         <div class="form-group">
@@ -3343,7 +3400,7 @@
                     <!-- ข้อมูลมารดา -->
                     <h3 class="section-divider">👩 ข้อมูลมารดา</h3>
                     <div class="form-row-prefix">
-                        <div class="form-group">
+                        <div class="form-group prefilled-field">
                             <label>คำนำหน้ามารดา</label>
                             <select class="form-control" name="mt_motherPrefix">
                                 <option value="">-- เลือก --</option>
@@ -3352,12 +3409,12 @@
                                 <option value="นาย">นาย</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>ชื่อมารดา <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>ชื่อมารดา <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_motherFirstName" required placeholder="ชื่อ">
                         </div>
-                        <div class="form-group">
-                            <label>นามสกุลมารดา <span class="required">*</span></label>
+                        <div class="form-group prefilled-field">
+                            <label>นามสกุลมารดา <span class="required">*</span><span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_motherLastName" required placeholder="นามสกุล">
                         </div>
                     </div>
@@ -3401,8 +3458,8 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>อาชีพมารดา</label>
+                        <div class="form-group prefilled-field">
+                            <label>อาชีพมารดา<span class="prefilled-label-badge" title="ข้อมูลดึงมาจากใบสมัครอัตโนมัติ">🔗 ใบสมัคร</span></label>
                             <input type="text" class="form-control" name="mt_motherOccupation" placeholder="เช่น เกษตรกร">
                         </div>
                         <div class="form-group">
@@ -4641,6 +4698,10 @@
                 el.dispatchEvent(new Event('change', { bubbles: true }));
             };
             Object.keys(d).forEach(k => set(k, d[k]));
+            // Show prefilled badges & green tint
+            setTimeout(() => {
+                document.querySelectorAll('.prefilled-label-badge').forEach(b => b.classList.add('visible'));
+            }, 120);
             // force select elements for prefix / month
             const selectNames = ['mt_studentPrefix','mt_fatherPrefix','mt_motherPrefix',
                                  'mt_guardianPrefix','mt_birthMonth','mt_fatherBloodType',
@@ -4721,7 +4782,7 @@
                     return `
                         <div class="history-item ${getDocsStatusClass(record.id)}" id="hist_${record.id}">
                             <div class="history-item-header">
-                                <span class="history-item-type">${gradeLabel} - ${record.formCode}</span>
+                                <span class="grade-badge ${record.gradeLevel === 'm4' ? 'm4' : 'm1'}">${gradeLabel}</span><span class="history-item-type" style="font-size:.65rem;opacity:.75;">${record.formCode}</span>
                                 <span class="history-item-date">${dateStr}</span>
                             </div>
                             <div class="history-item-name">
@@ -5588,6 +5649,8 @@
             document.getElementById('mobtuaPage').classList.remove('active');
             document.getElementById('landingPage').classList.remove('hidden');
             backToStep1();
+            // hide prefilled badges
+            document.querySelectorAll('.prefilled-label-badge').forEach(b => b.classList.remove('visible'));
             // reset lock badge
             const badge = document.getElementById('mobtuaLockedBadge');
             if (badge) {
@@ -5969,7 +6032,7 @@
 
                     return `<div class="history-item ${getDocsStatusClass(rec.id,'mobtua')}" id="hist_mt_${rec.id}" style="border-left: 3px solid #9c4dcc;">
                         <div class="history-item-header">
-                            <span class="history-item-type" style="background:#7b3f9e;">มอบตัว</span>
+                            <span class="grade-badge ${(rec.gradeLevel||rec.classRoom||'').includes('4')?'m4':'m1'}">${(rec.gradeLevel||rec.classRoom||'').includes('4')?'ม.4':'ม.1'}</span><span class="history-item-type" style="background:#7b3f9e;font-size:.65rem;">มอบตัว</span>
                             <span class="history-item-date">${dateStr}</span>
                         </div>
                         <div class="history-item-name">

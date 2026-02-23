@@ -724,16 +724,24 @@ body {
 .action-group { display:flex; gap:4px; flex-wrap:wrap; }
 .verify-note-area { width:100%; min-height:70px; border:1px solid var(--border); border-radius:var(--r-sm); padding:8px 10px; font-family:'Sarabun',sans-serif; font-size:.85rem; background:var(--card); color:var(--text); resize:vertical; }
 /* New-data alert modal */
-.new-data-alert-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s; }
-.new-data-alert-box { background:var(--bg);border-radius:var(--r-lg);padding:0;width:min(420px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;animation:slideUp .25s ease; }
-.new-data-alert-header { background:linear-gradient(135deg,#1e40af,#3b82f6);padding:1rem 1.25rem;display:flex;align-items:center;gap:10px; }
-.new-data-alert-header h3 { color:#fff;font-size:1rem;flex:1; }
-.new-data-alert-body { padding:1.25rem; }
-.new-data-alert-item { display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:.65rem .9rem;margin-bottom:.5rem;font-size:.85rem; }
-.new-data-alert-item .nda-icon { font-size:1.4rem; }
-.new-data-alert-item .nda-label { font-size:.72rem;color:var(--text-soft); }
-.new-data-alert-item .nda-name { font-weight:700; }
-.new-data-alert-footer { padding:.75rem 1.25rem 1.25rem; display:flex; gap:.5rem; justify-content:flex-end; }
+.new-data-alert-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s; }
+.new-data-alert-box { background:#fff;color:#1e293b;border-radius:16px;padding:0;width:min(520px,95vw);box-shadow:0 24px 80px rgba(0,0,0,.35);overflow:hidden;animation:slideUp .25s ease; }
+.new-data-alert-header { background:linear-gradient(135deg,#1e40af,#3b82f6);padding:1.1rem 1.5rem;display:flex;align-items:center;gap:12px; }
+.new-data-alert-header h3 { color:#fff;font-size:1.05rem;flex:1;margin:0; }
+.new-data-alert-body { padding:1.25rem 1.5rem; }
+.new-data-alert-item { display:flex;align-items:center;gap:12px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;font-size:.88rem;color:#1e293b; }
+.new-data-alert-item .nda-icon { font-size:1.6rem;flex-shrink:0; }
+.new-data-alert-item .nda-label { font-size:.72rem;color:#64748b;margin-bottom:2px; }
+.new-data-alert-item .nda-name { font-weight:700;color:#1e293b; }
+.nda-warning { background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:.6rem 1rem;font-size:.78rem;color:#92400e;text-align:center;margin-bottom:.75rem; }
+.new-data-alert-actions { padding:.5rem 1.5rem 1.25rem;display:flex;gap:.75rem;flex-wrap:wrap; }
+.new-data-alert-actions .btn-nda { flex:1;min-width:160px;padding:.65rem .75rem;border-radius:10px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s; }
+.btn-nda-preview { background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe; }
+.btn-nda-preview:hover { background:#dbeafe; }
+.btn-nda-verify  { background:#4338ca;color:#fff; }
+.btn-nda-verify:hover  { background:#3730a3; }
+.btn-nda-dismiss { background:#f1f5f9;color:#64748b;border:1.5px solid #e2e8f0;flex:0 0 auto;min-width:auto;padding:.65rem 1rem; }
+.btn-nda-dismiss:hover { background:#e2e8f0; }
 </style>
 </head>
 <body>
@@ -852,6 +860,10 @@ body {
         <option value="m1">ม.1</option>
         <option value="m4">ม.4</option>
       </select>
+      <button class="btn-icon" style="background:#16a34a;color:#fff;border:none;gap:5px;" onclick="exportIncompleteDocsExcel()" title="Export Excel รายการขาดเอกสาร">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        Excel ขาดเอกสาร
+      </button>
       <button class="btn-icon btn-refresh" onclick="loadAll()">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
         รีเฟรช
@@ -1258,20 +1270,24 @@ body {
 <div id="newDataAlertBackdrop" style="display:none;" class="new-data-alert-backdrop" onclick="dismissNewDataAlert()">
   <div class="new-data-alert-box" onclick="event.stopPropagation()">
     <div class="new-data-alert-header">
-      <span style="font-size:1.5rem;">🔔</span>
-      <h3>มีข้อมูลเข้าใหม่</h3>
-      <button onclick="dismissNewDataAlert()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#fff;font-size:.9rem;display:flex;align-items:center;justify-content:center;">✕</button>
+      <span style="font-size:1.6rem;">🔔</span>
+      <h3>มีข้อมูลเข้าใหม่!</h3>
+      <button onclick="dismissNewDataAlert()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;color:#fff;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div class="new-data-alert-body" id="newDataAlertBody"></div>
-    <div style="padding:.5rem 1.25rem;background:rgba(234,179,8,.08);border-top:1px solid rgba(234,179,8,.2);">
-      <p style="font-size:.75rem;color:#92400e;margin:0;text-align:center;">⚠️ กรุณาตรวจสอบเอกสารหลักฐานแนบแล้วสั่งพิมพ์</p>
+    <div style="padding:0 1.5rem .75rem;">
+      <div class="nda-warning">⚠️ กรุณาตรวจสอบเอกสารหลักฐานแนบแล้วสั่งพิมพ์</div>
     </div>
-    <div class="new-data-alert-footer">
-      <button class="btn-secondary" style="font-size:.82rem;padding:.35rem .8rem;" onclick="dismissNewDataAlert()">ปิด</button>
-      <button class="btn-sm btn-verify" style="font-size:.82rem;padding:.4rem .9rem;display:inline-flex;align-items:center;gap:5px;" onclick="dismissAndVerifyLatest()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        ตรวจสอบยืนยันเอกสาร
+    <div class="new-data-alert-actions">
+      <button class="btn-nda btn-nda-preview" onclick="ndaPreviewDoc()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
+        ดูตัวอย่างเอกสาร
       </button>
+      <button class="btn-nda btn-nda-verify" onclick="dismissAndVerifyLatest()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        ตรวจและยืนยันเอกสารประกอบ
+      </button>
+      <button class="btn-nda btn-nda-dismiss" onclick="dismissNewDataAlert()">ปิด</button>
     </div>
   </div>
 </div>
@@ -1299,6 +1315,7 @@ body {
 <!-- ======================================================
      FIREBASE + SCRIPTS
 ====================================================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {
@@ -1492,7 +1509,7 @@ function renderAdmissions() {
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     return `<tr id="row-admission-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)} ${noteIcon(r.docVerifiedNote)}</td>
       <td><span class="badge ${gradeCls}">${gradeLabel}</span></td>
       <td class="td-muted">${d.previousSchool || '—'}</td>
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
@@ -1540,7 +1557,7 @@ function renderMobtua() {
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     return `<tr id="row-mobtua-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)} ${noteIcon(r.docVerifiedNote)}</td>
       <td class="td-muted">${r.guardianName || '—'}</td>
       <td class="td-muted">${r.classRoom || '—'}</td>
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
@@ -1609,35 +1626,50 @@ function viewAdmission(id) {
   const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
   const docRows = KEYS.map(k => `<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${sv[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${k}</td></tr>`).join('');
 
+  // แปลงวันเกิดจาก birthDay/birthMonth/birthYear
+  const birthStr = d.birthDay && d.birthMonth ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}` : (d.birthDate || '');
+  // เพศจาก prefix
+  const genderStr = (() => {
+    const p = d.prefix || '';
+    if (p === 'เด็กชาย' || p === 'นาย') return 'ชาย';
+    if (p === 'เด็กหญิง' || p === 'นางสาว') return 'หญิง';
+    return p;
+  })();
+  // ที่อยู่ตามทะเบียนบ้าน
+  const addrParts = [d.houseNumber ? `${d.houseNumber}` : '', d.moo ? `หมู่ ${d.moo}` : '', d.subdistrict ? `ต.${d.subdistrict}` : '', d.district ? `อ.${d.district}` : '', d.province ? `จ.${d.province}` : ''];
+  const addrStr = addrParts.filter(Boolean).join(' ');
+
   grid.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:.75rem;">
       ${table(section('👤 ข้อมูลนักเรียน') +
-        tr('ชื่อ-นามสกุล', rec.studentName, true) +
+        tr('ชื่อ-นามสกุล', (d.prefix||'') + (d.firstName||'') + ' ' + (d.lastName||''), true) +
         tr('ระดับชั้นที่สมัคร', rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1') +
-        tr('เพศ', d.gender) +
-        tr('วันเกิด', d.birthdate) +
+        tr('เพศ', genderStr) +
+        tr('วันเกิด', birthStr) +
         tr('อายุ', d.age ? d.age + ' ปี' : '') +
         tr('เลขบัตรประชาชน', d.nationalId) +
-        tr('สัญชาติ / เชื้อชาติ / ศาสนา', [d.nationality, d.ethnicity, d.religion].filter(Boolean).join(' / '))
+        tr('หมู่เลือด', d.bloodType)
       )}
       ${table(section('🏫 การศึกษาเดิม') +
         tr('โรงเรียนเดิม', d.previousSchool) +
+        tr('อำเภอ', d.previousSchoolDistrict || d.district) +
+        tr('จังหวัด', d.previousSchoolProvince || d.province) +
+        tr('เกรดเฉลี่ย', d.gpa)
+      )}
+      ${table(section('🏠 ที่อยู่ตามทะเบียนบ้าน') +
+        tr('ที่อยู่', addrStr) +
         tr('อำเภอ', d.district) +
         tr('จังหวัด', d.province) +
-        tr('GPA/เกรดเฉลี่ย', d.gpa)
-      )}
-      ${table(section('🏠 ที่อยู่') +
-        tr('ที่อยู่ตามทะเบียนบ้าน', [d.houseNumber, d.moo, d.subdistrict, d.districtAddr, d.provinceAddr].filter(Boolean).join(' ')) +
         tr('โทรศัพท์', d.phone)
       )}
       ${table(section('👨‍👩‍👧 ผู้ปกครอง') +
+        tr('ชื่อบิดา', d.fatherName) +
+        tr('ชื่อมารดา', d.motherName) +
         tr('ชื่อผู้ปกครอง', d.parentName) +
-        tr('โทรผู้ปกครอง', d.parentPhone) +
-        tr('บิดา', d.fatherName) +
-        tr('มารดา', d.motherName)
+        tr('โทรผู้ปกครอง', d.parentPhone)
       )}
       ${table(section('📋 สถานะหลักฐาน') +
-        `<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: ${docStatusBadge(rec)}</div><table style="width:100%;">${docRows}</table></td></tr>`
+        \`<tr><td style="padding:5px 0 5px 10px;"><div style="font-size:.75rem;color:var(--text-soft);margin-bottom:4px;">ผลการตรวจสอบโดยครู: \${docStatusBadge(rec)}</div><table style="width:100%;">\${docRows}</table></td></tr>\`
       )}
       ${table(section('🕐 ข้อมูลระบบ') +
         tr('วันที่สมัคร', thaiDate(rec.createdAt)) +
@@ -2016,7 +2048,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
   </div>
   <div class="signature-section" style="text-align:right;margin-top:12px;">
     <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
-    <p style="margin-right:1cm;">(.......................................................................)</p>
+    <p style="margin-right:1cm;">( ${(data.prefix||'') + (data.firstName||'') + ' ' + (data.lastName||'')} )</p>
     <p>วันที่.................เดือน...............................พ.ศ................</p>
   </div>
   <div class="approval-section">
@@ -2198,6 +2230,83 @@ window.printAdmissionById    = printAdmissionById;
 window.printMobtuaById       = printMobtuaById;
 window.printCurrentAdmission = printCurrentAdmission;
 window.printCurrentMobtua    = printCurrentMobtua;
+
+/* ─────────────────────────────────────────────────
+   EXCEL EXPORT — INCOMPLETE DOCS
+───────────────────────────────────────────────── */
+function exportIncompleteDocsExcel() {
+    // Collect records where staffVerified is incomplete
+    const ADM_KEYS = ADMISSION_CHECKLIST_KEYS;
+    const MT_KEYS  = MOBTUA_CHECKLIST_KEYS;
+
+    const rows = [];
+    // Admissions
+    allAdmissions.forEach(r => {
+        const sv = r.staffVerified || {};
+        const total = ADM_KEYS.length;
+        const done  = ADM_KEYS.filter(k => sv[k]).length;
+        if (done < total) {
+            const missing = ADM_KEYS.filter(k => !sv[k]);
+            rows.push({
+                ประเภท: 'ใบสมัคร',
+                ชื่อนักเรียน: r.studentName || '',
+                ระดับ: r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1',
+                ปีการศึกษา: r.academicYear || '',
+                วันที่สมัคร: r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH') : '',
+                เอกสารได้รับ: `${done}/${total}`,
+                เอกสารที่ขาด: missing.join(' | '),
+                หมายเหตุ: r.docVerifiedNote || '',
+            });
+        }
+    });
+    // Mobtua
+    allMobtua.forEach(r => {
+        const sv = r.staffVerified || {};
+        const total = MT_KEYS.length;
+        const done  = MT_KEYS.filter(k => sv[k]).length;
+        if (done < total) {
+            const missing = MT_KEYS.filter(k => !sv[k]);
+            rows.push({
+                ประเภท: 'ใบมอบตัว',
+                ชื่อนักเรียน: r.studentName || '',
+                ระดับ: '',
+                ปีการศึกษา: r.academicYear || '',
+                วันที่สมัคร: r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH') : '',
+                เอกสารได้รับ: `${done}/${total}`,
+                เอกสารที่ขาด: missing.join(' | '),
+                หมายเหตุ: r.docVerifiedNote || '',
+            });
+        }
+    });
+
+    if (!rows.length) {
+        showToast('ไม่มีรายการที่ขาดเอกสาร 🎉', 'success');
+        return;
+    }
+
+    // Build XLSX using SheetJS (if available) or CSV fallback
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('no XLSX');
+        const ws = XLSX.utils.json_to_sheet(rows);
+        // Column widths
+        ws['!cols'] = [8,22,6,8,12,10,60,25].map(w => ({wch:w}));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'ขาดเอกสาร');
+        XLSX.writeFile(wb, `รายการขาดเอกสาร_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast(`ดาวน์โหลด Excel ${rows.length} รายการ`, 'success');
+    } catch(e) {
+        // CSV fallback
+        const headers = Object.keys(rows[0]);
+        const csv = [headers.join(','), ...rows.map(r => headers.map(h => `"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `รายการขาดเอกสาร_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        showToast(`ดาวน์โหลด CSV ${rows.length} รายการ`, 'success');
+    }
+}
+window.exportIncompleteDocsExcel = exportIncompleteDocsExcel;
 
 /* ─────────────────────────────────────────────────
    VERIFY DOCS SYSTEM
@@ -2388,6 +2497,12 @@ function addNotification(type, name, ts) {
 function showNewDataModal() {
     if (!_pendingNewData.length) return;
     const items = [..._pendingNewData];
+    // track latest for action buttons
+    if (items[0]) {
+        const latest = items[0].type === 'admission' ? allAdmissions[0] : allMobtua[0];
+        _ndaLatestId  = latest ? latest.id : '';
+        _ndaLatestCol = items[0].type === 'admission' ? 'admissions' : 'mobtua';
+    }
     _pendingNewData = [];
     const body = document.getElementById('newDataAlertBody');
     if (!body) return;
@@ -2417,6 +2532,10 @@ function showNewDataModal() {
 }
 
 let _newDataTargetTab = '';
+// track which record triggered the alert
+let _ndaLatestId = '';
+let _ndaLatestCol = '';
+
 function dismissNewDataAlert() {
     document.getElementById('newDataAlertBackdrop').style.display = 'none';
     _newDataTargetTab = '';
@@ -2424,18 +2543,56 @@ function dismissNewDataAlert() {
 function goToNewDataAndDismiss() {
     dismissNewDataAlert();
 }
+// Preview doc from notification modal
+function ndaPreviewDoc() {
+    dismissNewDataAlert();
+    const id  = _ndaLatestId;
+    const col = _ndaLatestCol;
+    if (!id) return;
+    setTimeout(() => {
+        if (col === 'admissions') printAdmissionById(id);
+        else printMobtuaById(id);
+    }, 150);
+}
 // Open verify for most recent new record
 function dismissAndVerifyLatest() {
     dismissNewDataAlert();
-    // Try latest admission first, then mobtua
-    const latest = allAdmissions[0] || allMobtua[0];
-    if (!latest) return;
-    const col = allAdmissions[0] ? 'admissions' : 'mobtua';
-    setTimeout(() => openVerifyDocs(latest.id, col), 150);
+    const id  = _ndaLatestId;
+    const col = _ndaLatestCol;
+    if (!id) return;
+    setTimeout(() => openVerifyDocs(id, col), 150);
 }
-window.dismissNewDataAlert   = dismissNewDataAlert;
-window.goToNewDataAndDismiss = goToNewDataAndDismiss;
+window.dismissNewDataAlert    = dismissNewDataAlert;
+window.goToNewDataAndDismiss  = goToNewDataAndDismiss;
 window.dismissAndVerifyLatest = dismissAndVerifyLatest;
+window.ndaPreviewDoc          = ndaPreviewDoc;
+
+/* ── Note icon in table ── */
+function noteIcon(note) {
+    if (!note) return '';
+    const safe = note.replace(/'/g, "\'").replace(/"/g, '&quot;');
+    return `<button onclick="showNoteModal('${safe}')" title="ดูหมายเหตุ" style="background:none;border:none;cursor:pointer;padding:0 2px;vertical-align:middle;color:#ca8a04;font-size:.9rem;" aria-label="หมายเหตุ">💬</button>`;
+}
+function showNoteModal(note) {
+    const existing = document.getElementById('notePopupModal');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'notePopupModal';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    el.innerHTML = `
+      <div onclick="event.stopPropagation()" style="background:#fff;color:#1e293b;border-radius:14px;padding:1.25rem 1.5rem;width:min(400px,90vw);box-shadow:0 20px 50px rgba(0,0,0,.3);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
+          <span style="font-size:1.3rem;">💬</span>
+          <strong style="font-size:.95rem;">หมายเหตุจากครู</strong>
+          <button onclick="document.getElementById('notePopupModal').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#64748b;">✕</button>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem 1rem;font-size:.88rem;line-height:1.6;white-space:pre-wrap;">${note}</div>
+      </div>`;
+    el.addEventListener('click', () => el.remove());
+    document.body.appendChild(el);
+}
+window.noteIcon     = noteIcon;
+window.showNoteModal= showNoteModal;
 
 function renderNotifBadge() {
   const badge = document.getElementById('notifBadge');

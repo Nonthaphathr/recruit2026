@@ -1754,6 +1754,35 @@
             transform: translateX(-3px);
         }
 
+        /* Pending Mobtua Card */
+        .pending-mobtua-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            width: 100%;
+            font-family: inherit;
+        }
+        .pending-mobtua-card:hover {
+            border-color: #7b3f9e;
+            box-shadow: 0 4px 16px rgba(123,63,158,.15);
+            transform: translateY(-2px);
+        }
+        .pending-mobtua-card.done-card { background: #f0fdf4; border-color: #16a34a; }
+        .pending-mobtua-card-icon { font-size: 2rem; flex-shrink: 0; width: 48px; text-align: center; }
+        .pending-mobtua-card-body { flex: 1; min-width: 0; }
+        .pending-mobtua-card-name { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pending-mobtua-card-detail { font-size: 0.78rem; color: #64748b; }
+        .pending-mobtua-status { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
+        .status-pending { background: #fef9c3; color: #854d0e; }
+        .status-done    { background: #dcfce7; color: #14532d; }
+
         .mobtua-page-header h2 {
             flex: 1;
             font-size: clamp(1rem, 3vw, 1.2rem);
@@ -2376,17 +2405,27 @@
             <button class="step-back-btn" onclick="backToStep1()">← กลับ</button>
             <p class="grade-step-title">📋 ใบมอบตัวนักเรียน — <strong>เลือกระดับชั้น</strong></p>
             <div class="grade-sub-grid">
-                <div class="grade-sub-card mobtua-m1" onclick="openMobTuaForm('m1')">
+                <div class="grade-sub-card mobtua-m1" onclick="showPendingMobtuaList('m1')">
                     <div class="sub-icon">🎒</div>
                     <h3>ม.1</h3>
                     <p>มัธยมศึกษาปีที่ 1</p>
                 </div>
-                <div class="grade-sub-card mobtua-m4" onclick="openMobTuaForm('m4')">
+                <div class="grade-sub-card mobtua-m4" onclick="showPendingMobtuaList('m4')">
                     <div class="sub-icon">🎓</div>
                     <h3>ม.4</h3>
                     <p>มัธยมศึกษาปีที่ 4</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Step 3: รายการรอมอบตัว (pending list) -->
+        <div class="grade-step" id="landingStep3Mobtua">
+            <button class="step-back-btn" onclick="backToStep2Mobtua()">← กลับ</button>
+            <p class="grade-step-title" id="pendingListTitle">📋 รายการรอมอบตัว ม.1</p>
+            <div id="pendingMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:1rem;max-height:55vh;overflow-y:auto;"></div>
+            <button class="btn btn-outline" style="margin-top:1rem;width:100%;" onclick="openBlankMobtuaForm()">
+                ➕ กรอกใบมอบตัวใหม่ (ไม่ได้สมัครออนไลน์)
+            </button>
         </div>
     </div>
 
@@ -3999,6 +4038,8 @@
             document.getElementById('landingStep1').style.display = '';
             document.getElementById('landingStep2Admission').classList.remove('active');
             document.getElementById('landingStep2Mobtua').classList.remove('active');
+            const s3 = document.getElementById('landingStep3Mobtua');
+            if (s3) s3.classList.remove('active');
         }
 
         function selectGrade(grade) {
@@ -4370,6 +4411,8 @@
 
                 console.log('Document written with ID:', docRef.id);
                 showToast('บันทึกข้อมูลสำเร็จ');
+                // สร้าง pending mobtua record อัตโนมัติ
+                await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
                 await loadHistory();
                 // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
                 document.getElementById('admissionForm').reset();
@@ -4384,6 +4427,237 @@
             } finally {
                 showLoading(false);
             }
+        }
+
+        // ── State สำหรับ mobtua form pre-fill ──
+        let _editingMobtuaId = '';  // id ของ pending record ที่กำลังแก้ไข
+        let _pendingMobtuaGrade = ''; // grade ที่เลือกใน step 3
+
+        /* ── Map admission data → mobtua initial data ── */
+        function admissionToMobtuaData(adm) {
+            const d = adm;
+            // แยก fatherName / motherName ถ้ายังไม่มี firstName/lastName
+            const splitName = (fullStr) => {
+                if (!fullStr) return { prefix: '', firstName: '', lastName: '' };
+                // รูปแบบ "นาย ชื่อ นามสกุล"
+                const prefixes = ['นาย','นาง','นางสาว','ดร.','รศ.','ผศ.'];
+                let prefix = '', rest = fullStr.trim();
+                for (const p of prefixes) {
+                    if (rest.startsWith(p)) { prefix = p; rest = rest.slice(p.length).trim(); break; }
+                }
+                const parts = rest.split(/\s+/);
+                return { prefix, firstName: parts[0] || '', lastName: parts.slice(1).join(' ') };
+            };
+            const father = splitName(d.fatherName || '');
+            const mother = splitName(d.motherName || '');
+            const classPrefix = d.gradeLevel === 'm4' ? 'ม.4/' : 'ม.1/';
+            return {
+                mt_studentPrefix:       d.prefix || '',
+                mt_studentFirstName:    d.firstName || (d.fullName || '').split(' ')[0] || '',
+                mt_studentLastName:     d.lastName  || (d.fullName || '').split(' ').slice(1).join(' ') || '',
+                mt_studentNickname:     d.nickname || '',
+                mt_birthDay:            d.birthDay || '',
+                mt_birthMonth:          d.birthMonth || '',
+                mt_birthYear:           d.birthYear || '',
+                mt_studentNationalId:   d.nationalId || '',
+                mt_height:              d.height || '',
+                mt_weight:              d.weight || '',
+                mt_bloodType:           d.bloodType || '',
+                mt_houseNo:             d.houseNumber || '',
+                mt_moo:                 d.moo || '',
+                mt_subdistrict:         d.subdistrict || '',
+                mt_district:            d.district || '',
+                mt_province:            d.province || '',
+                mt_postalCode:          d.postalCode || '',
+                mt_fatherPrefix:        d.fatherPrefix || father.prefix || '',
+                mt_fatherFirstName:     d.fatherFirstName || father.firstName || '',
+                mt_fatherLastName:      d.fatherLastName  || father.lastName  || '',
+                mt_fatherOccupation:    d.fatherOccupation || '',
+                mt_motherPrefix:        d.motherPrefix || mother.prefix || '',
+                mt_motherFirstName:     d.motherFirstName || mother.firstName || '',
+                mt_motherLastName:      d.motherLastName  || mother.lastName  || '',
+                mt_motherOccupation:    d.motherOccupation || '',
+                mt_academicYear:        d.academicYear || '',
+                mt_classRoom:           classPrefix,
+                // สัญชาติ/เชื้อชาติ/ศาสนา ค่าเริ่มต้น
+                mt_nationality:         'ไทย',
+                mt_ethnicity:           'ไทย',
+                mt_religion:            'พุทธ',
+            };
+        }
+
+        /* ── สร้าง pending mobtua เมื่อบันทึกใบสมัครเสร็จ ── */
+        async function createPendingMobtua(admData, admissionId, docChecks) {
+            try {
+                const prefilled = admissionToMobtuaData(admData);
+                const studentName = `${admData.prefix || ''}${admData.firstName || ''}${admData.lastName ? ' ' + admData.lastName : ''}`.trim() || admData.fullName || '';
+                const pendingRecord = {
+                    formType:     'ใบมอบตัวนักเรียน',
+                    formCode:     'วก.กทว.205',
+                    studentName:  studentName,
+                    guardianName: '',
+                    academicYear: admData.academicYear || '',
+                    classRoom:    admData.gradeLevel === 'm4' ? 'ม.4/' : 'ม.1/',
+                    gradeLevel:   admData.gradeLevel || '',
+                    admissionId:  admissionId,
+                    status:       'pending',   // pending = รอผู้ปกครองกรอก, done = กรอกแล้ว
+                    docChecks:    docChecks || {},
+                    data:         prefilled,
+                    createdAt:    window.firestore.serverTimestamp(),
+                    updatedAt:    window.firestore.serverTimestamp(),
+                };
+                await window.firestore.addDoc(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    pendingRecord
+                );
+                console.log('Pending mobtua created for', studentName);
+            } catch(e) {
+                console.warn('createPendingMobtua error:', e.message);
+            }
+        }
+
+        /* ── แสดง Step 3: รายการรอมอบตัวตาม grade ── */
+        async function showPendingMobtuaList(grade) {
+            _pendingMobtuaGrade = grade;
+            // ซ่อน step2 เปิด step3 — ใช้ active class เหมือนกัน
+            document.getElementById('landingStep2Mobtua').classList.remove('active');
+            const s3 = document.getElementById('landingStep3Mobtua');
+            s3.classList.add('active');
+            document.getElementById('pendingListTitle').textContent =
+                `📋 รายการรอมอบตัว ${grade === 'm4' ? 'ม.4' : 'ม.1'} — เลือกชื่อนักเรียน`;
+
+            const listEl = document.getElementById('pendingMobtuaList');
+            listEl.innerHTML = '<p style="text-align:center;color:#64748b;font-size:.85rem;padding:1.5rem 0;">⏳ กำลังโหลดรายการ...</p>';
+
+            try {
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    window.firestore.orderBy('createdAt', 'asc')
+                );
+                const snap = await window.firestore.getDocs(q);
+                const records = [];
+                snap.forEach(d => {
+                    const rec = { id: d.id, ...d.data() };
+                    // กรองตาม gradeLevel ที่บันทึกไว้ หรือ classRoom prefix
+                    const recGrade = rec.gradeLevel || (rec.classRoom?.startsWith('ม.4') ? 'm4' : 'm1');
+                    if (recGrade === grade) records.push(rec);
+                });
+
+                if (records.length === 0) {
+                    listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
+                        <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
+                        <p style="font-weight:600;margin-bottom:.5rem;">ยังไม่มีรายการรอมอบตัว</p>
+                        <p style="font-size:.82rem;">เมื่อผู้สมัครบันทึกใบสมัครออนไลน์แล้ว<br>ระบบจะสร้างรายการที่นี่โดยอัตโนมัติ</p>
+                    </div>`;
+                    return;
+                }
+
+                listEl.innerHTML = records.map(rec => {
+                    const isDone   = rec.status === 'done';
+                    const icon     = isDone ? '✅' : '📋';
+                    const statusLabel = isDone ? 'กรอกแล้ว' : 'รอกรอกข้อมูล';
+                    const statusCls   = isDone ? 'status-done' : 'status-pending';
+                    const cardCls     = isDone ? 'done-card' : '';
+                    let dateStr = '';
+                    if (rec.createdAt?.toDate) {
+                        dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'});
+                    }
+                    const schStr   = rec.data?.previousSchool ? `<span style="font-size:.73rem;color:#9333ea;background:#f3e8ff;padding:1px 7px;border-radius:99px;margin-left:4px;">${rec.data.previousSchool}</span>` : '';
+                    const guardianInfo = rec.guardianName ? ` · ผปค: ${rec.guardianName}` : '';
+                    return `<button class="pending-mobtua-card ${cardCls}" onclick="openPendingMobtua('${rec.id}')">
+                        <div class="pending-mobtua-card-icon">${icon}</div>
+                        <div class="pending-mobtua-card-body">
+                            <div class="pending-mobtua-card-name">${rec.studentName || '(ไม่ระบุชื่อ)'}${schStr}</div>
+                            <div class="pending-mobtua-card-detail">${rec.academicYear || ''}${rec.classRoom ? ' · ' + rec.classRoom : ''}${guardianInfo}</div>
+                            ${dateStr ? `<div class="pending-mobtua-card-detail" style="color:#94a3b8;">สมัคร ${dateStr}</div>` : ''}
+                        </div>
+                        <span class="pending-mobtua-status ${statusCls}">${statusLabel}</span>
+                    </button>`;
+                }).join('');
+            } catch(e) {
+                listEl.innerHTML = `<p style="color:#dc2626;text-align:center;padding:1rem;">⚠️ เกิดข้อผิดพลาด: ${e.message}</p>`;
+            }
+        }
+
+        function backToStep2Mobtua() {
+            document.getElementById('landingStep3Mobtua').classList.remove('active');
+            document.getElementById('landingStep2Mobtua').classList.add('active');
+        }
+
+        /* ── เปิดฟอร์มมอบตัวจาก pending record ── */
+        async function openPendingMobtua(id) {
+            try {
+                showLoading(true);
+                const snap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
+                if (!snap.exists()) { showToast('ไม่พบข้อมูล', 'error'); return; }
+                const rec = snap.data();
+                const d = rec.data || {};
+                _editingMobtuaId = id;
+
+                // เปิดหน้า mobtua form
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('mainContainer').classList.add('hidden');
+                document.getElementById('reportPage').classList.remove('active');
+                document.getElementById('mobtuaPage').classList.add('active');
+                backToStep1();
+
+                // รอ DOM พร้อม แล้ว reset ฟอร์มก่อน จากนั้น fill ข้อมูล
+                setTimeout(() => {
+                    document.getElementById('mobtuaForm').reset();
+                    fillMobtuaForm(d);
+                    // แสดง banner แจ้งว่ากำลัง edit pending record
+                    const badge = document.getElementById('mobtuaLockedBadge');
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = `✏️ กรอกต่อ: ${rec.studentName || ''}`;
+                        badge.style.cssText = 'background:rgba(123,63,158,.25);color:#fff;border-radius:999px;padding:3px 14px;font-size:.8rem;font-weight:600;';
+                    }
+                    showToast(`โหลดข้อมูล ${rec.studentName || ''} เรียบร้อยแล้ว กรอกส่วนที่เหลือต่อได้เลยครับ`, 'success');
+                }, 120);
+
+                loadMobtuaHistory();
+                setupAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /* ── เปิดฟอร์มมอบตัวเปล่า (กรณีไม่ได้สมัครออนไลน์) ── */
+        function openBlankMobtuaForm() {
+            _editingMobtuaId = '';
+            openMobTuaForm(_pendingMobtuaGrade || 'm1');
+        }
+
+        /* ── เติมข้อมูลจาก object d เข้าสู่ mobtuaForm ── */
+        function fillMobtuaForm(d) {
+            const set = (name, val) => {
+                if (val === undefined || val === null || val === '') return;
+                const el = document.querySelector(`[name="${name}"]`);
+                if (!el) return;
+                el.value = val;
+                // trigger change event so any listeners know
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+            Object.keys(d).forEach(k => set(k, d[k]));
+            // force select elements for prefix / month
+            const selectNames = ['mt_studentPrefix','mt_fatherPrefix','mt_motherPrefix',
+                                 'mt_guardianPrefix','mt_birthMonth','mt_fatherBloodType',
+                                 'mt_motherBloodType'];
+            selectNames.forEach(name => {
+                if (d[name]) set(name, d[name]);
+            });
+            // national id formatting — add dashes if raw digits
+            const fmt13 = (raw) => {
+                if (!raw) return '';
+                const digits = raw.replace(/\D/g, '');
+                if (digits.length !== 13) return raw;
+                return `${digits[0]}-${digits.slice(1,5)}-${digits.slice(5,10)}-${digits.slice(10,12)}-${digits[12]}`;
+            };
+            ['mt_studentNationalId','mt_fatherNationalId','mt_motherNationalId'].forEach(name => {
+                if (d[name]) set(name, fmt13(d[name]));
+            });
         }
 
         async function loadHistory() {
@@ -5275,47 +5549,52 @@
         // ========== ระบบใบมอบตัวนักเรียน วก.กทว.205 ==========
         function openMobTuaForm(grade) {
             // ซ่อนหน้าอื่น แสดงหน้า mobtua full page
+            _editingMobtuaId = ''; // ล้าง editing state — กรอกใหม่เปล่า
             document.getElementById('landingPage').classList.add('hidden');
             document.getElementById('mainContainer').classList.add('hidden');
             document.getElementById('reportPage').classList.remove('active');
             document.getElementById('mobtuaPage').classList.add('active');
-            // reset landing step for next time
             backToStep1();
 
             const defaultYear = localStorage.getItem('defaultAcademicYear');
             const yearVal = defaultYear || (new Date().getFullYear() + 543).toString();
             document.getElementById('mt_academicYear').value = yearVal;
 
-            // ตั้งค่าระดับชั้นเริ่มต้นใน classRoom field
             if (grade) {
                 const classRoomEl = document.querySelector('[name="mt_classRoom"]');
-                if (classRoomEl && !classRoomEl.value) {
+                if (classRoomEl) {
                     classRoomEl.value = grade === 'm1' ? 'ม.1/' : 'ม.4/';
                     classRoomEl.focus();
-                    // วาง cursor ไว้ท้ายสุด
                     const len = classRoomEl.value.length;
                     classRoomEl.setSelectionRange(len, len);
                 }
-                // เก็บ grade ไว้ใน data attribute ของ form เพื่อใช้ใน document
                 document.getElementById('mobtuaForm').dataset.grade = grade;
             }
 
-            // โหลดประวัติและ sync lock badge
             loadMobtuaHistory();
             const isLocked = localStorage.getItem('historyLocked') === 'true';
             const badge = document.getElementById('mobtuaLockedBadge');
             if (badge) {
+                badge.textContent = '🔒 ล็อครายการแล้ว';
+                badge.style.background = '';
                 isLocked ? badge.classList.remove('hidden') : badge.classList.add('hidden');
             }
-            // ตั้ง Autosave + โหลดข้อมูลที่บันทึกไว้
             setupAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
             promptRestoreAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
         }
 
         function closeMobtuaModal() {
+            _editingMobtuaId = '';
             document.getElementById('mobtuaPage').classList.remove('active');
             document.getElementById('landingPage').classList.remove('hidden');
             backToStep1();
+            // reset lock badge
+            const badge = document.getElementById('mobtuaLockedBadge');
+            if (badge) {
+                badge.classList.add('hidden');
+                badge.textContent = '🔒 ล็อครายการแล้ว';
+                badge.style.background = '';
+            }
         }
 
         function closeMobtuaPreviewModal() {
@@ -5577,33 +5856,62 @@
             const d = getMobtuaFormData();
             try {
                 showLoading(true);
-                const record = {
-                    formType: 'ใบมอบตัวนักเรียน',
-                    formCode: 'วก.กทว.205',
-                    studentName: d.mt_studentFullName || '',
-                    guardianName: d.mt_guardianName || '',
-                    academicYear: d.mt_academicYear || '',
-                    classRoom: d.mt_classRoom || '',
-                    data: d,
-                    createdAt: window.firestore.serverTimestamp(),
-                    updatedAt: window.firestore.serverTimestamp()
-                };
-                await window.firestore.addDoc(
-                    window.firestore.collection(window.db, 'mobtua'),
-                    record
-                );
-                showToast('บันทึกใบมอบตัวสำเร็จ');
+                const isEditing = !!_editingMobtuaId;
+                if (isEditing) {
+                    // อัปเดต pending record ที่มีอยู่
+                    await window.firestore.updateDoc(
+                        window.firestore.doc(window.db, 'mobtua', _editingMobtuaId),
+                        {
+                            studentName:  d.mt_studentFullName || '',
+                            guardianName: d.mt_guardianName || '',
+                            academicYear: d.mt_academicYear || '',
+                            classRoom:    d.mt_classRoom || '',
+                            status:       'done',
+                            data:         d,
+                            updatedAt:    window.firestore.serverTimestamp(),
+                        }
+                    );
+                    showToast('อัปเดตใบมอบตัวสำเร็จ ✅');
+                } else {
+                    // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์)
+                    const record = {
+                        formType:     'ใบมอบตัวนักเรียน',
+                        formCode:     'วก.กทว.205',
+                        studentName:  d.mt_studentFullName || '',
+                        guardianName: d.mt_guardianName || '',
+                        academicYear: d.mt_academicYear || '',
+                        classRoom:    d.mt_classRoom || '',
+                        gradeLevel:   d.mt_classRoom?.startsWith('ม.4') ? 'm4' : 'm1',
+                        status:       'done',
+                        data:         d,
+                        createdAt:    window.firestore.serverTimestamp(),
+                        updatedAt:    window.firestore.serverTimestamp()
+                    };
+                    await window.firestore.addDoc(
+                        window.firestore.collection(window.db, 'mobtua'),
+                        record
+                    );
+                    showToast('บันทึกใบมอบตัวสำเร็จ');
+                }
                 const html = generateMobtuaDocumentHTML(d, {}, false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
                 document.getElementById('mobtuaPreviewModal').classList.add('active');
                 await loadMobtuaHistory();
-                // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
+                // reset state
+                _editingMobtuaId = '';
+                // ล้างฟอร์มและ autosave
                 document.getElementById('mobtuaForm').reset();
                 clearAutosave(AUTOSAVE_KEY_MOBTUA);
-                // reset autosave setup flag ให้ event listener ทำงานต่อได้
                 const mf = document.getElementById('mobtuaForm');
                 if (mf) mf._autosaveSetup = false;
+                // reset badge
+                const badge = document.getElementById('mobtuaLockedBadge');
+                if (badge) {
+                    badge.classList.add('hidden');
+                    badge.textContent = '🔒 ล็อครายการแล้ว';
+                    badge.style.background = '';
+                }
             } catch (error) {
                 console.error('Error saving mobtua:', error);
                 showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
@@ -5653,8 +5961,11 @@
                     }
                     const actionBtns = isLocked
                         ? `<span style="font-size:var(--text-xs);color:var(--text-light);">🔒 ล็อครายการ</span>`
-                        : `<button class="btn btn-edit btn-sm" onclick="openMobtuaEditRecord('${rec.id}')">✏️ แก้ไข</button>
-                           <button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
+                        : rec.status === 'pending'
+                            ? `<button class="btn btn-primary btn-sm" style="background:#7b3f9e;" onclick="openPendingMobtua('${rec.id}')">✏️ กรอกต่อ</button>
+                               <button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`
+                            : `<button class="btn btn-edit btn-sm" onclick="openMobtuaEditRecord('${rec.id}')">✏️ แก้ไข</button>
+                               <button class="btn btn-danger btn-sm" onclick="deleteMobtuaRecord('${rec.id}')">🗑️ ลบ</button>`;
 
                     return `<div class="history-item ${getDocsStatusClass(rec.id,'mobtua')}" id="hist_mt_${rec.id}" style="border-left: 3px solid #9c4dcc;">
                         <div class="history-item-header">
@@ -5663,6 +5974,7 @@
                         </div>
                         <div class="history-item-name">
                             ${rec.studentName || '-'}
+                            ${rec.status === 'pending' ? '<span style=\"background:#fef9c3;color:#854d0e;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:4px;\">⏳ รอกรอก</span>' : ''}
                             ${getDocsStatusBadge(rec.id,'mobtua')}
                         </div>
                         <div class="history-item-detail">ปีการศึกษา ${rec.academicYear || '-'} | ${rec.classRoom || '-'} | ผู้ปกครอง: ${rec.guardianName || '-'}</div>

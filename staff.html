@@ -2030,6 +2030,109 @@ async function syncEditToMobtua(admId, prefix, firstName, lastName, fullName, ad
 }
 window.syncEditToMobtua = syncEditToMobtua;
 
+// ══════════════════════════════════════════════════════════════
+//  SYNC MOBTUA → ADMISSION (ทิศทางกลับ)
+//  เรียกหลังแก้ไขใบมอบตัว เพื่ออัปเดต field ที่ใช้ร่วมกัน
+// ══════════════════════════════════════════════════════════════
+async function syncMobtuaToAdmission(mtId, mtData, newStudentName) {
+  try {
+    const mtRec = allMobtua.find(r => r.id === mtId);
+    // หา admission ที่เชื่อมโยง
+    let admRec = null;
+    if (mtRec?.admissionId) {
+      admRec = allAdmissions.find(r => r.id === mtRec.admissionId);
+    }
+    if (!admRec && newStudentName) {
+      admRec = allAdmissions.find(r => r.studentName === newStudentName);
+    }
+    if (!admRec && mtRec?.studentName) {
+      admRec = allAdmissions.find(r => r.studentName === mtRec.studentName);
+    }
+    if (!admRec) {
+      console.log('syncMobtuaToAdmission: no linked admission found for', mtId);
+      return;
+    }
+
+    const d = mtData;
+    const oldAdm = admRec.data || {};
+
+    // parse father/mother from mobtua fullname fields (if split fields not available)
+    const parseMtName = (full) => {
+      if (!full) return { prefix: '', firstName: '', lastName: '' };
+      const prefixes = ['นาย','นาง','นางสาว','เด็กชาย','เด็กหญิง','ดร.','รศ.','ผศ.'];
+      let prefix = '', rest = full.trim();
+      for (const p of prefixes) {
+        if (rest.startsWith(p)) { prefix = p; rest = rest.slice(p.length).trim(); break; }
+      }
+      const parts = rest.split(/\s+/);
+      return { prefix, firstName: parts[0] || '', lastName: parts.slice(1).join(' ') };
+    };
+
+    const fatherParsed  = parseMtName(d.mt_fatherFullName || '');
+    const motherParsed  = parseMtName(d.mt_motherFullName || '');
+
+    // กำหนด fatherName / motherName แบบเต็มสำหรับ admission
+    const fatherName = d.mt_fatherFullName ||
+      `${d.mt_fatherPrefix || fatherParsed.prefix} ${d.mt_fatherFirstName || fatherParsed.firstName} ${d.mt_fatherLastName || fatherParsed.lastName}`.trim();
+    const motherName = d.mt_motherFullName ||
+      `${d.mt_motherPrefix || motherParsed.prefix} ${d.mt_motherFirstName || motherParsed.firstName} ${d.mt_motherLastName || motherParsed.lastName}`.trim();
+
+    const syncedAdmData = {
+      ...oldAdm,
+      // ── ข้อมูลนักเรียน ──
+      prefix:         d.mt_studentPrefix    || oldAdm.prefix,
+      firstName:      d.mt_studentFirstName || oldAdm.firstName,
+      lastName:       d.mt_studentLastName  || oldAdm.lastName,
+      fullName:       d.mt_studentFullName  || (d.mt_studentFirstName ? `${d.mt_studentFirstName} ${d.mt_studentLastName || ''}`.trim() : oldAdm.fullName),
+      nickname:       d.mt_studentNickname  || oldAdm.nickname,
+      birthDay:       d.mt_birthDay         || oldAdm.birthDay,
+      birthMonth:     d.mt_birthMonth       || oldAdm.birthMonth,
+      birthYear:      d.mt_birthYear        || oldAdm.birthYear,
+      nationalId:     d.mt_studentNationalId|| oldAdm.nationalId,
+      height:         d.mt_height           || oldAdm.height,
+      weight:         d.mt_weight           || oldAdm.weight,
+      bloodType:      d.mt_bloodType        || oldAdm.bloodType,
+      // ── ที่อยู่ ──
+      houseNumber:    d.mt_houseNo          || oldAdm.houseNumber,
+      moo:            d.mt_moo              || oldAdm.moo,
+      subdistrict:    d.mt_subdistrict      || oldAdm.subdistrict,
+      district:       d.mt_district         || oldAdm.district,
+      province:       d.mt_province         || oldAdm.province,
+      postalCode:     d.mt_postalCode       || oldAdm.postalCode,
+      // ── บิดา ──
+      fatherName,
+      fatherPrefix:      d.mt_fatherPrefix      || fatherParsed.prefix   || oldAdm.fatherPrefix,
+      fatherFirstName:   d.mt_fatherFirstName   || fatherParsed.firstName || oldAdm.fatherFirstName,
+      fatherLastName:    d.mt_fatherLastName     || fatherParsed.lastName  || oldAdm.fatherLastName,
+      fatherOccupation:  d.mt_fatherOccupation  || oldAdm.fatherOccupation,
+      fatherNationalId:  d.mt_fatherNationalId  || oldAdm.fatherNationalId,
+      // ── มารดา ──
+      motherName,
+      motherPrefix:      d.mt_motherPrefix      || motherParsed.prefix   || oldAdm.motherPrefix,
+      motherFirstName:   d.mt_motherFirstName   || motherParsed.firstName || oldAdm.motherFirstName,
+      motherLastName:    d.mt_motherLastName     || motherParsed.lastName  || oldAdm.motherLastName,
+      motherOccupation:  d.mt_motherOccupation  || oldAdm.motherOccupation,
+      motherNationalId:  d.mt_motherNationalId  || oldAdm.motherNationalId,
+    };
+
+    const admStudentName = newStudentName ||
+      `${syncedAdmData.prefix || ''}${syncedAdmData.fullName || ''}`.trim() || admRec.studentName;
+
+    await window._fs.updateDoc(
+      window._fs.doc(window._db, 'admissions', admRec.id),
+      { studentName: admStudentName, data: syncedAdmData, updatedAt: window._fs.serverTimestamp() }
+    );
+    // อัปเดต local cache
+    admRec.studentName = admStudentName;
+    admRec.data = syncedAdmData;
+    renderAdmissions();
+    console.log('syncMobtuaToAdmission: synced to admission', admRec.id);
+  } catch(e) {
+    console.warn('syncMobtuaToAdmission error:', e.message);
+  }
+}
+window.syncMobtuaToAdmission = syncMobtuaToAdmission;
+
 function editMobtua(id) {
   const rec = allMobtua.find(r => r.id === id);
   if (!rec) return;
@@ -2102,7 +2205,12 @@ async function saveEditMobtua() {
       window._fs.doc(window._db, 'mobtua', currentEditId),
       { studentName: studentFullName, classRoom, guardianName, academicYear, data: d, updatedAt: window._fs.serverTimestamp() }
     );
-    showToast('แก้ไขข้อมูลใบมอบตัวสำเร็จ', 'success');
+    // อัปเดต local cache ใบมอบตัวก่อน
+    const mtRec = allMobtua.find(r => r.id === currentEditId);
+    if (mtRec) { mtRec.studentName = studentFullName; mtRec.guardianName = guardianName; mtRec.data = d; }
+    // ── Sync กลับไปยังใบสมัคร ──
+    await syncMobtuaToAdmission(currentEditId, d, studentFullName);
+    showToast('แก้ไขข้อมูลใบมอบตัวสำเร็จ ✅ (sync ไปใบสมัครแล้ว)', 'success');
     closeModal('modalEditMobtua');
     const mt = document.getElementById('modalEditMobtua');
     if (mt) mt.style.zIndex = '';

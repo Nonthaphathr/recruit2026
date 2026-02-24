@@ -310,6 +310,133 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 ══════════════════════════════════════════════ */
 .verify-checklist{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem;}
 
+/* ════════════════════════════════════════════════════════
+   INSPECTION STEPPER CSS
+════════════════════════════════════════════════════════ */
+.stepper-overlay{
+  position:fixed;inset:0;z-index:6000;
+  display:flex;flex-direction:column;
+  background:var(--bg,#f0f3f8);
+  animation:fadeIn .2s ease;
+}
+.stepper-header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);
+  padding:.75rem 1.25rem;
+  display:flex;align-items:center;gap:1rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  flex-shrink:0;
+}
+.stepper-title{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:'Mitr',sans-serif;font-weight:600;color:#fff;font-size:.95rem;
+  min-width:0;flex:0 0 auto;
+}
+.stepper-icon{font-size:1.1rem;}
+.stepper-progress{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:0;
+}
+.stepper-step{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.step-circle{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;font-family:'Mitr',sans-serif;
+  background:rgba(255,255,255,.18);color:rgba(255,255,255,.7);
+  border:2px solid rgba(255,255,255,.25);transition:all .3s ease;
+}
+.step-circle.active{
+  background:var(--gold);color:var(--navy);
+  border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.3);
+}
+.step-circle.done{
+  background:#4ade80;color:#064e3b;border-color:#4ade80;
+}
+.step-label{
+  font-size:.62rem;color:rgba(255,255,255,.65);
+  font-family:'Sarabun',sans-serif;white-space:nowrap;
+}
+.stepper-step.active .step-label{color:rgba(255,255,255,.95);}
+.step-line{
+  flex:1;height:2px;background:rgba(255,255,255,.2);
+  max-width:60px;min-width:20px;margin:0 4px;
+  transition:background .3s;
+}
+.step-line.done{background:#4ade80;}
+.stepper-close-btn{
+  background:rgba(255,255,255,.15);border:none;
+  width:32px;height:32px;border-radius:50%;
+  color:rgba(255,255,255,.9);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .2s;
+}
+.stepper-close-btn:hover{background:rgba(255,255,255,.3);}
+.stepper-body{
+  flex:1;overflow-y:auto;
+  max-width:780px;width:100%;
+  margin:0 auto;padding:1.25rem 1rem;
+  display:flex;flex-direction:column;
+}
+.stepper-panel{display:none;flex-direction:column;gap:.6rem;animation:fadeIn .2s ease;}
+.stepper-panel.active{display:flex;}
+.stepper-panel-title{
+  font-family:'Mitr',sans-serif;font-size:1.05rem;font-weight:600;
+  color:var(--navy);margin-bottom:.3rem;
+  padding-bottom:.6rem;border-bottom:2px solid var(--border);
+  display:flex;align-items:center;gap:.5rem;
+}
+.stepper-panel-actions{display:flex;justify-content:flex-end;margin-bottom:.25rem;}
+.stepper-detail-scroll{
+  flex:1;
+}
+.stepper-footer{
+  background:var(--card);
+  padding:.85rem 1.25rem;
+  display:flex;align-items:center;gap:.75rem;
+  border-top:1.5px solid var(--border);
+  flex-shrink:0;
+  box-shadow:0 -2px 8px rgba(0,0,0,.07);
+}
+
+/* Print cards grid (Step 3) */
+.print-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.print-card{
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:1.4rem 1rem 1.2rem;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s ease;
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+}
+.print-card:hover{
+  border-color:var(--gold);
+  box-shadow:0 4px 16px rgba(212,168,67,.2);
+  transform:translateY(-3px);
+}
+.print-card.disabled{
+  opacity:.5;cursor:not-allowed;
+}
+.print-card.disabled:hover{transform:none;border-color:var(--border);box-shadow:none;}
+.print-card-icon{font-size:2.2rem;line-height:1;}
+.print-card-title{
+  font-family:'Mitr',sans-serif;font-weight:600;
+  color:var(--navy);font-size:.9rem;
+}
+.print-card-desc{font-size:.75rem;color:var(--text-soft);line-height:1.5;}
+.print-card-badge{
+  font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;
+  border:1.5px solid;margin-top:auto;
+}
+.print-card-badge.ok{background:#dcfce7;color:#15803d;border-color:#86efac;}
+.print-card-badge.warn{background:#fef9c3;color:#854d0e;border-color:#fde047;}
+.print-card-badge.na{background:#f1f5f9;color:#64748b;border-color:#cbd5e1;}
+
+@media(max-width:640px){
+  .print-cards-grid{grid-template-columns:1fr;}
+  .stepper-title span:last-child{display:none;}
+  .step-label{display:none;}
+}
+
 /* ── Student detail overlay (stacked on top of verify modal) ── */
 #studentDetailOverlay{
   position:fixed;inset:0;z-index:4500;
@@ -1156,16 +1283,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
     <div style="padding:0 1.5rem .75rem;">
       <div class="nda-warning">⚠️ กรุณาตรวจสอบเอกสารหลักฐานแนบแล้วสั่งพิมพ์</div>
     </div>
-    <div class="new-data-alert-actions">
-      <button class="btn-nda btn-nda-preview" onclick="ndaPreviewDoc()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-        ดูตัวอย่างเอกสาร
+    <div class="new-data-alert-actions" style="padding-bottom:1.25rem;">
+      <button class="btn-nda btn-nda-verify" style="font-size:1rem;padding:.7rem 1.6rem;letter-spacing:.02em;" onclick="startInspectionFlow()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        เริ่มตรวจสอบ
       </button>
-      <button class="btn-nda btn-nda-verify" onclick="dismissAndVerifyLatest()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        ตรวจและยืนยันเอกสารประกอบ
-      </button>
-      <button class="btn-nda btn-nda-dismiss" onclick="dismissNewDataAlert()">ปิด</button>
     </div>
   </div>
 </div>
@@ -1198,6 +1320,112 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
     แจ้งเตือน
   </button>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     INSPECTION STEPPER (full-page overlay)
+════════════════════════════════════════════════════════ -->
+<div id="inspectionStepper" style="display:none;" class="stepper-overlay">
+  <!-- Header -->
+  <div class="stepper-header">
+    <div class="stepper-title">
+      <span class="stepper-icon">🔍</span>
+      <span id="stepperStudentName">ตรวจสอบนักเรียน</span>
+    </div>
+    <div class="stepper-progress">
+      <div class="stepper-step" id="step-indicator-1">
+        <div class="step-circle active" id="step-circle-1">1</div>
+        <div class="step-label">รายละเอียด</div>
+      </div>
+      <div class="step-line" id="step-line-12"></div>
+      <div class="stepper-step" id="step-indicator-2">
+        <div class="step-circle" id="step-circle-2">2</div>
+        <div class="step-label">ยืนยันเอกสาร</div>
+      </div>
+      <div class="step-line" id="step-line-23"></div>
+      <div class="stepper-step" id="step-indicator-3">
+        <div class="step-circle" id="step-circle-3">3</div>
+        <div class="step-label">สั่งพิมพ์</div>
+      </div>
+    </div>
+    <button class="stepper-close-btn" onclick="closeInspectionStepper()" title="ปิด">✕</button>
+  </div>
+
+  <!-- Body -->
+  <div class="stepper-body">
+    <!-- STEP 1: รายละเอียดนักเรียน -->
+    <div id="stepper-panel-1" class="stepper-panel active">
+      <div class="stepper-panel-title">👤 ตรวจรายละเอียดนักเรียน</div>
+      <div class="stepper-panel-actions">
+        <button class="btn-sm btn-edit" id="stepperEditBtn" onclick="openEditFromStepper()" style="padding:.4rem .85rem;font-size:.82rem;display:inline-flex;align-items:center;gap:5px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          แก้ไขข้อมูล
+        </button>
+      </div>
+      <div id="stepperDetailBody" class="stepper-detail-scroll"></div>
+    </div>
+
+    <!-- STEP 2: ยืนยันเอกสาร -->
+    <div id="stepper-panel-2" class="stepper-panel">
+      <div class="stepper-panel-title">📋 ยืนยันเอกสารหลักฐาน</div>
+      <div class="verify-summary" id="stepperVerifySummary"></div>
+      <div id="stepperLinkedNote" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 12px;font-size:.78rem;color:#1e40af;margin-bottom:.55rem;display:none;"></div>
+      <p style="font-size:.78rem;color:var(--text-soft);margin-bottom:.5rem;">
+        ✅ กดติ๊กรายการที่ได้รับเอกสารครบแล้ว
+      </p>
+      <div class="verify-checklist" id="stepperVerifyChecklist"></div>
+      <div style="margin-top:.75rem;">
+        <label style="font-size:.82rem;font-weight:600;color:var(--gold);display:block;margin-bottom:4px;">📝 หมายเหตุ</label>
+        <textarea class="verify-note-area" id="stepperVerifyNote" placeholder="เช่น รอสำเนาบัตรประชาชนมารดา..."></textarea>
+      </div>
+    </div>
+
+    <!-- STEP 3: สั่งพิมพ์ -->
+    <div id="stepper-panel-3" class="stepper-panel">
+      <div class="stepper-panel-title">🖨️ สั่งพิมพ์เอกสาร</div>
+      <p style="font-size:.82rem;color:var(--text-soft);margin-bottom:1.1rem;">เลือกเอกสารที่ต้องการพิมพ์</p>
+      <div class="print-cards-grid" id="printCardsGrid">
+        <!-- Cards generated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer navigation -->
+  <div class="stepper-footer">
+    <button class="btn-secondary" id="stepperBackBtn" onclick="stepperNav(-1)" style="display:none;">← ย้อนกลับ</button>
+    <div style="flex:1;"></div>
+    <button class="btn-gold" id="stepperNextBtn" onclick="stepperNav(1)">
+      ถัดไป <span style="font-size:.9em;">→</span>
+    </button>
+    <button class="btn-gold" id="stepperDoneBtn" onclick="closeInspectionStepper()" style="display:none;">
+      ✅ เสร็จสิ้น
+    </button>
+  </div>
+</div>
+
+<!-- Mobtua verify sub-modal (inside stepper flow for print card 3) -->
+<div id="mobtuaVerifySubModal" class="stepper-overlay" style="display:none;background:rgba(15,28,46,.6);z-index:6100;">
+  <div class="modal-box" style="max-width:640px;margin:auto;">
+    <div class="modal-header">
+      <h3>📋 ยืนยันเอกสาร — ใบมอบตัว</h3>
+      <button class="modal-close-btn" onclick="closeMobtuaVerifySubModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="verify-checklist" id="mobtuaSubChecklist"></div>
+      <div style="margin-top:.75rem;">
+        <label style="font-size:.82rem;font-weight:600;color:var(--gold);display:block;margin-bottom:4px;">📝 หมายเหตุ</label>
+        <textarea class="verify-note-area" id="mobtuaSubNote" placeholder="หมายเหตุสำหรับใบมอบตัว..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeMobtuaVerifySubModal()">ยกเลิก</button>
+      <button class="btn-gold" onclick="confirmMobtuaSubVerifyAndPrint()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+        ยืนยันและสั่งพิมพ์ใบมอบตัว
+      </button>
+    </div>
+  </div>
 </div>
 
 <div id="printTarget"></div>
@@ -2485,7 +2713,612 @@ async function syncVerifiedDocsFromMobtua(mtId, mtStaffVerified, note) {
     }
 }
 
+
 window.syncVerifiedDocsFromMobtua = syncVerifiedDocsFromMobtua;
+
+/* ══════════════════════════════════════════════════════════════════
+   INSPECTION STEPPER — Full-page guided flow
+══════════════════════════════════════════════════════════════════ */
+let _stepperCurrentStep = 1;
+let _stepperRecId  = '';
+let _stepperCol    = '';  // 'admissions' | 'mobtua'
+
+// ── Open from Notification modal ──────────────────────────────
+function startInspectionFlow() {
+    dismissNewDataAlert();
+    const id  = _ndaLatestId;
+    const col = _ndaLatestCol;
+    if (!id) return;
+    setTimeout(() => openInspectionStepper(id, col), 150);
+}
+window.startInspectionFlow = startInspectionFlow;
+
+// ── Open from any context (table buttons etc.) ─────────────────
+function openInspectionStepper(id, col) {
+    _stepperRecId  = id;
+    _stepperCol    = col;
+
+    // sync shared verify state
+    _verifyCurrentId         = id;
+    _verifyCurrentCollection = col;
+
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    const name = rec ? (rec.studentName || 'ไม่ระบุ') : '?';
+    document.getElementById('stepperStudentName').textContent = name;
+
+    goToStep(1);
+    document.getElementById('inspectionStepper').style.display = 'flex';
+}
+window.openInspectionStepper = openInspectionStepper;
+
+function closeInspectionStepper() {
+    document.getElementById('inspectionStepper').style.display = 'none';
+    _stepperCurrentStep = 1;
+    closeStudentDetailOverlay(null);
+}
+window.closeInspectionStepper = closeInspectionStepper;
+
+// ── Step navigation ────────────────────────────────────────────
+async function stepperNav(dir) {
+    const nextStep = _stepperCurrentStep + dir;
+    // Going forward from step 2 → save verify
+    if (dir > 0 && _stepperCurrentStep === 2) {
+        await saveStepperVerify();
+    }
+    if (nextStep < 1 || nextStep > 3) return;
+    goToStep(nextStep);
+}
+window.stepperNav = stepperNav;
+
+function goToStep(n) {
+    _stepperCurrentStep = n;
+
+    // Hide all panels, show active
+    [1,2,3].forEach(i => {
+        const p = document.getElementById(`stepper-panel-${i}`);
+        if (p) { p.classList.toggle('active', i === n); }
+    });
+
+    // Update progress indicators
+    [1,2,3].forEach(i => {
+        const c = document.getElementById(`step-circle-${i}`);
+        if (!c) return;
+        c.classList.remove('active','done');
+        if (i < n) c.classList.add('done');
+        else if (i === n) c.classList.add('active');
+    });
+    const l12 = document.getElementById('step-line-12');
+    const l23 = document.getElementById('step-line-23');
+    if (l12) l12.classList.toggle('done', n > 1);
+    if (l23) l23.classList.toggle('done', n > 2);
+
+    // Update step indicators class
+    [1,2,3].forEach(i => {
+        const ind = document.getElementById(`step-indicator-${i}`);
+        if (ind) ind.classList.toggle('active', i === n);
+    });
+
+    // Back / Next / Done buttons
+    const backBtn = document.getElementById('stepperBackBtn');
+    const nextBtn = document.getElementById('stepperNextBtn');
+    const doneBtn = document.getElementById('stepperDoneBtn');
+    if (backBtn) backBtn.style.display = n > 1 ? '' : 'none';
+    if (nextBtn) nextBtn.style.display = n < 3 ? '' : 'none';
+    if (nextBtn && n === 2) nextBtn.textContent = 'ยืนยันและถัดไป →';
+    if (nextBtn && n === 1) nextBtn.innerHTML = 'ถัดไป <span style="font-size:.9em;">→</span>';
+    if (doneBtn) doneBtn.style.display = n === 3 ? '' : 'none';
+
+    // Build panel content
+    if (n === 1) buildStepperStep1();
+    if (n === 2) buildStepperStep2();
+    if (n === 3) buildStepperStep3();
+}
+window.goToStep = goToStep;
+
+// ── STEP 1: Student Detail ────────────────────────────────────
+function buildStepperStep1() {
+    const id  = _stepperRecId;
+    const col = _stepperCol;
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) { document.getElementById('stepperDetailBody').innerHTML = '<p>ไม่พบข้อมูล</p>'; return; }
+
+    const d = rec.data || {};
+    const gradeLabel = col === 'admissions'
+        ? (rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')
+        : ((rec.gradeLevel || rec.classRoom || '').includes('4') ? 'ม.4' : 'ม.1');
+
+    const dash = '<span style="color:#94a3b8">—</span>';
+    const row = (label, val, hl = false) =>
+        `<div class="sdc-row"><span class="sdc-label">${label}</span>
+         <span class="sdc-val${hl ? ' highlight' : ''}">${val || dash}</span></div>`;
+    const rowId = (label, val) =>
+        `<div class="sdc-row"><span class="sdc-label">${label}</span>
+         <span class="sdc-val" style="font-family:monospace;font-size:.82rem;letter-spacing:.05em;color:#c2185b;font-weight:700;">${val || dash}</span></div>`;
+    const sec = t => `<div class="sdc-section-title">${t}</div>`;
+    const addrStr = (parts) => parts.filter(Boolean).join(' ') || dash;
+
+    let html = '';
+
+    if (col === 'admissions') {
+        const birthStr = d.birthDay && d.birthMonth
+            ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}`.trim() : (d.birthDate || '');
+        const studentAddr = addrStr([d.houseNumber,
+            d.moo ? `หมู่ ${d.moo}` : '', d.village ? `บ้าน${d.village}` : '',
+            d.subdistrict ? `ต.${d.subdistrict}` : '', d.district ? `อ.${d.district}` : '',
+            d.province ? `จ.${d.province}` : '', d.postalCode || '']);
+        const fatherFull = `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim();
+        const motherFull = `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim();
+
+        html = sec('👤 ข้อมูลนักเรียน') +
+            row('ชื่อ-นามสกุล', `${d.prefix||''}${d.firstName||''} ${d.lastName||''}`.trim(), true) +
+            row('ระดับชั้นที่สมัคร', gradeLabel) + row('ชื่อเล่น', d.nickname) +
+            row('วันเกิด', birthStr) + row('อายุ', d.age ? d.age + ' ปี' : '') +
+            row('หมู่เลือด', d.bloodType) + row('ส่วนสูง / น้ำหนัก', `${d.height||'—'} cm / ${d.weight||'—'} kg`) +
+            rowId('เลขบัตรประชาชนนักเรียน', d.nationalId) + row('โทรศัพท์', d.phone) +
+            sec('🏠 ที่อยู่ตามทะเบียนบ้าน') +
+            row('บ้านเลขที่', d.houseNumber) + row('หมู่', d.moo) + row('หมู่บ้าน', d.village) +
+            row('ตำบล', d.subdistrict) + row('อำเภอ', d.district) +
+            row('จังหวัด', d.province) + row('รหัสไปรษณีย์', d.postalCode) +
+            row('ที่อยู่เต็ม', studentAddr) +
+            sec('🏫 การศึกษาเดิม') +
+            row('โรงเรียนเดิม', d.previousSchool) +
+            row('จังหวัด', d.schoolProvince || d.previousSchoolProvince) + row('เกรดเฉลี่ย', d.gpa) +
+            sec('👨 บิดา') + row('ชื่อบิดา', fatherFull) +
+            row('อาชีพบิดา', d.fatherOccupation) + row('อายุบิดา', d.fatherAge ? d.fatherAge + ' ปี' : '') +
+            sec('👩 มารดา') + row('ชื่อมารดา', motherFull) +
+            row('อาชีพมารดา', d.motherOccupation) + row('อายุมารดา', d.motherAge ? d.motherAge + ' ปี' : '') +
+            sec('🕐 ข้อมูลระบบ') +
+            row('วันที่สมัคร', thaiDate(rec.createdAt)) + row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+    } else {
+        const birthStr = d.mt_birthDay && d.mt_birthMonth
+            ? `${d.mt_birthDay} ${d.mt_birthMonth} ${d.mt_birthYear || ''}`.trim() : '';
+        const studentAddr = addrStr([d.mt_houseNo, d.mt_moo ? `หมู่ ${d.mt_moo}` : '',
+            d.mt_subdistrict ? `ต.${d.mt_subdistrict}` : '', d.mt_district ? `อ.${d.mt_district}` : '',
+            d.mt_province ? `จ.${d.mt_province}` : '', d.mt_postalCode || '']);
+        const guardianFull = `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim();
+        const fatherFull = `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim();
+        const motherFull = `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim();
+
+        html = sec('👤 ข้อมูลนักเรียน') +
+            row('ชื่อ-นามสกุล', `${d.mt_studentPrefix||''}${d.mt_studentFirstName||''} ${d.mt_studentLastName||''}`.trim(), true) +
+            row('ชื่อเล่น', d.mt_studentNickname) + row('ห้องเรียน', d.mt_classRoom) +
+            row('ปีการศึกษา', d.mt_academicYear) + row('วันเกิด', birthStr) +
+            row('หมู่เลือด', d.mt_bloodType) +
+            row('ส่วนสูง / น้ำหนัก', `${d.mt_height||'—'} cm / ${d.mt_weight||'—'} kg`) +
+            rowId('เลขบัตรประชาชนนักเรียน', d.mt_studentNationalId) +
+            sec('🏠 ที่อยู่ตามทะเบียนบ้าน') +
+            row('บ้านเลขที่', d.mt_houseNo) + row('หมู่', d.mt_moo) +
+            row('ตำบล', d.mt_subdistrict) + row('อำเภอ', d.mt_district) +
+            row('จังหวัด', d.mt_province) + row('รหัสไปรษณีย์', d.mt_postalCode) +
+            row('ที่อยู่เต็ม', studentAddr) +
+            sec('🧑‍🤝‍🧑 ผู้ปกครอง') +
+            row('ชื่อผู้ปกครอง', guardianFull, true) + row('ความสัมพันธ์', d.mt_guardianRelation) +
+            rowId('เลขบัตรผู้ปกครอง', d.mt_guardianNationalId) +
+            row('อาชีพ', d.mt_guardianOccupation) + row('โทรมือถือ', d.mt_guardianMobile) +
+            sec('👨 บิดา') + row('ชื่อบิดา', fatherFull) +
+            rowId('เลขบัตรบิดา', d.mt_fatherNationalId) +
+            row('อาชีพบิดา', d.mt_fatherOccupation) + row('โทรมือถือ', d.mt_fatherMobile) +
+            sec('👩 มารดา') + row('ชื่อมารดา', motherFull) +
+            rowId('เลขบัตรมารดา', d.mt_motherNationalId) +
+            row('อาชีพมารดา', d.mt_motherOccupation) + row('โทรมือถือ', d.mt_motherMobile) +
+            sec('🕐 ข้อมูลระบบ') +
+            row('วันที่บันทึก', thaiDate(rec.createdAt)) + row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+    }
+
+    document.getElementById('stepperDetailBody').innerHTML = html;
+}
+
+// ── STEP 2: Verify Docs ───────────────────────────────────────
+function buildStepperStep2() {
+    const id  = _stepperRecId;
+    const col = _stepperCol;
+    const isAdm = col === 'admissions';
+    const arr = isAdm ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) return;
+
+    _verifyCurrentId         = id;
+    _verifyCurrentCollection = col;
+
+    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
+    const sv    = rec.staffVerified || {};
+    const docChecks = rec.docChecks || {};
+
+    // init draft
+    _verifyDraft = {};
+    items.forEach(k => { _verifyDraft[k] = sv[k] === true; });
+
+    // linked record staffVerified
+    let linkedSV = {};
+    if (isAdm) {
+        const lmt = allMobtua.find(r => r.admissionId === id || r.studentName === rec.studentName);
+        if (lmt?.staffVerified) linkedSV = lmt.staffVerified;
+    } else {
+        const ladm = allAdmissions.find(r => r.id === rec.admissionId || r.studentName === rec.studentName);
+        if (ladm?.staffVerified) linkedSV = ladm.staffVerified;
+    }
+
+    // Summary
+    const studentCnt = items.filter(k => docChecks[k] === true).length;
+    const staffCnt   = items.filter(k => sv[k] === true).length;
+    const prevNote   = rec.docVerifiedNote || '';
+
+    document.getElementById('stepperVerifySummary').innerHTML = `
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:.35rem;">
+            <div style="font-size:.82rem;color:var(--text-soft);">📱 ผู้สมัครทำเครื่องหมาย: <strong style="color:var(--text);">${studentCnt}/${items.length}</strong></div>
+            <div style="font-size:.82rem;color:var(--text-soft);">👩‍🏫 ครูตรวจสอบแล้ว: <strong style="color:${staffCnt===items.length?'#16a34a':staffCnt>0?'#ca8a04':'#ea580c'};">${staffCnt}/${items.length}</strong></div>
+        </div>
+        ${prevNote ? `<div style="font-size:.78rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 9px;color:var(--text-soft);">หมายเหตุก่อนหน้า: ${prevNote}</div>` : ''}`;
+
+    // Linked note
+    const linkedNote = document.getElementById('stepperLinkedNote');
+    const hasLinked = Object.values(linkedSV).some(v => v === true);
+    if (hasLinked && linkedNote) {
+        const lbl = isAdm ? 'ใบมอบตัว' : 'ใบสมัคร';
+        const linkedCnt = SHARED_DOC_KEYS.filter(k => linkedSV[k] === true).length;
+        linkedNote.textContent = `🔗 ยืนยันเอกสารร่วม ${linkedCnt} รายการจาก${lbl}แล้ว — รายการ 🔗ร่วม จะ sync อัตโนมัติ`;
+        linkedNote.style.display = '';
+    } else if (linkedNote) {
+        linkedNote.style.display = 'none';
+    }
+
+    // Checklist
+    document.getElementById('stepperVerifyChecklist').innerHTML = items.map((item, i) => {
+        const studentDone = docChecks[item] === true;
+        const staffDone   = _verifyDraft[item] === true;
+        const isShared    = SHARED_DOC_KEYS.includes(item);
+        const linkedDone  = isShared && linkedSV[item] === true;
+        const sharedTag   = isShared ? `<span style="font-size:.63rem;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:1px 5px;border-radius:99px;">🔗ร่วม</span>` : '';
+        const linkedTag   = (linkedDone && !staffDone) ? `<span style="font-size:.63rem;color:#059669;background:#f0fdf4;border:1px solid #86efac;padding:1px 5px;border-radius:99px;">✓อีกฉบับ</span>` : '';
+        const studentTag  = studentDone ? `<span style="font-size:.63rem;color:#16a34a;white-space:nowrap;">📱ผู้สมัคร</span>` : '';
+        return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}" onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+            <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+            <span style="flex:1;">${item}</span>
+            <span style="display:flex;gap:3px;align-items:center;flex-shrink:0;">${sharedTag}${linkedTag}${studentTag}</span>
+        </label>`;
+    }).join('');
+
+    // Note
+    const noteEl = document.getElementById('stepperVerifyNote');
+    if (noteEl) noteEl.value = prevNote;
+}
+
+function stepperToggleVerify(itemKey, idx) {
+    _verifyDraft[itemKey] = !_verifyDraft[itemKey];
+    const el = document.getElementById(`svci_${idx}`);
+    const cb = el?.querySelector('input[type="checkbox"]');
+    if (el) el.className = 'verify-check-item ' + (_verifyDraft[itemKey] ? 'done' : '');
+    if (cb) cb.checked = _verifyDraft[itemKey];
+}
+window.stepperToggleVerify = stepperToggleVerify;
+
+async function saveStepperVerify() {
+    const col  = _stepperCol;
+    const id   = _stepperRecId;
+    const note = document.getElementById('stepperVerifyNote')?.value?.trim() || '';
+    const newSV = { ..._verifyDraft };
+
+    // Determine Firestore collection
+    const fsCol  = col === 'admissions' ? 'admissions' : 'mobtua';
+    const fsDoc  = window._fs.doc(window._db, fsCol, id);
+    try {
+        await window._fs.updateDoc(fsDoc, {
+            staffVerified: newSV,
+            docVerifiedNote: note,
+            updatedAt: window._fs.serverTimestamp()
+        });
+        // Bidirectional sync for shared docs
+        if (col === 'admissions') {
+            syncVerifiedDocsToMobtua(id, newSV);
+        } else {
+            syncVerifiedDocsFromMobtua(id, newSV);
+        }
+        await loadAll();
+    } catch(e) { console.error('saveStepperVerify error:', e); }
+}
+
+// ── STEP 3: Print Cards ───────────────────────────────────────
+function buildStepperStep3() {
+    const id  = _stepperRecId;
+    const col = _stepperCol;
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+
+    // Check verify completeness
+    const sv = rec?.staffVerified || {};
+    const docItems = col === 'admissions'
+        ? ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
+           'สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา']
+        : ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+
+    const allDone = docItems.every(k => sv[k] === true);
+    const missingDocs = docItems.filter(k => sv[k] !== true);
+    const missingCount = missingDocs.length;
+
+    const verifyBadge = allDone
+        ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
+        : `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`;
+
+    // Find linked mobtua (if admission)
+    let linkedMobtua = null;
+    if (col === 'admissions') {
+        linkedMobtua = allMobtua.find(m =>
+            m.admissionId === id || m.studentName === (rec?.studentName || '__'));
+    }
+
+    const card = (icon, title, desc, badge, onclick, disabled = false) => `
+        <div class="print-card${disabled ? ' disabled' : ''}" ${disabled ? '' : `onclick="${onclick}"`}>
+          <div class="print-card-icon">${icon}</div>
+          <div class="print-card-title">${title}</div>
+          <div class="print-card-desc">${desc}</div>
+          ${badge}
+        </div>`;
+
+    // Card 3 logic — mobtua
+    let card3 = '';
+    if (col === 'mobtua') {
+        card3 = card('📋', 'พิมพ์ใบมอบตัว',
+            'เอกสารมอบตัวนักเรียน',
+            `<span class="print-card-badge ok">✓ เลือกได้</span>`,
+            `printMobtuaById('${id}')`);
+    } else if (linkedMobtua) {
+        const mtSv = linkedMobtua.staffVerified || {};
+        const mtAllDone = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+            'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+            'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา',
+            'สำเนาบัตรประชาชนของมารดา'].every(k => mtSv[k] === true);
+        card3 = card('📋', 'พิมพ์ใบมอบตัว',
+            'ต้องยืนยันหลักฐานใบมอบตัวก่อน',
+            mtAllDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
+                      : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
+            `openMobtuaVerifySubModal('${linkedMobtua.id}')`);
+    } else {
+        card3 = card('📋', 'พิมพ์ใบมอบตัว',
+            'ยังไม่มีข้อมูลใบมอบตัว',
+            `<span class="print-card-badge na">ไม่มีข้อมูล</span>`,
+            '', true);
+    }
+
+    document.getElementById('printCardsGrid').innerHTML =
+        card('📄', 'พิมพ์ใบสมัคร',
+            col === 'admissions' ? 'แบบฟอร์มใบสมัครเรียน' : 'ใบสมัครที่เชื่อมโยง',
+            verifyBadge,
+            col === 'admissions' ? `printAdmissionById('${id}')` : `printLinkedAdmission('${id}')`) +
+        card('📅', 'พิมพ์ใบนัดหมาย',
+            missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
+            missingCount > 0
+                ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
+                : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
+            `printAppointmentDoc('${id}','${col}')`) +
+        card3;
+}
+
+function printLinkedAdmission(mobtuaId) {
+    const mt = allMobtua.find(r => r.id === mobtuaId);
+    if (!mt) return;
+    const adm = allAdmissions.find(r => r.id === mt.admissionId || r.studentName === mt.studentName);
+    if (adm) printAdmissionById(adm.id);
+}
+window.printLinkedAdmission = printLinkedAdmission;
+
+// ── Edit from stepper ─────────────────────────────────────────
+function openEditFromStepper() {
+    const col = _stepperCol;
+    const id  = _stepperRecId;
+    if (col === 'admissions') editAdmission(id);
+    else editMobtua(id);
+}
+window.openEditFromStepper = openEditFromStepper;
+
+// ── Mobtua verify sub-modal ───────────────────────────────────
+let _mobtuaSubId = '';
+function openMobtuaVerifySubModal(mobtuaId) {
+    _mobtuaSubId = mobtuaId;
+    const rec = allMobtua.find(r => r.id === mobtuaId);
+    if (!rec) return;
+
+    const MT_KEYS = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+        'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+        'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+
+    const sv = rec.staffVerified || {};
+    const draft = {};
+    MT_KEYS.forEach(k => { draft[k] = sv[k] === true; });
+
+    document.getElementById('mobtuaSubChecklist').innerHTML = MT_KEYS.map(item => {
+        const done = draft[item];
+        return `<div class="verify-check-item ${done ? 'done' : ''}" id="mtsub_${item.replace(/[^a-z0-9]/gi,'_')}"
+            onclick="toggleMtSub(this, '${item.replace(/'/g,"\\'")}')" style="cursor:pointer;">
+            <input type="checkbox" ${done ? 'checked' : ''} style="pointer-events:none;width:16px;height:16px;accent-color:#16a34a;">
+            <span style="flex:1;">${item}</span>
+        </div>`;
+    }).join('');
+
+    document.getElementById('mobtuaSubNote').value = rec.staffNote || '';
+    document.getElementById('mobtuaVerifySubModal').style.display = 'flex';
+}
+window.openMobtuaVerifySubModal = openMobtuaVerifySubModal;
+
+function toggleMtSub(el, itemKey) {
+    el.classList.toggle('done');
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (cb) cb.checked = el.classList.contains('done');
+}
+window.toggleMtSub = toggleMtSub;
+
+function closeMobtuaVerifySubModal() {
+    document.getElementById('mobtuaVerifySubModal').style.display = 'none';
+}
+window.closeMobtuaVerifySubModal = closeMobtuaVerifySubModal;
+
+async function confirmMobtuaSubVerifyAndPrint() {
+    const id = _mobtuaSubId;
+    if (!id) return;
+    const MT_KEYS = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+        'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+        'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+
+    const newSV = {};
+    MT_KEYS.forEach(k => {
+        const el = document.getElementById(`mtsub_${k.replace(/[^a-z0-9]/gi,'_')}`);
+        newSV[k] = el ? el.classList.contains('done') : false;
+    });
+    const note = document.getElementById('mobtuaSubNote').value.trim();
+
+    try {
+        await window._fs.updateDoc(window._fs.doc(window._db, 'mobtua', id), {
+            staffVerified: newSV, staffNote: note, updatedAt: window._fs.serverTimestamp()
+        });
+        closeMobtuaVerifySubModal();
+        await loadAll();
+        buildStepperStep3(); // Refresh print cards
+        printMobtuaById(id);
+    } catch(e) { console.error(e); }
+}
+window.confirmMobtuaSubVerifyAndPrint = confirmMobtuaSubVerifyAndPrint;
+
+/* ══════════════════════════════════════════════════════════════════
+   ใบนัดหมาย — APPOINTMENT LETTER
+══════════════════════════════════════════════════════════════════ */
+function printAppointmentDoc(id, col) {
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) return;
+    const html = generateAppointmentHTML(rec, col);
+    openDocPreview(html, `ใบนัดหมาย — ${rec.studentName || 'ไม่ระบุ'}`);
+}
+window.printAppointmentDoc = printAppointmentDoc;
+
+function generateAppointmentHTML(rec, col) {
+    const d = rec.data || {};
+    const sv = rec.staffVerified || {};
+
+    const gradeLabel = col === 'admissions'
+        ? (rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')
+        : ((rec.gradeLevel || rec.classRoom || '').includes('4') ? 'ม.4' : 'ม.1');
+
+    const DOC_KEYS = col === 'admissions'
+        ? ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
+           'สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา']
+        : ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
+           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
+           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+
+    const missingDocs = DOC_KEYS.filter(k => sv[k] !== true);
+    const doneDocs    = DOC_KEYS.filter(k => sv[k] === true);
+
+    // Student name
+    let studentFullName = rec.studentName || '';
+    if (!studentFullName) {
+        if (col === 'admissions') {
+            studentFullName = `${d.prefix||''}${d.firstName||''} ${d.lastName||''}`.trim();
+        } else {
+            studentFullName = `${d.mt_studentPrefix||''}${d.mt_studentFirstName||''} ${d.mt_studentLastName||''}`.trim();
+        }
+    }
+
+    // Guardian name
+    let guardianName = '';
+    if (col === 'admissions') {
+        guardianName = d.parentName || d.fatherName || '';
+    } else {
+        guardianName = `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim();
+    }
+
+    // Appointment data from localStorage
+    const apptDate  = localStorage.getItem('appointmentDateText')  || 'วันที่ยังไม่ได้กำหนด';
+    const apptTime  = localStorage.getItem('appointmentTimeText')  || '—';
+    const apptPlace = localStorage.getItem('appointmentPlaceText') || 'โรงเรียนกระดุมทองวิทยา';
+
+    // QR Code URL pointing to mobtua form
+    const baseUrl = window.location.href.replace('staff.html', 'index.html');
+    const qrUrl   = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&qzone=1&color=1a1a2e&bgcolor=ffffff&data=${encodeURIComponent(baseUrl)}`;
+
+    // Missing docs list rows
+    const missingRows = missingDocs.length > 0
+        ? missingDocs.map((doc, i) =>
+            `<tr><td style="padding:5px 8px;font-size:12.5px;border-bottom:1px solid #ffe4e4;">
+              <span style="background:#dc2626;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:6px;">${i+1}</span>
+              ${doc}
+            </td></tr>`).join('')
+        : `<tr><td style="padding:8px;color:#15803d;font-weight:600;font-size:13px;text-align:center;">✅ เอกสารครบถ้วนแล้ว</td></tr>`;
+
+    const missingSection = missingDocs.length > 0 ? `
+      <div style="background:#fff5f5;border:2px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:16px;">
+        <div style="font-weight:700;color:#dc2626;font-size:13px;margin-bottom:8px;">📌 เอกสารที่ยังขาด (${missingDocs.length} รายการ)</div>
+        <table style="width:100%;border-collapse:collapse;">${missingRows}</table>
+      </div>` : `
+      <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px;margin-bottom:16px;text-align:center;">
+        <div style="font-weight:700;color:#15803d;font-size:13px;">✅ เอกสารครบถ้วนทุกรายการ</div>
+        <div style="font-size:12px;color:#166534;margin-top:4px;">นักเรียนพร้อมมอบตัวในวันที่นัดหมาย</div>
+      </div>`;
+
+    return `
+<div style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;max-width:600px;margin:0 auto;padding:24px;border:2px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+
+  <!-- Header -->
+  <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #1e3a5f;">
+    <div style="font-size:13px;font-weight:700;color:#1e3a5f;letter-spacing:.04em;">โรงเรียนกระดุมทองวิทยา</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px;">อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+    <div style="font-size:20px;font-weight:900;color:#1e3a5f;letter-spacing:.04em;">ใบนัดหมายมอบตัว</div>
+    <div style="font-size:12px;color:#64748b;">ระดับชั้น ${gradeLabel} ปีการศึกษา ${d.academicYear || d.mt_academicYear || new Date().getFullYear() + 543}</div>
+  </div>
+
+  <!-- Student Info -->
+  <div style="background:#f8fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div style="flex:1;">
+      <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">ชื่อ-นามสกุลนักเรียน</div>
+      <div style="font-size:16px;font-weight:800;color:#1e3a5f;">${studentFullName}</div>
+      <div style="font-size:11.5px;color:#475569;margin-top:4px;">ผู้ปกครอง: <strong>${guardianName || '—'}</strong></div>
+    </div>
+    <div style="background:#1e3a5f;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;align-self:center;">${gradeLabel}</div>
+  </div>
+
+  <!-- Missing docs -->
+  ${missingSection}
+
+  <!-- Appointment date — RED BOLD -->
+  <div style="background:#dc2626;color:#fff;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
+    <div style="font-size:11px;font-weight:600;opacity:.85;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">📅 วันนัดหมายมอบตัว</div>
+    <div style="font-size:20px;font-weight:900;line-height:1.2;">${apptDate}</div>
+    <div style="font-size:13px;font-weight:600;margin-top:4px;opacity:.9;">⏰ ${apptTime}</div>
+    <div style="font-size:11.5px;margin-top:4px;opacity:.85;">📍 ${apptPlace}</div>
+  </div>
+
+  <!-- Instructions + QR -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;">
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:8px;">📋 ขั้นตอนการกรอกใบมอบตัวออนไลน์</div>
+      <div style="font-size:11.5px;color:#374151;line-height:1.8;">
+        <div>① แสกน QR Code ด้านขวา หรือเปิดลิงก์ระบบ</div>
+        <div>② เลือก <strong>ใบมอบตัว</strong> และเลือกชั้นเรียน</div>
+        <div>③ ค้นหาชื่อนักเรียนและกดกรอกต่อ</div>
+        <div>④ กรอกข้อมูลให้ครบและกด <strong>บันทึก</strong></div>
+        <div>⑤ สามารถทำจากบ้านได้เลย ก่อนวันมอบตัว</div>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <img src="${qrUrl}" width="110" height="110" alt="QR Code" style="border-radius:8px;border:2px solid #e5e7eb;display:block;">
+      <div style="font-size:10px;color:#64748b;margin-top:4px;max-width:110px;">แสกนเพื่อกรอก<br>ใบมอบตัวออนไลน์</div>
+    </div>
+  </div>
+
+  <!-- Footer note -->
+  <div style="border-top:1.5px solid #e5e7eb;padding-top:12px;font-size:11px;color:#94a3b8;text-align:center;">
+    * กรุณานำเอกสารที่ขาดมายื่นในวันมอบตัว · พิมพ์หรือบันทึกใบนัดหมายนี้ไว้เป็นหลักฐาน<br>
+    ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา · ออกใบนัดหมาย ณ วันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}
+  </div>
+</div>`;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════
    STUDENT DETAIL OVERLAY (stacked over verify docs modal)

@@ -3776,6 +3776,31 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: .5rem; color: #b91c1c;">📆 วันที่นัดหมายมอบตัว</h4>
+                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem;">
+                        วันที่นี้จะแสดงในใบนัดหมายที่ออกให้ผู้สมัคร (สีแดงเน้น) และใช้อ้างอิงในระบบ staff
+                    </p>
+                    <div class="form-group">
+                        <label>วันที่มอบตัว (ภาษาไทย เช่น วันเสาร์ที่ 10 พฤษภาคม 2568):</label>
+                        <input type="text" class="form-control" id="appointmentDateText"
+                            placeholder="เช่น วันเสาร์ที่ 10 พฤษภาคม 2568">
+                    </div>
+                    <div class="form-group" style="margin-top:.5rem;">
+                        <label>เวลา (เช่น 08.30 – 12.00 น.):</label>
+                        <input type="text" class="form-control" id="appointmentTimeText"
+                            placeholder="เช่น 08.30 – 12.00 น.">
+                    </div>
+                    <div class="form-group" style="margin-top:.5rem;">
+                        <label>สถานที่ (เช่น อาคารเอนกประสงค์ โรงเรียนกระดุมทองวิทยา):</label>
+                        <input type="text" class="form-control" id="appointmentPlaceText"
+                            placeholder="เช่น อาคารเอนกประสงค์ โรงเรียนกระดุมทองวิทยา">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAppointmentSettings()" style="width: 100%; background: linear-gradient(135deg,#b91c1c,#dc2626);">
+                        💾 บันทึกวันนัดหมาย
+                    </button>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: var(--primary);">🔒 ล็อครายการประวัติการสมัคร</h4>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -5022,6 +5047,7 @@
             const password = prompt('กรุณาใส่รหัสผ่านแอดมิน:');
             if (password === '1111') {
                 loadAdminSettings();
+                loadAppointmentSettings();
                 document.getElementById('adminModal').classList.add('active');
             } else if (password !== null) {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -5289,6 +5315,25 @@
                 return;
             }
             showLandingStep2('mobtua');
+        }
+
+        function saveAppointmentSettings() {
+            const dateText  = document.getElementById('appointmentDateText').value.trim();
+            const timeText  = document.getElementById('appointmentTimeText').value.trim();
+            const placeText = document.getElementById('appointmentPlaceText').value.trim();
+            localStorage.setItem('appointmentDateText',  dateText);
+            localStorage.setItem('appointmentTimeText',  timeText);
+            localStorage.setItem('appointmentPlaceText', placeText);
+            showToast('บันทึกวันนัดหมายสำเร็จ ✅');
+        }
+
+        function loadAppointmentSettings() {
+            const d = document.getElementById('appointmentDateText');
+            const t = document.getElementById('appointmentTimeText');
+            const p = document.getElementById('appointmentPlaceText');
+            if (d) d.value = localStorage.getItem('appointmentDateText') || '';
+            if (t) t.value = localStorage.getItem('appointmentTimeText') || '';
+            if (p) p.value = localStorage.getItem('appointmentPlaceText') || '';
         }
 
         function saveDefaultYear() {

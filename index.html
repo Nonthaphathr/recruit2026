@@ -4627,6 +4627,107 @@
             };
         }
 
+        /* ══════════════════════════════════════════════════════════
+           SYNC MOBTUA → ADMISSION  (ทิศทางกลับ)
+           เรียกหลังบันทึก/แก้ไขใบมอบตัว เพื่อ sync field ที่ใช้ร่วมกัน
+           กลับไปยัง admission record ที่เชื่อมโยง
+        ══════════════════════════════════════════════════════════ */
+        async function syncMobtuaToAdmission(mobtuaId, mtData, newStudentName) {
+            try {
+                const fs = window.firestore;
+                const db = window.db;
+
+                // หา admissionId จาก mobtua record ก่อน
+                let admissionId = null;
+                const mtSnap = await fs.getDoc(fs.doc(db, 'mobtua', mobtuaId));
+                if (mtSnap.exists()) {
+                    admissionId = mtSnap.data().admissionId || null;
+                }
+                if (!admissionId) {
+                    // fallback: ค้นหาจากชื่อนักเรียน
+                    const oldName = mtSnap.exists() ? (mtSnap.data().studentName || '') : '';
+                    const searchName = newStudentName || oldName;
+                    if (searchName) {
+                        const q = fs.query(fs.collection(db, 'admissions'), fs.where('studentName', '==', searchName));
+                        const snap = await fs.getDocs(q);
+                        if (!snap.empty) admissionId = snap.docs[0].id;
+                    }
+                }
+                if (!admissionId) { console.log('syncMobtuaToAdmission: no linked admission for', mobtuaId); return; }
+
+                // โหลด admission data เดิม
+                const admSnap = await fs.getDoc(fs.doc(db, 'admissions', admissionId));
+                if (!admSnap.exists()) return;
+                const oldAdm = admSnap.data().data || {};
+
+                const d = mtData;
+                const parseMtName = (full) => {
+                    if (!full) return { prefix: '', firstName: '', lastName: '' };
+                    const pxs = ['นาย','นาง','นางสาว','เด็กชาย','เด็กหญิง','ดร.','รศ.','ผศ.'];
+                    let prefix = '', rest = (full || '').trim();
+                    for (const p of pxs) {
+                        if (rest.startsWith(p)) { prefix = p; rest = rest.slice(p.length).trim(); break; }
+                    }
+                    const parts = rest.split(/\s+/);
+                    return { prefix, firstName: parts[0] || '', lastName: parts.slice(1).join(' ') };
+                };
+
+                const fatherParsed = parseMtName(d.mt_fatherFullName || '');
+                const motherParsed = parseMtName(d.mt_motherFullName || '');
+
+                const fatherName = d.mt_fatherFullName ||
+                    [d.mt_fatherPrefix, d.mt_fatherFirstName, d.mt_fatherLastName].filter(Boolean).join(' ').trim();
+                const motherName = d.mt_motherFullName ||
+                    [d.mt_motherPrefix, d.mt_motherFirstName, d.mt_motherLastName].filter(Boolean).join(' ').trim();
+
+                const syncedAdmData = {
+                    ...oldAdm,
+                    prefix:           d.mt_studentPrefix       || oldAdm.prefix,
+                    firstName:        d.mt_studentFirstName    || oldAdm.firstName,
+                    lastName:         d.mt_studentLastName     || oldAdm.lastName,
+                    fullName:         d.mt_studentFullName     || (d.mt_studentFirstName ? `${d.mt_studentFirstName} ${d.mt_studentLastName || ''}`.trim() : oldAdm.fullName),
+                    nickname:         d.mt_studentNickname     || oldAdm.nickname,
+                    birthDay:         d.mt_birthDay            || oldAdm.birthDay,
+                    birthMonth:       d.mt_birthMonth          || oldAdm.birthMonth,
+                    birthYear:        d.mt_birthYear           || oldAdm.birthYear,
+                    nationalId:       d.mt_studentNationalId   || oldAdm.nationalId,
+                    height:           d.mt_height              || oldAdm.height,
+                    weight:           d.mt_weight              || oldAdm.weight,
+                    bloodType:        d.mt_bloodType           || oldAdm.bloodType,
+                    houseNumber:      d.mt_houseNo             || oldAdm.houseNumber,
+                    moo:              d.mt_moo                 || oldAdm.moo,
+                    subdistrict:      d.mt_subdistrict         || oldAdm.subdistrict,
+                    district:         d.mt_district            || oldAdm.district,
+                    province:         d.mt_province            || oldAdm.province,
+                    postalCode:       d.mt_postalCode          || oldAdm.postalCode,
+                    fatherName,
+                    fatherPrefix:     d.mt_fatherPrefix        || fatherParsed.prefix    || oldAdm.fatherPrefix,
+                    fatherFirstName:  d.mt_fatherFirstName     || fatherParsed.firstName || oldAdm.fatherFirstName,
+                    fatherLastName:   d.mt_fatherLastName      || fatherParsed.lastName  || oldAdm.fatherLastName,
+                    fatherOccupation: d.mt_fatherOccupation    || oldAdm.fatherOccupation,
+                    fatherNationalId: d.mt_fatherNationalId    || oldAdm.fatherNationalId,
+                    motherName,
+                    motherPrefix:     d.mt_motherPrefix        || motherParsed.prefix    || oldAdm.motherPrefix,
+                    motherFirstName:  d.mt_motherFirstName     || motherParsed.firstName || oldAdm.motherFirstName,
+                    motherLastName:   d.mt_motherLastName      || motherParsed.lastName  || oldAdm.motherLastName,
+                    motherOccupation: d.mt_motherOccupation    || oldAdm.motherOccupation,
+                    motherNationalId: d.mt_motherNationalId    || oldAdm.motherNationalId,
+                };
+
+                const admStudentName = newStudentName ||
+                    `${syncedAdmData.prefix || ''}${syncedAdmData.fullName || ''}`.trim() || admSnap.data().studentName;
+
+                await fs.updateDoc(fs.doc(db, 'admissions', admissionId), {
+                    studentName: admStudentName,
+                    data: syncedAdmData,
+                    updatedAt: fs.serverTimestamp()
+                });
+                console.log('syncMobtuaToAdmission: synced to admission', admissionId);
+            } catch(e) {
+                console.warn('syncMobtuaToAdmission error:', e.message);
+            }
+        }
+
         /* ── สร้าง pending mobtua เมื่อบันทึกใบสมัครเสร็จ ── */
         async function createPendingMobtua(admData, admissionId, docChecks) {
             try {
@@ -6138,7 +6239,9 @@
                             updatedAt:    window.firestore.serverTimestamp(),
                         }
                     );
-                    showToast('อัปเดตใบมอบตัวสำเร็จ ✅');
+                    // ── Sync กลับไปยังใบสมัคร ──
+                    await syncMobtuaToAdmission(_editingMobtuaId, d, d.mt_studentFullName || '');
+                    showToast('อัปเดตใบมอบตัวสำเร็จ ✅ (sync ไปใบสมัครแล้ว)');
                 } else {
                     // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์)
                     const record = {
@@ -6385,7 +6488,9 @@
                     }
                 );
 
-                showToast('แก้ไขข้อมูลสำเร็จ');
+                // ── Sync กลับไปยังใบสมัคร ──
+                await syncMobtuaToAdmission(id, updatedInner, studentFullName);
+                showToast('แก้ไขข้อมูลสำเร็จ ✅ (sync ไปใบสมัครแล้ว)');
                 closeMobtuaEditModal();
                 await loadMobtuaHistory();
             } catch(e) {

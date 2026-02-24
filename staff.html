@@ -3495,16 +3495,9 @@ function buildStepperStep3() {
     const arr = col === 'admissions' ? allAdmissions : allMobtua;
     const rec = arr.find(r => r.id === id);
 
-    // Check verify completeness
+    // Check verify completeness — use shared constants
     const sv = rec?.staffVerified || {};
-    const docItems = col === 'admissions'
-        ? ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
-           'สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
-           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
-           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา']
-        : ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
-           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
-           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+    const docItems = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
 
     const allDone = docItems.every(k => sv[k] === true);
     const missingDocs = docItems.filter(k => sv[k] !== true);
@@ -3535,25 +3528,45 @@ function buildStepperStep3() {
     // Card 3 logic — mobtua
     let card3 = '';
     if (col === 'mobtua') {
-        card3 = card('📋', 'ใบมอบตัวนักเรียน',
-            'เอกสารมอบตัวนักเรียน',
-            `<span class="print-card-badge ok">✓ เลือกได้</span>`,
-            `openCardPreview('mobtua','${id}','mobtua')`,
-            false, '#15803d');
+        // กำลังดูใบมอบตัวอยู่แล้ว — ตรวจ status ว่ากรอกครบยัง
+        const mtDone = rec?.status === 'done';
+        const mtSv   = rec?.staffVerified || {};
+        const mtDocDone = MOBTUA_CHECKLIST_KEYS.every(k => mtSv[k] === true);
+        if (!mtDone) {
+            card3 = card('📋', 'ใบมอบตัวนักเรียน',
+                '⏳ ผู้ปกครองยังไม่กรอกข้อมูลให้ครบ',
+                `<span class="print-card-badge na">รอผู้ปกครอง</span>`,
+                '', true, '#94a3b8');
+        } else {
+            card3 = card('📋', 'ใบมอบตัวนักเรียน',
+                mtDocDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
+                mtDocDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
+                          : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
+                mtDocDone
+                    ? `openCardPreview('mobtua','${id}','mobtua')`
+                    : `stepperOpenMobtuaVerify('${id}')`,
+                false, '#15803d');
+        }
     } else if (linkedMobtua) {
-        const mtSv = linkedMobtua.staffVerified || {};
-        const mtAllDone = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
-            'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
-            'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา',
-            'สำเนาบัตรประชาชนของมารดา'].every(k => mtSv[k] === true);
-        card3 = card('📋', 'ใบมอบตัวนักเรียน',
-            mtAllDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
-            mtAllDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
-                      : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
-            mtAllDone
-                ? `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`
-                : `stepperOpenMobtuaVerify('${linkedMobtua.id}')`,
-            false, '#15803d');
+        // ดูจากฝั่ง admission — ตรวจ status ของ linkedMobtua ว่ากรอกครบยัง
+        const mtDone = linkedMobtua.status === 'done';
+        const mtSv   = linkedMobtua.staffVerified || {};
+        const mtDocDone = MOBTUA_CHECKLIST_KEYS.every(k => mtSv[k] === true);
+        if (!mtDone) {
+            card3 = card('📋', 'ใบมอบตัวนักเรียน',
+                '⏳ ผู้ปกครองยังไม่กรอกข้อมูลให้ครบ',
+                `<span class="print-card-badge na">รอผู้ปกครอง</span>`,
+                '', true, '#94a3b8');
+        } else {
+            card3 = card('📋', 'ใบมอบตัวนักเรียน',
+                mtDocDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
+                mtDocDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
+                          : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
+                mtDocDone
+                    ? `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`
+                    : `stepperOpenMobtuaVerify('${linkedMobtua.id}')`,
+                false, '#15803d');
+        }
     } else {
         card3 = card('📋', 'ใบมอบตัวนักเรียน',
             'ยังไม่มีข้อมูลใบมอบตัว',
@@ -3801,14 +3814,7 @@ function generateAppointmentHTML(rec, col) {
         ? (rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')
         : ((rec.gradeLevel || rec.classRoom || '').includes('4') ? 'ม.4' : 'ม.1');
 
-    const DOC_KEYS = col === 'admissions'
-        ? ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
-           'สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
-           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
-           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา']
-        : ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
-           'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
-           'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+    const DOC_KEYS = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
 
     const missingDocs = DOC_KEYS.filter(k => sv[k] !== true);
     const doneDocs    = DOC_KEYS.filter(k => sv[k] === true);
@@ -3860,7 +3866,7 @@ function generateAppointmentHTML(rec, col) {
       </div>`;
 
     return `
-<div style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;max-width:600px;margin:0 auto;padding:24px;border:2px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+<div style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;max-width:600px;margin:0 auto;padding:24px;">
 
   <!-- Header -->
   <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #1e3a5f;">

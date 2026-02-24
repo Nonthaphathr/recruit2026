@@ -1939,19 +1939,11 @@ function renderAdmissions() {
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-view"  onclick="viewAdmission('${r.id}')" title="ดูรายละเอียด">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-            ดู
+          <button class="btn-sm btn-verify" onclick="openInspectionStepper('${r.id}','admissions')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            ตรวจเอกสาร
           </button>
-          <button class="btn-sm btn-edit"  onclick="editAdmission('${r.id}')" title="แก้ไข">✏️</button>
-          <button class="btn-sm btn-verify" onclick="openVerifyDocs('${r.id}','admissions')" title="ตรวจสอบหลักฐาน" style="font-size:1rem;padding:.25rem .5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          </button>
-          <button class="btn-sm btn-print" onclick="printAdmissionById('${r.id}')" title="พิมพ์เอกสาร" style="font-size:1rem;padding:.25rem .5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </button>
-          <button class="btn-sm" onclick="printAppointmentDoc('${r.id}','admissions')" title="พิมพ์ใบนัดหมาย" style="font-size:.85rem;padding:.25rem .45rem;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;line-height:1;">📅</button>
-          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\\'")}')" title="ลบ">🗑️</button>
+          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\'")}')" title="ลบ">🗑️</button>
         </div>
       </td>
     </tr>`;
@@ -1988,19 +1980,11 @@ function renderMobtua() {
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-view"  onclick="viewMobtua('${r.id}')" title="ดูรายละเอียด">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-            ดู
+          <button class="btn-sm btn-verify" onclick="openInspectionStepper('${r.id}','mobtua')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            ตรวจเอกสาร
           </button>
-          <button class="btn-sm btn-edit"  onclick="editMobtua('${r.id}')" title="แก้ไข">✏️</button>
-          <button class="btn-sm btn-verify" onclick="openVerifyDocs('${r.id}','mobtua')" title="ตรวจสอบหลักฐาน" style="font-size:1rem;padding:.25rem .5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          </button>
-          <button class="btn-sm btn-print" onclick="printMobtuaById('${r.id}')" title="พิมพ์เอกสาร" style="font-size:1rem;padding:.25rem .5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </button>
-          <button class="btn-sm" onclick="printAppointmentDoc('${r.id}','mobtua')" title="พิมพ์ใบนัดหมาย" style="font-size:.85rem;padding:.25rem .45rem;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;line-height:1;">📅</button>
-          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\\'")}')" title="ลบ">🗑️</button>
+          <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\'")}')" title="ลบ">🗑️</button>
         </div>
       </td>
     </tr>`;

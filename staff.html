@@ -43,7 +43,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;font-size:16px;line-height:1.65;}
+body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;font-size:16.5px;line-height:1.7;}
 
 /* ══════════════════════════════════════════════
    LOADING OVERLAY
@@ -137,7 +137,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
    TAB SYSTEM
 ══════════════════════════════════════════════ */
 .section-tabs{display:flex;gap:.25rem;margin-bottom:1rem;border-bottom:2px solid var(--border);padding-bottom:0;overflow-x:auto;}
-.tab-btn{background:none;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.98rem;font-weight:600;color:var(--text-soft);padding:.7rem 1.25rem .85rem;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;display:flex;align-items:center;gap:.45rem;border-radius:var(--r-sm) var(--r-sm) 0 0;white-space:nowrap;}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:1.02rem;font-weight:600;color:var(--text-soft);padding:.8rem 1.4rem .95rem;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;display:flex;align-items:center;gap:.5rem;border-radius:var(--r-sm) var(--r-sm) 0 0;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);background:rgba(0,0,0,.03);}
 .tab-btn.active{color:var(--navy-light);border-bottom-color:var(--navy);}
 .tab-btn .tab-count{background:var(--surface-2);color:var(--text-soft);border-radius:99px;padding:2px 9px;font-size:.78rem;font-weight:700;}
@@ -152,7 +152,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-bottom:.9rem;}
 .search-box{flex:1;min-width:180px;position:relative;}
 .search-box svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text-soft);pointer-events:none;}
-.search-input{width:100%;padding:.65rem .9rem .65rem 2.5rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.92rem;background:var(--card);color:var(--text);transition:border-color .2s;}
+.search-input{width:100%;padding:.72rem 1rem .72rem 2.7rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.98rem;background:var(--card);color:var(--text);transition:border-color .2s;}
 .search-input:focus{outline:none;border-color:var(--slate-light);}
 .filter-select{padding:.58rem .8rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.85rem;background:var(--card);color:var(--text);cursor:pointer;}
 .filter-select:focus{outline:none;border-color:var(--slate-light);}
@@ -185,7 +185,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 /* Action buttons */
 .action-group{display:flex;gap:.3rem;align-items:center;flex-wrap:wrap;}
-.btn-sm{display:inline-flex;align-items:center;gap:.3rem;padding:.42rem .8rem;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;white-space:nowrap;}
+.btn-sm{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border-radius:var(--r-md);font-size:.88rem;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .18s;white-space:nowrap;}
 .btn-view  {background:#e8f4fd;border-color:#90caf9;color:#1565c0;}
 .btn-view:hover {background:#bbdefb;}
 .btn-edit  {background:#fff8e1;border-color:#ffe082;color:#e65100;}
@@ -274,7 +274,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem 1.25rem;}
 .detail-item{display:flex;flex-direction:column;gap:2px;}
 .detail-label{font-size:.72rem;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-.detail-val{font-size:.88rem;color:var(--text);font-weight:500;}
+.detail-val{font-size:.93rem;color:var(--text);font-weight:500;}
 .detail-section-title{font-family:'Mitr',sans-serif;font-size:.82rem;color:var(--slate);font-weight:600;margin:1.1rem 0 .65rem;padding-bottom:.35rem;border-bottom:1.5px solid var(--border);grid-column:1/-1;}
 
 /* Edit form */
@@ -282,17 +282,17 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .form-group{display:flex;flex-direction:column;gap:.3rem;}
 .form-group.full{grid-column:1/-1;}
 .form-label{font-size:.78rem;font-weight:600;color:var(--text-mid);}
-.form-control{padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Sarabun',sans-serif;font-size:.88rem;color:var(--text);background:var(--card);transition:border-color .2s;}
+.form-control{padding:.65rem 1rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.95rem;color:var(--text);background:var(--card);transition:border-color .2s;}
 .form-control:focus{outline:none;border-color:var(--slate-light);}
 
 /* Modal action buttons */
-.btn-primary{background:var(--navy);color:#fff;border:none;padding:.6rem 1.4rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:background .2s;}
+.btn-primary{background:var(--navy);color:#fff;border:none;padding:.75rem 1.6rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;}
 .btn-primary:hover{background:var(--slate);}
-.btn-secondary{background:var(--surface);border:1.5px solid var(--border);color:var(--text-mid);padding:.7rem 1.3rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;}
+.btn-secondary{background:var(--surface);border:1.5px solid var(--border);color:var(--text-mid);padding:.78rem 1.5rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s;}
 .btn-secondary:hover{background:var(--surface-2);}
 .btn-danger{background:var(--red);color:#fff;border:none;padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;}
 .btn-success-solid{background:var(--emerald);color:#fff;border:none;padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);border:none;padding:.7rem 1.4rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:filter .2s,transform .15s;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);border:none;padding:.85rem 1.7rem;border-radius:var(--r-lg);font-family:'Mitr',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:filter .2s,transform .15s;}
 
 /* Confirm modal */
 .confirm-modal{max-width:400px;}
@@ -518,6 +518,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .print-card-badge.ok{background:#dcfce7;color:#15803d;border-color:#86efac;}
 .print-card-badge.warn{background:#fef9c3;color:#854d0e;border-color:#fde047;}
 .print-card-badge.na{background:#f1f5f9;color:#64748b;border-color:#cbd5e1;}
+.print-card-cta{
+  font-size:.78rem;color:#94a3b8;margin-top:auto;padding-top:.3rem;
+  font-weight:600;letter-spacing:.01em;
+}
+.print-card:hover .print-card-cta{color:var(--gold);}
 .print-card-hint{
   font-size:.75rem;color:#94a3b8;margin-top:-.3rem;
 }
@@ -1724,7 +1729,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {
   getFirestore, collection, getDocs, getDoc, doc,
-  deleteDoc, updateDoc, query, orderBy, onSnapshot,
+  deleteDoc, updateDoc, query, orderBy, where, onSnapshot,
   serverTimestamp, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -1742,7 +1747,7 @@ const db  = getFirestore(app);
 
 /* ── Expose helpers ── */
 window._db = db;
-window._fs = { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp };
+window._fs = { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, where, onSnapshot, serverTimestamp, Timestamp };
 
 /* ── Password ── */
 const STAFF_PASS = 'admin1234';
@@ -1818,10 +1823,11 @@ function subscribeAdmissions() {
         highlightRowLater(r.id, 'admission');
       });
     }
+    if (isFirstLoadAdmission) setConnStatus(true);
     isFirstLoadAdmission = false;
     allAdmissions = newRecords;
-    renderAdmissions();
-    updateStats();
+    try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
+    try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
   }, err => {
     console.error('admission snapshot error:', err);
     setConnStatus(false);
@@ -1862,8 +1868,8 @@ function subscribeMobtua() {
     }
     isFirstLoadMobtua = false;
     allMobtua = newRecords;
-    renderMobtua();
-    updateStats();
+    try { renderMobtua(); } catch(e) { console.error('renderMobtua error:', e); }
+    try { updateStats(); } catch(e) {}
   }, err => {
     console.error('mobtua snapshot error:', err);
     setConnStatus(false);
@@ -3171,6 +3177,12 @@ function openInspectionStepper(id, col) {
     const rec = arr.find(r => r.id === id);
     const name = rec ? (rec.studentName || 'ไม่ระบุ') : '?';
     document.getElementById('stepperStudentName').textContent = name;
+    const gradeBadge = document.getElementById('stepperGradeBadge');
+    if (gradeBadge && rec) {
+        const gl = rec.gradeLevel || rec.data?.gradeLevel || '';
+        gradeBadge.textContent = gl === 'm4' ? 'ม.4' : 'ม.1';
+        gradeBadge.style.display = '';
+    }
 
     goToStep(1);
     document.getElementById('inspectionStepper').style.display = 'flex';
@@ -3567,43 +3579,70 @@ function buildStepperStep3() {
         card3;
 }
 
-// ── openCardPreview: show print preview modal above stepper (step 3 stays) ──
+// ── openCardPreview: show cardPreviewModal above stepper (step 3 stays visible) ──
 let _ppvType = '', _ppvId = '', _ppvCol = '';
 async function openCardPreview(type, id, col) {
     _ppvType = type; _ppvId = id; _ppvCol = col || _stepperCol;
-    const modal = document.getElementById('printPreviewModal');
-    const content = document.getElementById('ppvContent');
-    const title = document.getElementById('ppvTitle');
-    if (!modal || !content) return;
-    content.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;font-size:1rem;">⏳ กำลังโหลด...</div>';
+    const modal = document.getElementById('cardPreviewModal');
+    const contentEl = document.getElementById('cpvContent');
+    const titleEl   = document.getElementById('cpvTitle');
+    const subtitleEl = document.getElementById('cpvSubtitle');
+    if (!modal || !contentEl) return;
+    contentEl.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;font-size:1.1rem;">⏳ กำลังโหลดตัวอย่าง...</div>';
     modal.classList.add('open');
+    // store for print button
+    const printBtn = document.getElementById('cpvPrintBtn');
+    if (printBtn) { printBtn.dataset.type = type; printBtn.dataset.id = id; printBtn.dataset.col = col || _stepperCol; }
     try {
         let html = '';
         if (type === 'admission') {
-            const arr = allAdmissions; const rec = arr.find(r => r.id === id);
+            const rec = allAdmissions.find(r => r.id === id);
             html = rec ? generateAdmissionDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
-            title.textContent = '📄 ใบสมัครเรียน';
+            titleEl.textContent = '📄 ใบสมัครเรียน';
+            if (subtitleEl) subtitleEl.textContent = rec?.studentName || '';
         } else if (type === 'linkedAdmission') {
             const mt = allMobtua.find(r => r.id === id);
             const adm = mt ? allAdmissions.find(a => a.id === mt.admissionId || a.studentName === mt.studentName) : null;
-            html = adm ? generateAdmissionDocHTML(adm.data || {}, adm.staffVerified || {}, !!adm.staffVerified) : '<p>ไม่พบใบสมัครที่เชื่อมโยง</p>';
-            title.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
+            html = adm ? generateAdmissionDocHTML(adm.data || {}, adm.staffVerified || {}, !!adm.staffVerified) : '<p style="color:#dc2626;padding:2rem;text-align:center;">ไม่พบใบสมัครที่เชื่อมโยง</p>';
+            titleEl.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
+            if (subtitleEl) subtitleEl.textContent = adm?.studentName || mt?.studentName || '';
         } else if (type === 'mobtua') {
-            const arr = allMobtua; const rec = arr.find(r => r.id === id);
+            const rec = allMobtua.find(r => r.id === id);
             html = rec ? generateMobtuaDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
-            title.textContent = '📋 ใบมอบตัวนักเรียน';
+            titleEl.textContent = '📋 ใบมอบตัวนักเรียน';
+            if (subtitleEl) subtitleEl.textContent = rec ? `${rec.studentName || ''} · ${rec.classRoom || ''}` : '';
         } else if (type === 'appointment') {
-            const arr = col === 'mobtua' ? allMobtua : allAdmissions;
+            const arr = (col === 'mobtua') ? allMobtua : allAdmissions;
             const rec = arr.find(r => r.id === id);
             html = rec ? generateAppointmentHTML(rec, col) : '<p>ไม่พบข้อมูล</p>';
-            title.textContent = '📅 ใบนัดหมายมอบตัว';
+            titleEl.textContent = '📅 ใบนัดหมายมอบตัว';
+            if (subtitleEl) subtitleEl.textContent = rec?.studentName || '';
         }
-        content.innerHTML = html;
+        contentEl.innerHTML = html;
     } catch(e) {
-        content.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${e.message}</p>`;
+        contentEl.innerHTML = `<div style="color:#dc2626;padding:2rem;text-align:center;">❌ เกิดข้อผิดพลาด: ${e.message}</div>`;
+        console.error('openCardPreview error:', e);
     }
 }
 window.openCardPreview = openCardPreview;
+
+function closeCardPreviewModal() {
+    const modal = document.getElementById('cardPreviewModal');
+    if (modal) modal.classList.remove('open');
+    const c = document.getElementById('cpvContent');
+    if (c) c.innerHTML = '';
+    _ppvType = ''; _ppvId = ''; _ppvCol = '';
+}
+window.closeCardPreviewModal = closeCardPreviewModal;
+
+window.executeCpvPrint = function() {
+    const btn = document.getElementById('cpvPrintBtn');
+    const t = btn?.dataset.type || _ppvType;
+    const i = btn?.dataset.id   || _ppvId;
+    const c = btn?.dataset.col  || _ppvCol || _stepperCol;
+    closeCardPreviewModal();
+    setTimeout(() => stepperPrint(t, i, c), 80);
+};
 
 function closePrintPreviewModal() {
     const modal = document.getElementById('printPreviewModal');
@@ -3631,113 +3670,6 @@ function stepperPrint(type, id, col) {
     }, 200);
 }
 window.stepperPrint = stepperPrint;
-
-// ══════════════════════════════════════════════════════════════
-//  CARD PREVIEW MODAL — open document preview ABOVE stepper
-//  Step 3 card grid remains visible underneath
-// ══════════════════════════════════════════════════════════════
-let _cpvType = '', _cpvId = '', _cpvCol = '';
-
-function openCardPreview(type, id, col) {
-    _cpvType = type; _cpvId = id; _cpvCol = col || _stepperCol;
-
-    const modal = document.getElementById('cardPreviewModal');
-    const title = document.getElementById('cpvTitle');
-    const subtitle = document.getElementById('cpvSubtitle');
-    const content = document.getElementById('cpvContent');
-
-    // Clear content and show loading
-    content.innerHTML = '<div style="text-align:center;padding:3rem;color:#94a3b8;"><div style="font-size:2.5rem;margin-bottom:.8rem;">⏳</div>กำลังโหลดตัวอย่าง...</div>';
-    modal.classList.add('open');
-
-    // Generate document HTML based on type
-    const arr = _cpvCol === 'admissions' ? allAdmissions : allMobtua;
-    const rec = arr.find(r => r.id === (_cpvCol === 'admissions' ? _cpvId : id)) || {};
-
-    try {
-        if (type === 'admission') {
-            title.textContent = '📄 ใบสมัครเรียน';
-            const d = rec.data || {};
-            subtitle.textContent = `${rec.studentName || ''} · ${rec.gradeText || ''}`;
-            const html = generateAdmissionHTML(d);
-            content.innerHTML = html;
-
-        } else if (type === 'linkedAdmission') {
-            title.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
-            // find admission linked to this mobtua
-            const mtRec = allMobtua.find(r => r.id === id) || {};
-            const admRec = allAdmissions.find(r =>
-                r.id === mtRec.admissionId || r.studentName === mtRec.studentName) || {};
-            const d = admRec.data || {};
-            subtitle.textContent = admRec.studentName || mtRec.studentName || '';
-            const html = generateAdmissionHTML(d);
-            content.innerHTML = html;
-
-        } else if (type === 'mobtua') {
-            title.textContent = '📋 ใบมอบตัวนักเรียน';
-            const mtArr = allMobtua;
-            const mtRec = mtArr.find(r => r.id === id) || {};
-            const d = mtRec.data || {};
-            subtitle.textContent = `${mtRec.studentName || ''} · ${mtRec.classRoom || ''}`;
-            const html = generateMobtuaDocumentHTML(d, mtRec.staffVerified || {}, !!mtRec.staffVerified);
-            content.innerHTML = html;
-
-        } else if (type === 'appointment') {
-            title.textContent = '📅 ใบนัดหมายการมอบตัว';
-            const sourceArr = _cpvCol === 'admissions' ? allAdmissions : allMobtua;
-            const sourceRec = sourceArr.find(r => r.id === id) || {};
-            subtitle.textContent = sourceRec.studentName || '';
-            const html = generateAppointmentDoc(id, _cpvCol);
-            content.innerHTML = html;
-        }
-    } catch(e) {
-        content.innerHTML = `<div style="text-align:center;padding:2rem;color:#dc2626;">❌ เกิดข้อผิดพลาด: ${e.message}</div>`;
-        console.error('openCardPreview error:', e);
-    }
-}
-window.openCardPreview = openCardPreview;
-
-function closeCardPreviewModal() {
-    document.getElementById('cardPreviewModal').classList.remove('open');
-    document.getElementById('cpvContent').innerHTML = '';
-    _cpvType = ''; _cpvId = ''; _cpvCol = '';
-}
-window.closeCardPreviewModal = closeCardPreviewModal;
-
-function executeCpvPrint() {
-    // Use the existing stepperPrint which closes stepper then prints
-    // But first close the preview modal
-    closeCardPreviewModal();
-    setTimeout(() => {
-        stepperPrint(_cpvType || 'admission', _cpvId || _stepperRecId, _cpvCol || _stepperCol);
-    }, 80);
-}
-window.executeCpvPrint = executeCpvPrint;
-
-// Store values before closing for executeCpvPrint (since closeCardPreviewModal clears them)
-const _origClose = closeCardPreviewModal;
-window.closeCardPreviewModal = function() {
-    // Store type/id/col in cpvPrintBtn data for the print button to use
-    const btn = document.getElementById('cpvPrintBtn');
-    if (btn) {
-        btn.dataset.type = _cpvType;
-        btn.dataset.id   = _cpvId;
-        btn.dataset.col  = _cpvCol;
-    }
-    document.getElementById('cardPreviewModal').classList.remove('open');
-    document.getElementById('cpvContent').innerHTML = '';
-    _cpvType = ''; _cpvId = ''; _cpvCol = '';
-};
-
-// Override executeCpvPrint to read from dataset
-window.executeCpvPrint = function() {
-    const btn = document.getElementById('cpvPrintBtn');
-    const t = _cpvType || (btn?.dataset.type) || 'admission';
-    const i = _cpvId   || (btn?.dataset.id)   || _stepperRecId;
-    const c = _cpvCol  || (btn?.dataset.col)   || _stepperCol;
-    closeCardPreviewModal();
-    setTimeout(() => stepperPrint(t, i, c), 80);
-};
 
 function printLinkedAdmission(mobtuaId) {
     const mt = allMobtua.find(r => r.id === mobtuaId);
@@ -4501,8 +4433,13 @@ window.switchTab = switchTab;
 function setConnStatus(online) {
   const dot   = document.getElementById('connDot');
   const label = document.getElementById('connLabel');
-  dot.className   = `conn-dot ${online ? 'live' : 'offline'}`;
-  label.textContent = online ? 'เชื่อมต่อแล้ว' : 'ออฟไลน์';
+  if (dot)   dot.className    = `conn-dot ${online ? 'live' : 'offline'}`;
+  if (label) label.textContent = online ? 'เชื่อมต่อแล้ว' : 'ออฟไลน์';
+  // Hide loader as soon as Firebase responds
+  if (online) {
+    const loader = document.getElementById('pageLoader');
+    if (loader) loader.classList.add('done');
+  }
 }
 
 /* ─────────────────────────────────────────────────
@@ -4519,8 +4456,10 @@ document.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Dismiss loader after short delay
-  setTimeout(() => document.getElementById('pageLoader').classList.add('done'), 600);
+  // Dismiss loader — fast timeout fallback (Firebase will also hide it when connected)
+  setTimeout(() => {
+    document.getElementById('pageLoader').classList.add('done');
+  }, 1200); // increased slightly to allow Firebase to respond first
 
   // Auto-login if session exists
   if (sessionStorage.getItem('staffAuth') === '1') {

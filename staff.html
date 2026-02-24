@@ -3000,23 +3000,40 @@ async function saveStepperVerify() {
     const note = document.getElementById('stepperVerifyNote')?.value?.trim() || '';
     const newSV = { ..._verifyDraft };
 
-    // Determine Firestore collection
-    const fsCol  = col === 'admissions' ? 'admissions' : 'mobtua';
-    const fsDoc  = window._fs.doc(window._db, fsCol, id);
+    const fsCol = col === 'admissions' ? 'admissions' : 'mobtua';
+    const fsDoc = window._fs.doc(window._db, fsCol, id);
     try {
         await window._fs.updateDoc(fsDoc, {
             staffVerified: newSV,
             docVerifiedNote: note,
+            docVerifiedAt: window._fs.serverTimestamp(),
             updatedAt: window._fs.serverTimestamp()
         });
-        // Bidirectional sync for shared docs
-        if (col === 'admissions') {
-            syncVerifiedDocsToMobtua(id, newSV);
-        } else {
-            syncVerifiedDocsFromMobtua(id, newSV);
+        // ── update local cache immediately (no loadAll to avoid notification storm) ──
+        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const rec = arr.find(r => r.id === id);
+        if (rec) {
+            rec.staffVerified   = { ...newSV };
+            rec.docVerifiedNote = note;
         }
-        await loadAll();
-    } catch(e) { console.error('saveStepperVerify error:', e); }
+        const cnt = Object.values(newSV).filter(Boolean).length;
+        const total = Object.keys(newSV).length;
+        const label = cnt === total ? '✅ ครบถ้วน' : cnt > 0 ? `⚠️ ยืนยัน ${cnt}/${total}` : '❌ ยังไม่มี';
+        showToast(`บันทึกแล้ว — ${label}`, 'success');
+
+        // Bidirectional sync (fire-and-forget — does NOT call loadAll internally)
+        if (col === 'admissions') {
+            syncVerifiedDocsToMobtua(id, newSV, note);
+        } else {
+            syncVerifiedDocsFromMobtua(id, newSV, note);
+        }
+        // Re-render tables quietly without resetting subscriptions
+        if (col === 'admissions') renderAdmissions();
+        else renderMobtua();
+    } catch(e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+        console.error('saveStepperVerify error:', e);
+    }
 }
 
 // ── STEP 3: Print Cards ───────────────────────────────────────
@@ -3066,7 +3083,7 @@ function buildStepperStep3() {
         card3 = card('📋', 'พิมพ์ใบมอบตัว',
             'เอกสารมอบตัวนักเรียน',
             `<span class="print-card-badge ok">✓ เลือกได้</span>`,
-            `printMobtuaById('${id}')`);
+            `stepperPrint('mobtua','${id}')`);
     } else if (linkedMobtua) {
         const mtSv = linkedMobtua.staffVerified || {};
         const mtAllDone = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
@@ -3077,7 +3094,7 @@ function buildStepperStep3() {
             'ต้องยืนยันหลักฐานใบมอบตัวก่อน',
             mtAllDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
                       : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
-            `openMobtuaVerifySubModal('${linkedMobtua.id}')`);
+            `stepperOpenMobtuaVerify('${linkedMobtua.id}')`);
     } else {
         card3 = card('📋', 'พิมพ์ใบมอบตัว',
             'ยังไม่มีข้อมูลใบมอบตัว',
@@ -3089,15 +3106,27 @@ function buildStepperStep3() {
         card('📄', 'พิมพ์ใบสมัคร',
             col === 'admissions' ? 'แบบฟอร์มใบสมัครเรียน' : 'ใบสมัครที่เชื่อมโยง',
             verifyBadge,
-            col === 'admissions' ? `printAdmissionById('${id}')` : `printLinkedAdmission('${id}')`) +
+            col === 'admissions' ? `stepperPrint('admission','${id}')` : `stepperPrint('linkedAdmission','${id}')`) +
         card('📅', 'พิมพ์ใบนัดหมาย',
             missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
             missingCount > 0
                 ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
                 : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
-            `printAppointmentDoc('${id}','${col}')`) +
+            `stepperPrint('appointment','${id}','${col}')`) +
         card3;
 }
+
+// ── Print wrapper: close stepper first so modal z-index doesn't conflict ──
+function stepperPrint(type, id, col) {
+    closeInspectionStepper();
+    setTimeout(() => {
+        if (type === 'admission')       printAdmissionById(id);
+        else if (type === 'mobtua')     printMobtuaById(id);
+        else if (type === 'linkedAdmission') printLinkedAdmission(id);
+        else if (type === 'appointment') printAppointmentDoc(id, col || _stepperCol);
+    }, 200);
+}
+window.stepperPrint = stepperPrint;
 
 function printLinkedAdmission(mobtuaId) {
     const mt = allMobtua.find(r => r.id === mobtuaId);
@@ -3118,6 +3147,12 @@ window.openEditFromStepper = openEditFromStepper;
 
 // ── Mobtua verify sub-modal ───────────────────────────────────
 let _mobtuaSubId = '';
+function stepperOpenMobtuaVerify(mobtuaId) {
+    // sub-modal is z-index 6100 (above stepper 6000) — safe to open directly
+    openMobtuaVerifySubModal(mobtuaId);
+}
+window.stepperOpenMobtuaVerify = stepperOpenMobtuaVerify;
+
 function openMobtuaVerifySubModal(mobtuaId) {
     _mobtuaSubId = mobtuaId;
     const rec = allMobtua.find(r => r.id === mobtuaId);
@@ -3173,13 +3208,26 @@ async function confirmMobtuaSubVerifyAndPrint() {
 
     try {
         await window._fs.updateDoc(window._fs.doc(window._db, 'mobtua', id), {
-            staffVerified: newSV, staffNote: note, updatedAt: window._fs.serverTimestamp()
+            staffVerified: newSV, staffNote: note,
+            docVerifiedAt: window._fs.serverTimestamp(),
+            updatedAt: window._fs.serverTimestamp()
         });
+        // update local cache (no loadAll to avoid notification flood)
+        const rec = allMobtua.find(r => r.id === id);
+        if (rec) { rec.staffVerified = { ...newSV }; rec.staffNote = note; }
         closeMobtuaVerifySubModal();
-        await loadAll();
-        buildStepperStep3(); // Refresh print cards
-        printMobtuaById(id);
-    } catch(e) { console.error(e); }
+        renderMobtua();
+        buildStepperStep3(); // Refresh print cards with updated data
+        showToast('บันทึกหลักฐานใบมอบตัวแล้ว ✅', 'success');
+        // Print — stepper still open, need to close first
+        setTimeout(() => {
+            closeInspectionStepper();
+            setTimeout(() => printMobtuaById(id), 200);
+        }, 100);
+    } catch(e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+        console.error(e);
+    }
 }
 window.confirmMobtuaSubVerifyAndPrint = confirmMobtuaSubVerifyAndPrint;
 

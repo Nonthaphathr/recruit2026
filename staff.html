@@ -43,7 +43,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;font-size:16px;line-height:1.65;}
 
 /* ══════════════════════════════════════════════
    LOADING OVERLAY
@@ -74,10 +74,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
    HEADER
 ══════════════════════════════════════════════ */
 .app-header{background:var(--navy);border-bottom:2px solid rgba(212,168,67,.2);position:sticky;top:0;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.3);}
-.header-inner{max-width:1400px;margin:0 auto;padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;}
-.header-logo{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(212,168,67,.4);object-fit:cover;flex-shrink:0;}
+.header-inner{max-width:1400px;margin:0 auto;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.85rem;}
+.header-logo{width:42px;height:42px;border-radius:50%;border:2px solid rgba(212,168,67,.5);object-fit:cover;flex-shrink:0;}
 .header-title{flex:1;min-width:0;}
-.header-title h1{font-family:'Mitr',sans-serif;font-size:clamp(.85rem,2.5vw,1rem);font-weight:600;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-title h1{font-family:'Mitr',sans-serif;font-size:clamp(.92rem,2.5vw,1.08rem);font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .header-title p{font-size:.7rem;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .header-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
 .header-link-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(212,168,67,.15);border:1.5px solid rgba(212,168,67,.4);color:var(--gold-light);border-radius:var(--r-sm);padding:.4rem .75rem;font-family:'Sarabun',sans-serif;font-size:.78rem;font-weight:600;text-decoration:none;transition:background .2s;white-space:nowrap;}
@@ -129,18 +129,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .stat-card.c-mobtua::before {background:var(--emerald);}
 .stat-card.c-today::before  {background:var(--gold);}
 .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-.stat-label{font-size:.72rem;color:var(--text-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;}
-.stat-num{font-family:'Mitr',sans-serif;font-size:2rem;font-weight:700;color:var(--text);line-height:1;}
+.stat-label{font-size:.78rem;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;}
+.stat-num{font-family:'Mitr',sans-serif;font-size:2.4rem;font-weight:800;color:var(--text);line-height:1;}
 .stat-sub{font-size:.7rem;color:var(--text-soft);margin-top:.3rem;}
 
 /* ══════════════════════════════════════════════
    TAB SYSTEM
 ══════════════════════════════════════════════ */
 .section-tabs{display:flex;gap:.25rem;margin-bottom:1rem;border-bottom:2px solid var(--border);padding-bottom:0;overflow-x:auto;}
-.tab-btn{background:none;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;color:var(--text-soft);padding:.6rem 1.1rem .8rem;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;display:flex;align-items:center;gap:.4rem;border-radius:var(--r-sm) var(--r-sm) 0 0;white-space:nowrap;}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:.98rem;font-weight:600;color:var(--text-soft);padding:.7rem 1.25rem .85rem;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;display:flex;align-items:center;gap:.45rem;border-radius:var(--r-sm) var(--r-sm) 0 0;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);background:rgba(0,0,0,.03);}
 .tab-btn.active{color:var(--navy-light);border-bottom-color:var(--navy);}
-.tab-btn .tab-count{background:var(--surface-2);color:var(--text-soft);border-radius:99px;padding:1px 7px;font-size:.72rem;}
+.tab-btn .tab-count{background:var(--surface-2);color:var(--text-soft);border-radius:99px;padding:2px 9px;font-size:.78rem;font-weight:700;}
 .tab-btn.active .tab-count{background:var(--navy);color:#fff;}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;animation:fadeIn .25s ease;}
@@ -152,7 +152,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-bottom:.9rem;}
 .search-box{flex:1;min-width:180px;position:relative;}
 .search-box svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text-soft);pointer-events:none;}
-.search-input{width:100%;padding:.58rem .8rem .58rem 2.3rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.85rem;background:var(--card);color:var(--text);transition:border-color .2s;}
+.search-input{width:100%;padding:.65rem .9rem .65rem 2.5rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.92rem;background:var(--card);color:var(--text);transition:border-color .2s;}
 .search-input:focus{outline:none;border-color:var(--slate-light);}
 .filter-select{padding:.58rem .8rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.85rem;background:var(--card);color:var(--text);cursor:pointer;}
 .filter-select:focus{outline:none;border-color:var(--slate-light);}
@@ -167,17 +167,17 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden;}
 .data-table{width:100%;border-collapse:collapse;}
 .data-table thead{background:linear-gradient(to right,var(--navy) 0%,var(--navy-light) 100%);}
-.data-table th{padding:.7rem 1rem;text-align:left;font-family:'Mitr',sans-serif;font-size:.74rem;font-weight:500;color:rgba(255,255,255,.8);letter-spacing:.04em;white-space:nowrap;}
+.data-table th{padding:.8rem 1.1rem;text-align:left;font-family:'Mitr',sans-serif;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.04em;white-space:nowrap;}
 .data-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
 .data-table tbody tr:hover{background:#f5f8ff;}
 .data-table tbody tr.new-row{animation:highlight-new 2s ease;}
 @keyframes highlight-new{0%,30%{background:#fffbeb;}100%{background:transparent;}}
-.data-table td{padding:.75rem 1rem;font-size:.85rem;vertical-align:middle;}
-.data-table td.td-name{font-weight:600;color:var(--text);}
+.data-table td{padding:.9rem 1.1rem;font-size:.9rem;vertical-align:middle;}
+.data-table td.td-name{font-weight:700;color:var(--text);font-size:.95rem;}
 .data-table td.td-muted{color:var(--text-soft);font-size:.8rem;}
 
 /* Grade badges */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:.77rem;font-weight:700;white-space:nowrap;}
 .badge-m1    {background:#fce4ec;color:#c2185b;}
 .badge-m4    {background:#ede7f6;color:#5e35b1;}
 .badge-mobtua{background:#e8f5e9;color:#2e7d32;}
@@ -185,7 +185,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 /* Action buttons */
 .action-group{display:flex;gap:.3rem;align-items:center;flex-wrap:wrap;}
-.btn-sm{display:inline-flex;align-items:center;gap:.25rem;padding:.3rem .6rem;border-radius:var(--r-sm);font-size:.76rem;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;white-space:nowrap;}
+.btn-sm{display:inline-flex;align-items:center;gap:.3rem;padding:.42rem .8rem;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;white-space:nowrap;}
 .btn-view  {background:#e8f4fd;border-color:#90caf9;color:#1565c0;}
 .btn-view:hover {background:#bbdefb;}
 .btn-edit  {background:#fff8e1;border-color:#ffe082;color:#e65100;}
@@ -288,11 +288,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 /* Modal action buttons */
 .btn-primary{background:var(--navy);color:#fff;border:none;padding:.6rem 1.4rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:background .2s;}
 .btn-primary:hover{background:var(--slate);}
-.btn-secondary{background:var(--surface);border:1.5px solid var(--border);color:var(--text-mid);padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .2s;}
+.btn-secondary{background:var(--surface);border:1.5px solid var(--border);color:var(--text-mid);padding:.7rem 1.3rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;}
 .btn-secondary:hover{background:var(--surface-2);}
 .btn-danger{background:var(--red);color:#fff;border:none;padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;}
 .btn-success-solid{background:var(--emerald);color:#fff;border:none;padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Sarabun',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);border:none;padding:.6rem 1.1rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);border:none;padding:.7rem 1.4rem;border-radius:var(--r-md);font-family:'Mitr',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:filter .2s,transform .15s;}
 
 /* Confirm modal */
 .confirm-modal{max-width:400px;}
@@ -308,133 +308,336 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 /* ══════════════════════════════════════════════
    VERIFY DOCS MODAL
 ══════════════════════════════════════════════ */
-.verify-checklist{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem;}
+.verify-checklist{display:flex;flex-direction:column;gap:7px;margin-bottom:1rem;}
+.verify-note-area{width:100%;min-height:80px;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:.9rem;resize:vertical;background:var(--card);}
 
 /* ════════════════════════════════════════════════════════
-   INSPECTION STEPPER CSS
+   INSPECTION STEPPER — REDESIGNED
 ════════════════════════════════════════════════════════ */
 .stepper-overlay{
   position:fixed;inset:0;z-index:6000;
   display:flex;flex-direction:column;
-  background:var(--bg,#f0f3f8);
-  animation:fadeIn .2s ease;
-}
-.stepper-header{
-  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);
-  padding:.75rem 1.25rem;
-  display:flex;align-items:center;gap:1rem;
-  box-shadow:0 2px 12px rgba(0,0,0,.25);
-  flex-shrink:0;
-}
-.stepper-title{
-  display:flex;align-items:center;gap:.5rem;
-  font-family:'Mitr',sans-serif;font-weight:600;color:#fff;font-size:.95rem;
-  min-width:0;flex:0 0 auto;
-}
-.stepper-icon{font-size:1.1rem;}
-.stepper-progress{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:0;
-}
-.stepper-step{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.step-circle{
-  width:30px;height:30px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.78rem;font-weight:700;font-family:'Mitr',sans-serif;
-  background:rgba(255,255,255,.18);color:rgba(255,255,255,.7);
-  border:2px solid rgba(255,255,255,.25);transition:all .3s ease;
-}
-.step-circle.active{
-  background:var(--gold);color:var(--navy);
-  border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.3);
-}
-.step-circle.done{
-  background:#4ade80;color:#064e3b;border-color:#4ade80;
-}
-.step-label{
-  font-size:.62rem;color:rgba(255,255,255,.65);
-  font-family:'Sarabun',sans-serif;white-space:nowrap;
-}
-.stepper-step.active .step-label{color:rgba(255,255,255,.95);}
-.step-line{
-  flex:1;height:2px;background:rgba(255,255,255,.2);
-  max-width:60px;min-width:20px;margin:0 4px;
-  transition:background .3s;
-}
-.step-line.done{background:#4ade80;}
-.stepper-close-btn{
-  background:rgba(255,255,255,.15);border:none;
-  width:32px;height:32px;border-radius:50%;
-  color:rgba(255,255,255,.9);font-size:1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:background .2s;
-}
-.stepper-close-btn:hover{background:rgba(255,255,255,.3);}
-.stepper-body{
-  flex:1;overflow-y:auto;
-  max-width:780px;width:100%;
-  margin:0 auto;padding:1.25rem 1rem;
-  display:flex;flex-direction:column;
-}
-.stepper-panel{display:none;flex-direction:column;gap:.6rem;animation:fadeIn .2s ease;}
-.stepper-panel.active{display:flex;}
-.stepper-panel-title{
-  font-family:'Mitr',sans-serif;font-size:1.05rem;font-weight:600;
-  color:var(--navy);margin-bottom:.3rem;
-  padding-bottom:.6rem;border-bottom:2px solid var(--border);
-  display:flex;align-items:center;gap:.5rem;
-}
-.stepper-panel-actions{display:flex;justify-content:flex-end;margin-bottom:.25rem;}
-.stepper-detail-scroll{
-  flex:1;
-}
-.stepper-footer{
-  background:var(--card);
-  padding:.85rem 1.25rem;
-  display:flex;align-items:center;gap:.75rem;
-  border-top:1.5px solid var(--border);
-  flex-shrink:0;
-  box-shadow:0 -2px 8px rgba(0,0,0,.07);
+  background:#f3f6fb;
+  animation:fadeIn .22s ease;
 }
 
-/* Print cards grid (Step 3) */
-.print-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-.print-card{
-  background:var(--card);
-  border:2px solid var(--border);
-  border-radius:var(--r-xl);
-  padding:1.4rem 1rem 1.2rem;
-  text-align:center;
-  cursor:pointer;
-  transition:all .2s ease;
-  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+/* ═══ SLIM HEADER ═══ */
+.stepper-header{
+  background:linear-gradient(120deg,var(--navy) 0%,#1d3461 60%,#253f72 100%);
+  padding:.85rem 1.6rem;
+  display:flex;align-items:center;gap:1rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+  flex-shrink:0;
+  min-height:62px;
+  position:relative;
+  overflow:hidden;
 }
+.stepper-header::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.stepper-title{
+  display:flex;align-items:center;gap:.75rem;flex:1;
+  font-family:'Mitr',sans-serif;font-weight:700;color:#fff;font-size:1.15rem;
+  letter-spacing:.01em;position:relative;
+}
+.stepper-icon{font-size:1.5rem;}
+.stepper-student-grade{
+  background:var(--gold);color:var(--navy);
+  font-size:.72rem;font-weight:800;padding:2px 10px;border-radius:99px;
+  letter-spacing:.04em;flex-shrink:0;
+}
+
+/* hide old inline progress from header */
+.stepper-progress{display:none!important;}
+.stepper-step,.step-circle,.step-label,.step-line{display:none!important;}
+
+.stepper-close-btn{
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);
+  width:42px;height:42px;border-radius:50%;
+  color:#fff;font-size:1.2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;position:relative;
+}
+.stepper-close-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.4);transform:rotate(90deg);}
+
+/* ═══ BIG STEP PROGRESS — inside body ═══ */
+.stepper-progress-bar-wrap{
+  background:#fff;
+  border-bottom:2px solid #e2e8f0;
+  padding:1.1rem 2rem;
+  display:flex;align-items:stretch;gap:0;
+  flex-shrink:0;
+  box-shadow:0 2px 8px rgba(15,28,46,.06);
+}
+.sp-step{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:.45rem;
+  position:relative;cursor:default;
+  padding:.4rem .5rem;
+}
+.sp-step::after{
+  content:'';position:absolute;top:25px;left:calc(50% + 26px);
+  right:calc(-50% + 26px);height:3px;
+  background:#e2e8f0;transition:background .4s;z-index:0;
+}
+.sp-step:last-child::after{display:none;}
+.sp-step.done::after{background:linear-gradient(90deg,#4ade80,#22c55e);}
+.sp-num{
+  width:50px;height:50px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Mitr',sans-serif;font-size:1.15rem;font-weight:700;
+  background:#eef1f8;color:#94a3b8;
+  border:2.5px solid #dde3ef;
+  transition:all .35s cubic-bezier(.4,0,.2,1);z-index:1;position:relative;
+}
+.sp-step.active .sp-num{
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);
+  border-color:var(--gold-light);
+  box-shadow:0 0 0 6px rgba(212,168,67,.18),0 6px 16px rgba(212,168,67,.3);
+  transform:scale(1.15);font-size:1.2rem;
+}
+.sp-step.done .sp-num{
+  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-color:#22c55e;
+  box-shadow:0 0 0 5px rgba(34,197,94,.15);
+}
+.sp-done-icon{font-size:1.3rem;}
+.sp-label{
+  font-family:'Mitr',sans-serif;font-size:.9rem;font-weight:600;
+  color:#94a3b8;text-align:center;white-space:nowrap;transition:color .3s;
+}
+.sp-step.active .sp-label{color:var(--navy);font-size:.95rem;font-weight:700;}
+.sp-step.done .sp-label{color:#16a34a;font-weight:700;}
+.sp-sublabel{font-size:.75rem;color:#b0bac9;text-align:center;white-space:nowrap;}
+.sp-step.active .sp-sublabel{color:var(--text-soft);font-size:.78rem;}
+.sp-step.done .sp-sublabel{color:#4ade80;}
+
+/* ═══ Body ═══ */
+.stepper-body{
+  flex:1;overflow-y:auto;
+  max-width:860px;width:100%;
+  margin:0 auto;padding:1.8rem 1.6rem;
+  display:flex;flex-direction:column;
+}
+.stepper-panel{display:none;flex-direction:column;gap:1rem;animation:fadeIn .2s ease;}
+.stepper-panel.active{display:flex;}
+
+/* Panel title */
+.stepper-panel-title{
+  font-family:'Mitr',sans-serif;font-size:1.25rem;font-weight:700;
+  color:var(--navy);margin-bottom:.5rem;
+  padding-bottom:.85rem;border-bottom:2.5px solid var(--border);
+  display:flex;align-items:center;gap:.6rem;
+}
+.stepper-panel-actions{display:flex;justify-content:flex-end;margin-bottom:.3rem;}
+.stepper-detail-scroll{flex:1;}
+
+/* Step status banner — shown at top of each panel body */
+.step-status-banner{
+  display:flex;align-items:center;gap:1rem;
+  background:#fff;border-radius:16px;
+  padding:1.1rem 1.4rem;
+  border:2px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  margin-bottom:.5rem;
+}
+.step-status-num{
+  width:56px;height:56px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Mitr',sans-serif;font-size:1.4rem;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));
+  color:var(--navy);box-shadow:0 4px 14px rgba(212,168,67,.3);
+}
+.step-status-info{flex:1;}
+.step-status-title{font-family:'Mitr',sans-serif;font-size:1.05rem;font-weight:700;color:var(--navy);}
+.step-status-sub{font-size:.88rem;color:var(--text-soft);margin-top:2px;}
+.step-status-badge{font-size:.78rem;font-weight:700;padding:5px 14px;border-radius:99px;flex-shrink:0;}
+.ssb-1{background:#e8f0ff;color:#2563eb;border:1.5px solid #93c5fd;}
+.ssb-2{background:#fdf9e8;color:#854d0e;border:1.5px solid #fde68a;}
+.ssb-3{background:#f0fdf4;color:#16a34a;border:1.5px solid #86efac;}
+
+/* ═══ Footer nav ═══ */
+.stepper-footer{
+  background:#fff;
+  padding:1.1rem 1.8rem;
+  display:flex;align-items:center;gap:1rem;
+  border-top:2px solid #e8edf5;
+  flex-shrink:0;
+  box-shadow:0 -6px 24px rgba(0,0,0,.07);
+}
+.stepper-footer .btn-secondary{
+  padding:.8rem 1.7rem;font-size:1rem;border-radius:12px;
+  font-family:'Mitr',sans-serif;font-weight:600;
+}
+.stepper-footer .btn-gold{
+  padding:.85rem 2rem;font-size:1.05rem;border-radius:12px;
+  box-shadow:0 4px 18px rgba(212,168,67,.4);letter-spacing:.01em;
+}
+
+/* ═══ Print cards — Step 3 ═══ */
+.print-cards-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.4rem;margin-top:.6rem;
+}
+.print-card{
+  background:#fff;
+  border:2px solid #e2e8f0;
+  border-radius:22px;
+  padding:2.2rem 1.4rem 1.8rem;
+  text-align:center;cursor:pointer;
+  transition:all .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;align-items:center;gap:.85rem;
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 12px rgba(15,28,46,.06);
+}
+.print-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--gold),var(--gold-light));
+  opacity:0;transition:opacity .3s;
+}
+.print-card:hover::before{opacity:1;}
 .print-card:hover{
   border-color:var(--gold);
-  box-shadow:0 4px 16px rgba(212,168,67,.2);
-  transform:translateY(-3px);
+  box-shadow:0 12px 36px rgba(212,168,67,.22),0 4px 12px rgba(0,0,0,.08);
+  transform:translateY(-6px);
 }
+.print-card:active{transform:translateY(-2px);}
 .print-card.disabled{
-  opacity:.5;cursor:not-allowed;
+  opacity:.4;cursor:not-allowed;pointer-events:none;filter:grayscale(.5);
 }
-.print-card.disabled:hover{transform:none;border-color:var(--border);box-shadow:none;}
-.print-card-icon{font-size:2.2rem;line-height:1;}
+.print-card-icon{font-size:3.2rem;line-height:1;margin-bottom:.2rem;}
 .print-card-title{
-  font-family:'Mitr',sans-serif;font-weight:600;
-  color:var(--navy);font-size:.9rem;
+  font-family:'Mitr',sans-serif;font-weight:700;
+  color:var(--navy);font-size:1.1rem;
 }
-.print-card-desc{font-size:.75rem;color:var(--text-soft);line-height:1.5;}
+.print-card-desc{font-size:.88rem;color:var(--text-soft);line-height:1.65;}
 .print-card-badge{
-  font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;
+  font-size:.78rem;font-weight:700;padding:5px 14px;border-radius:99px;
   border:1.5px solid;margin-top:auto;
 }
 .print-card-badge.ok{background:#dcfce7;color:#15803d;border-color:#86efac;}
 .print-card-badge.warn{background:#fef9c3;color:#854d0e;border-color:#fde047;}
 .print-card-badge.na{background:#f1f5f9;color:#64748b;border-color:#cbd5e1;}
+.print-card-hint{
+  font-size:.75rem;color:#94a3b8;margin-top:-.3rem;
+}
+
+/* ═══ CARD PREVIEW MODAL — sits above stepper, step 3 stays visible ═══ */
+.card-preview-modal{
+  position:fixed;inset:0;z-index:6500;
+  background:rgba(8,18,36,.72);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:1.4rem;
+  animation:fadeIn .18s ease;
+}
+.card-preview-modal.open{display:flex;}
+.card-preview-box{
+  background:#fff;border-radius:22px;
+  width:100%;max-width:880px;max-height:92vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 30px 90px rgba(0,0,0,.55);
+  overflow:hidden;
+  animation:slideUp .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.cpv-header{
+  background:linear-gradient(120deg,var(--navy),#1d3461);
+  padding:1.1rem 1.6rem;
+  display:flex;align-items:center;gap:1rem;flex-shrink:0;
+}
+.cpv-header-info{flex:1;}
+.cpv-title{font-family:'Mitr',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;}
+.cpv-subtitle{font-size:.82rem;color:rgba(255,255,255,.55);margin-top:2px;}
+.cpv-close{
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
+  width:40px;height:40px;border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;
+}
+.cpv-close:hover{background:rgba(255,255,255,.28);transform:rotate(90deg);}
+.cpv-body{
+  flex:1;overflow-y:auto;padding:1.4rem;background:#f8fafc;
+}
+.cpv-footer{
+  background:#fff;padding:1rem 1.6rem;
+  border-top:1.5px solid #e8edf5;
+  display:flex;gap:.8rem;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0;
+}
+.cpv-footer .btn-primary{
+  padding:.75rem 1.8rem;font-size:.98rem;border-radius:12px;
+  font-family:'Mitr',sans-serif;
+}
+.cpv-footer .btn-secondary{
+  padding:.75rem 1.5rem;font-size:.98rem;border-radius:12px;
+}
+
+/* ═══ Print preview modal (non-stepper) ═══ */
+.print-preview-modal{
+  position:fixed;inset:0;z-index:6500;
+  background:rgba(10,20,40,.7);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:1.2rem;
+  animation:fadeIn .2s ease;
+}
+.print-preview-modal.open{display:flex;}
+.print-preview-box{
+  background:#fff;border-radius:18px;
+  width:100%;max-width:860px;max-height:90vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,.45);overflow:hidden;
+}
+.ppv-header{
+  background:linear-gradient(135deg,var(--navy),#1a3358);
+  padding:1rem 1.4rem;
+  display:flex;align-items:center;gap:.9rem;flex-shrink:0;
+}
+.ppv-header h3{flex:1;font-family:'Mitr',sans-serif;font-size:1rem;font-weight:700;color:#fff;}
+.ppv-close{
+  background:rgba(255,255,255,.15);border:none;width:36px;height:36px;
+  border-radius:50%;color:#fff;font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+}
+.ppv-close:hover{background:rgba(255,255,255,.3);}
+.ppv-body{flex:1;overflow-y:auto;padding:1.2rem;background:#f8fafc;}
+.ppv-footer{
+  background:#fff;padding:.9rem 1.4rem;border-top:1.5px solid #e8edf5;
+  display:flex;gap:.7rem;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0;
+}
+
+/* ═══ Verify check items ═══ */
+.verify-check-item{
+  display:flex;align-items:center;gap:.7rem;padding:.85rem 1.1rem;
+  border:1.5px solid var(--border);border-radius:12px;cursor:pointer;
+  transition:all .18s;background:#fff;font-size:.95rem;
+}
+.verify-check-item.done{background:#f0fdf4;border-color:#86efac;color:#15803d;}
+.verify-check-item:hover:not(.done){background:#f8fafc;border-color:#c7d3e8;}
+
+/* ═══ Stepper detail rows ═══ */
+.sdc-section{
+  font-family:'Mitr',sans-serif;font-size:.82rem;font-weight:700;
+  color:var(--slate);text-transform:uppercase;letter-spacing:.07em;
+  margin:1.1rem 0 .5rem;padding-bottom:.4rem;
+  border-bottom:1.5px solid var(--border);
+}
+.sdc-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:.55rem 0;border-bottom:1px dashed #eef0f5;gap:1rem;font-size:.95rem;
+}
+.sdc-row:last-child{border-bottom:none;}
+.sdc-label{color:var(--text-soft);font-size:.85rem;flex-shrink:0;min-width:130px;}
+.sdc-val{color:var(--text);font-weight:600;text-align:right;word-break:break-word;}
+
+/* ═══ Edit button inside stepper ═══ */
+#stepperEditBtn{
+  padding:.65rem 1.3rem!important;font-size:.95rem!important;
+  border-radius:10px!important;
+}
 
 @media(max-width:640px){
   .print-cards-grid{grid-template-columns:1fr;}
-  .stepper-title span:last-child{display:none;}
-  .step-label{display:none;}
+  .stepper-progress-bar-wrap{padding:.8rem 1rem;}
+  .sp-sublabel{display:none;}
+  .sp-label{font-size:.82rem;}
+  .sp-num{width:42px;height:42px;font-size:1rem;}
+  .stepper-body{padding:1.2rem 1rem;}
 }
 
 /* ── Student detail overlay (stacked on top of verify modal) ── */
@@ -1324,42 +1527,67 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 
 <!-- ════════════════════════════════════════════════════════
-     INSPECTION STEPPER (full-page overlay)
+     INSPECTION STEPPER (full-page overlay) — REDESIGNED
 ════════════════════════════════════════════════════════ -->
 <div id="inspectionStepper" style="display:none;" class="stepper-overlay">
-  <!-- Header -->
+
+  <!-- ══ SLIM HEADER: name + grade + close ══ -->
   <div class="stepper-header">
     <div class="stepper-title">
       <span class="stepper-icon">🔍</span>
       <span id="stepperStudentName">ตรวจสอบนักเรียน</span>
+      <span class="stepper-student-grade" id="stepperGradeBadge" style="display:none;"></span>
     </div>
-    <div class="stepper-progress">
-      <div class="stepper-step" id="step-indicator-1">
-        <div class="step-circle active" id="step-circle-1">1</div>
-        <div class="step-label">รายละเอียด</div>
-      </div>
+    <!-- hidden compat elements -->
+    <div class="stepper-progress" style="display:none;">
+      <div class="stepper-step" id="step-indicator-1"><div class="step-circle active" id="step-circle-1">1</div><div class="step-label">รายละเอียด</div></div>
       <div class="step-line" id="step-line-12"></div>
-      <div class="stepper-step" id="step-indicator-2">
-        <div class="step-circle" id="step-circle-2">2</div>
-        <div class="step-label">ยืนยันเอกสาร</div>
-      </div>
+      <div class="stepper-step" id="step-indicator-2"><div class="step-circle" id="step-circle-2">2</div><div class="step-label">ยืนยันเอกสาร</div></div>
       <div class="step-line" id="step-line-23"></div>
-      <div class="stepper-step" id="step-indicator-3">
-        <div class="step-circle" id="step-circle-3">3</div>
-        <div class="step-label">สั่งพิมพ์</div>
-      </div>
+      <div class="stepper-step" id="step-indicator-3"><div class="step-circle" id="step-circle-3">3</div><div class="step-label">สั่งพิมพ์</div></div>
     </div>
     <button class="stepper-close-btn" onclick="closeInspectionStepper()" title="ปิด">✕</button>
   </div>
 
-  <!-- Body -->
+  <!-- ══ BIG STEP PROGRESS BAR (inside, below header) ══ -->
+  <div class="stepper-progress-bar-wrap" id="stepperProgressBarWrap">
+    <div class="sp-step active" id="sp-step-1">
+      <div class="sp-num" id="sp-num-1">1</div>
+      <div class="sp-label">รายละเอียดนักเรียน</div>
+      <div class="sp-sublabel">ตรวจสอบข้อมูลส่วนตัว</div>
+    </div>
+    <div class="sp-step" id="sp-step-2">
+      <div class="sp-num" id="sp-num-2">2</div>
+      <div class="sp-label">ยืนยันเอกสาร</div>
+      <div class="sp-sublabel">ติ๊กหลักฐานที่รับแล้ว</div>
+    </div>
+    <div class="sp-step" id="sp-step-3">
+      <div class="sp-num" id="sp-num-3">3</div>
+      <div class="sp-label">สั่งพิมพ์เอกสาร</div>
+      <div class="sp-sublabel">ออกเอกสาร / ใบนัดหมาย</div>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
   <div class="stepper-body">
+
     <!-- STEP 1: รายละเอียดนักเรียน -->
     <div id="stepper-panel-1" class="stepper-panel active">
-      <div class="stepper-panel-title">👤 ตรวจรายละเอียดนักเรียน</div>
-      <div class="stepper-panel-actions">
-        <button class="btn-sm btn-edit" id="stepperEditBtn" onclick="openEditFromStepper()" style="padding:.4rem .85rem;font-size:.82rem;display:inline-flex;align-items:center;gap:5px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <!-- Status banner -->
+      <div class="step-status-banner">
+        <div class="step-status-num">1</div>
+        <div class="step-status-info">
+          <div class="step-status-title">ตรวจสอบรายละเอียดนักเรียน</div>
+          <div class="step-status-sub">ตรวจสอบข้อมูลส่วนตัว ที่อยู่ และข้อมูลผู้ปกครอง</div>
+        </div>
+        <span class="step-status-badge ssb-1">ขั้นที่ 1 / 3</span>
+      </div>
+      <div class="stepper-panel-title">
+        <span>👤</span> รายละเอียดนักเรียน
+        <div style="flex:1;"></div>
+        <button class="btn-sm btn-edit" id="stepperEditBtn" onclick="openEditFromStepper()"
+          style="padding:.65rem 1.3rem;font-size:.95rem;display:inline-flex;align-items:center;gap:7px;border-radius:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           แก้ไขข้อมูล
         </button>
       </div>
@@ -1368,39 +1596,97 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
     <!-- STEP 2: ยืนยันเอกสาร -->
     <div id="stepper-panel-2" class="stepper-panel">
-      <div class="stepper-panel-title">📋 ยืนยันเอกสารหลักฐาน</div>
+      <!-- Status banner -->
+      <div class="step-status-banner">
+        <div class="step-status-num">2</div>
+        <div class="step-status-info">
+          <div class="step-status-title">ยืนยันเอกสารหลักฐาน</div>
+          <div class="step-status-sub">ติ๊กรายการหลักฐานที่ผู้ปกครองนำมาให้ครบแล้ว</div>
+        </div>
+        <span class="step-status-badge ssb-2">ขั้นที่ 2 / 3</span>
+      </div>
+      <div class="stepper-panel-title"><span>📋</span> เอกสารหลักฐาน</div>
       <div class="verify-summary" id="stepperVerifySummary"></div>
-      <div id="stepperLinkedNote" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 12px;font-size:.78rem;color:#1e40af;margin-bottom:.55rem;display:none;"></div>
-      <p style="font-size:.78rem;color:var(--text-soft);margin-bottom:.5rem;">
-        ✅ กดติ๊กรายการที่ได้รับเอกสารครบแล้ว
+      <div id="stepperLinkedNote" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:10px 16px;font-size:.9rem;color:#1e40af;margin-bottom:.7rem;display:none;"></div>
+      <p style="font-size:.95rem;color:var(--text-soft);margin-bottom:.8rem;">
+        ✅ กดที่รายการเพื่อยืนยันว่าได้รับเอกสารแล้ว
       </p>
       <div class="verify-checklist" id="stepperVerifyChecklist"></div>
-      <div style="margin-top:.75rem;">
-        <label style="font-size:.82rem;font-weight:600;color:var(--gold);display:block;margin-bottom:4px;">📝 หมายเหตุ</label>
-        <textarea class="verify-note-area" id="stepperVerifyNote" placeholder="เช่น รอสำเนาบัตรประชาชนมารดา..."></textarea>
+      <div style="margin-top:1.2rem;">
+        <label style="font-size:.95rem;font-weight:700;color:var(--gold);display:block;margin-bottom:8px;">📝 หมายเหตุ</label>
+        <textarea class="verify-note-area" id="stepperVerifyNote"
+          style="font-size:.95rem;padding:.75rem 1rem;border-radius:12px;"
+          placeholder="เช่น รอสำเนาบัตรประชาชนมารดา..."></textarea>
       </div>
     </div>
 
     <!-- STEP 3: สั่งพิมพ์ -->
     <div id="stepper-panel-3" class="stepper-panel">
-      <div class="stepper-panel-title">🖨️ สั่งพิมพ์เอกสาร</div>
-      <p style="font-size:.82rem;color:var(--text-soft);margin-bottom:1.1rem;">เลือกเอกสารที่ต้องการพิมพ์</p>
+      <!-- Status banner -->
+      <div class="step-status-banner">
+        <div class="step-status-num" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 14px rgba(34,197,94,.3);">3</div>
+        <div class="step-status-info">
+          <div class="step-status-title">สั่งพิมพ์เอกสาร</div>
+          <div class="step-status-sub">คลิกที่การ์ดเพื่อดูตัวอย่างก่อนพิมพ์ — หน้านี้จะไม่หายไปเมื่อเปิดดูเอกสาร</div>
+        </div>
+        <span class="step-status-badge ssb-3">ขั้นที่ 3 / 3</span>
+      </div>
+      <div class="stepper-panel-title"><span>🖨️</span> เลือกเอกสารที่ต้องการ</div>
       <div class="print-cards-grid" id="printCardsGrid">
-        <!-- Cards generated by JS -->
+        <!-- Cards generated by buildStepperStep3() — clicking opens card-preview-modal above stepper -->
       </div>
     </div>
   </div>
 
-  <!-- Footer navigation -->
+  <!-- ══ FOOTER navigation ══ -->
   <div class="stepper-footer">
     <button class="btn-secondary" id="stepperBackBtn" onclick="stepperNav(-1)" style="display:none;">← ย้อนกลับ</button>
     <div style="flex:1;"></div>
-    <button class="btn-gold" id="stepperNextBtn" onclick="stepperNav(1)">
-      ถัดไป <span style="font-size:.9em;">→</span>
-    </button>
-    <button class="btn-gold" id="stepperDoneBtn" onclick="closeInspectionStepper()" style="display:none;">
-      ✅ เสร็จสิ้น
-    </button>
+    <button class="btn-gold" id="stepperNextBtn" onclick="stepperNav(1)">ถัดไป →</button>
+    <button class="btn-gold" id="stepperDoneBtn" onclick="closeInspectionStepper()" style="display:none;">✅ เสร็จสิ้น</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     CARD PREVIEW MODAL — sits above stepper (z:6500), step 3 stays visible
+════════════════════════════════════════════════════════ -->
+<div id="cardPreviewModal" class="card-preview-modal">
+  <div class="card-preview-box">
+    <div class="cpv-header">
+      <div class="cpv-header-info">
+        <div class="cpv-title" id="cpvTitle">📄 ตัวอย่างเอกสาร</div>
+        <div class="cpv-subtitle" id="cpvSubtitle"></div>
+      </div>
+      <button class="cpv-close" onclick="closeCardPreviewModal()" title="ปิด">✕</button>
+    </div>
+    <div class="cpv-body">
+      <div id="cpvContent" style="background:#fff;border-radius:10px;padding:.5rem;"></div>
+    </div>
+    <div class="cpv-footer">
+      <button class="btn-secondary" onclick="closeCardPreviewModal()">✕ ปิด</button>
+      <button class="btn-primary" id="cpvPrintBtn" onclick="executeCpvPrint()" style="background:linear-gradient(135deg,var(--navy),#1d3461);">
+        🖨️ พิมพ์เอกสาร
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PRINT PREVIEW MODAL — overlays stepper, step 3 stays behind
+════════════════════════════════════════════════════════ -->
+<div id="printPreviewModal" class="print-preview-modal" onclick="if(event.target===this)closePrintPreviewModal()">
+  <div class="print-preview-box">
+    <div class="ppv-header">
+      <h3 id="ppvTitle">👁 ตัวอย่างเอกสาร</h3>
+      <button class="ppv-close" onclick="closePrintPreviewModal()">✕</button>
+    </div>
+    <div class="ppv-body">
+      <div id="ppvContent" style="background:#fff;border-radius:8px;padding:.5rem;"></div>
+    </div>
+    <div class="ppv-footer">
+      <button class="btn-secondary" onclick="closePrintPreviewModal()">✕ ปิด</button>
+      <button class="btn-gold" id="ppvPrintBtn" onclick="executePrintFromPPV()">🖨️ สั่งพิมพ์</button>
+    </div>
   </div>
 </div>
 
@@ -2919,7 +3205,7 @@ function goToStep(n) {
         if (p) { p.classList.toggle('active', i === n); }
     });
 
-    // Update progress indicators
+    // Update old-style progress indicators (hidden but kept for compat)
     [1,2,3].forEach(i => {
         const c = document.getElementById(`step-circle-${i}`);
         if (!c) return;
@@ -2931,11 +3217,26 @@ function goToStep(n) {
     const l23 = document.getElementById('step-line-23');
     if (l12) l12.classList.toggle('done', n > 1);
     if (l23) l23.classList.toggle('done', n > 2);
-
-    // Update step indicators class
     [1,2,3].forEach(i => {
         const ind = document.getElementById(`step-indicator-${i}`);
         if (ind) ind.classList.toggle('active', i === n);
+    });
+
+    // ── Update BIG progress bar ──
+    [1,2,3].forEach(i => {
+        const sp = document.getElementById(`sp-step-${i}`);
+        const sn = document.getElementById(`sp-num-${i}`);
+        if (!sp) return;
+        sp.classList.remove('active','done');
+        if (i < n) {
+            sp.classList.add('done');
+            if (sn) sn.textContent = '✓';
+        } else if (i === n) {
+            sp.classList.add('active');
+            if (sn) sn.textContent = String(i);
+        } else {
+            if (sn) sn.textContent = String(i);
+        }
     });
 
     // Back / Next / Done buttons
@@ -3208,54 +3509,118 @@ function buildStepperStep3() {
             m.admissionId === id || m.studentName === (rec?.studentName || '__'));
     }
 
-    const card = (icon, title, desc, badge, onclick, disabled = false) => `
-        <div class="print-card${disabled ? ' disabled' : ''}" ${disabled ? '' : `onclick="${onclick}"`}>
+    // card opens preview modal (step 3 stays behind)
+    const card = (icon, title, desc, badge, onclick, disabled = false, color='') => `
+        <div class="print-card${disabled ? ' disabled' : ''}" ${disabled ? '' : `onclick="${onclick}"`}
+          style="${color ? `border-top:4px solid ${color};` : ''}">
           <div class="print-card-icon">${icon}</div>
           <div class="print-card-title">${title}</div>
           <div class="print-card-desc">${desc}</div>
           ${badge}
+          ${disabled ? '' : `<div class="print-card-cta">คลิกเพื่อดูและพิมพ์ →</div>`}
         </div>`;
 
     // Card 3 logic — mobtua
     let card3 = '';
     if (col === 'mobtua') {
-        card3 = card('📋', 'พิมพ์ใบมอบตัว',
+        card3 = card('📋', 'ใบมอบตัวนักเรียน',
             'เอกสารมอบตัวนักเรียน',
             `<span class="print-card-badge ok">✓ เลือกได้</span>`,
-            `stepperPrint('mobtua','${id}')`);
+            `openCardPreview('mobtua','${id}','mobtua')`,
+            false, '#15803d');
     } else if (linkedMobtua) {
         const mtSv = linkedMobtua.staffVerified || {};
         const mtAllDone = ['สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน',
             'สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา',
             'สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา',
             'สำเนาบัตรประชาชนของมารดา'].every(k => mtSv[k] === true);
-        card3 = card('📋', 'พิมพ์ใบมอบตัว',
-            'ต้องยืนยันหลักฐานใบมอบตัวก่อน',
+        card3 = card('📋', 'ใบมอบตัวนักเรียน',
+            mtAllDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
             mtAllDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
                       : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
-            `stepperOpenMobtuaVerify('${linkedMobtua.id}')`);
+            mtAllDone
+                ? `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`
+                : `stepperOpenMobtuaVerify('${linkedMobtua.id}')`,
+            false, '#15803d');
     } else {
-        card3 = card('📋', 'พิมพ์ใบมอบตัว',
+        card3 = card('📋', 'ใบมอบตัวนักเรียน',
             'ยังไม่มีข้อมูลใบมอบตัว',
             `<span class="print-card-badge na">ไม่มีข้อมูล</span>`,
-            '', true);
+            '', true, '#94a3b8');
     }
 
     document.getElementById('printCardsGrid').innerHTML =
-        card('📄', 'พิมพ์ใบสมัคร',
-            col === 'admissions' ? 'แบบฟอร์มใบสมัครเรียน' : 'ใบสมัครที่เชื่อมโยง',
+        card('📄', 'ใบสมัครเรียน',
+            col === 'admissions' ? 'แบบฟอร์มใบสมัครที่นักเรียนกรอก' : 'ใบสมัครที่เชื่อมโยง',
             verifyBadge,
-            col === 'admissions' ? `stepperPrint('admission','${id}')` : `stepperPrint('linkedAdmission','${id}')`) +
-        card('📅', 'พิมพ์ใบนัดหมาย',
+            col === 'admissions'
+                ? `openCardPreview('admission','${id}','${col}')`
+                : `openCardPreview('linkedAdmission','${id}','${col}')`,
+            false, '#1e3352') +
+        card('📅', 'ใบนัดหมายมอบตัว',
             missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
             missingCount > 0
                 ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
                 : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
-            `stepperPrint('appointment','${id}','${col}')`) +
+            `openCardPreview('appointment','${id}','${col}')`,
+            false, '#d4a843') +
         card3;
 }
 
-// ── Print wrapper: close stepper first so modal z-index doesn't conflict ──
+// ── openCardPreview: show print preview modal above stepper (step 3 stays) ──
+let _ppvType = '', _ppvId = '', _ppvCol = '';
+async function openCardPreview(type, id, col) {
+    _ppvType = type; _ppvId = id; _ppvCol = col || _stepperCol;
+    const modal = document.getElementById('printPreviewModal');
+    const content = document.getElementById('ppvContent');
+    const title = document.getElementById('ppvTitle');
+    if (!modal || !content) return;
+    content.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;font-size:1rem;">⏳ กำลังโหลด...</div>';
+    modal.classList.add('open');
+    try {
+        let html = '';
+        if (type === 'admission') {
+            const arr = allAdmissions; const rec = arr.find(r => r.id === id);
+            html = rec ? generateAdmissionDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
+            title.textContent = '📄 ใบสมัครเรียน';
+        } else if (type === 'linkedAdmission') {
+            const mt = allMobtua.find(r => r.id === id);
+            const adm = mt ? allAdmissions.find(a => a.id === mt.admissionId || a.studentName === mt.studentName) : null;
+            html = adm ? generateAdmissionDocHTML(adm.data || {}, adm.staffVerified || {}, !!adm.staffVerified) : '<p>ไม่พบใบสมัครที่เชื่อมโยง</p>';
+            title.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
+        } else if (type === 'mobtua') {
+            const arr = allMobtua; const rec = arr.find(r => r.id === id);
+            html = rec ? generateMobtuaDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
+            title.textContent = '📋 ใบมอบตัวนักเรียน';
+        } else if (type === 'appointment') {
+            const arr = col === 'mobtua' ? allMobtua : allAdmissions;
+            const rec = arr.find(r => r.id === id);
+            html = rec ? generateAppointmentHTML(rec, col) : '<p>ไม่พบข้อมูล</p>';
+            title.textContent = '📅 ใบนัดหมายมอบตัว';
+        }
+        content.innerHTML = html;
+    } catch(e) {
+        content.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${e.message}</p>`;
+    }
+}
+window.openCardPreview = openCardPreview;
+
+function closePrintPreviewModal() {
+    const modal = document.getElementById('printPreviewModal');
+    if (modal) modal.classList.remove('open');
+}
+window.closePrintPreviewModal = closePrintPreviewModal;
+
+function executePrintFromPPV() {
+    const content = document.getElementById('ppvContent');
+    if (!content) return;
+    const printTarget = document.getElementById('printTarget');
+    if (printTarget) printTarget.innerHTML = content.innerHTML;
+    window.print();
+}
+window.executePrintFromPPV = executePrintFromPPV;
+
+// ── stepperPrint (legacy: close stepper first) ──
 function stepperPrint(type, id, col) {
     closeInspectionStepper();
     setTimeout(() => {
@@ -3266,6 +3631,113 @@ function stepperPrint(type, id, col) {
     }, 200);
 }
 window.stepperPrint = stepperPrint;
+
+// ══════════════════════════════════════════════════════════════
+//  CARD PREVIEW MODAL — open document preview ABOVE stepper
+//  Step 3 card grid remains visible underneath
+// ══════════════════════════════════════════════════════════════
+let _cpvType = '', _cpvId = '', _cpvCol = '';
+
+function openCardPreview(type, id, col) {
+    _cpvType = type; _cpvId = id; _cpvCol = col || _stepperCol;
+
+    const modal = document.getElementById('cardPreviewModal');
+    const title = document.getElementById('cpvTitle');
+    const subtitle = document.getElementById('cpvSubtitle');
+    const content = document.getElementById('cpvContent');
+
+    // Clear content and show loading
+    content.innerHTML = '<div style="text-align:center;padding:3rem;color:#94a3b8;"><div style="font-size:2.5rem;margin-bottom:.8rem;">⏳</div>กำลังโหลดตัวอย่าง...</div>';
+    modal.classList.add('open');
+
+    // Generate document HTML based on type
+    const arr = _cpvCol === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === (_cpvCol === 'admissions' ? _cpvId : id)) || {};
+
+    try {
+        if (type === 'admission') {
+            title.textContent = '📄 ใบสมัครเรียน';
+            const d = rec.data || {};
+            subtitle.textContent = `${rec.studentName || ''} · ${rec.gradeText || ''}`;
+            const html = generateAdmissionHTML(d);
+            content.innerHTML = html;
+
+        } else if (type === 'linkedAdmission') {
+            title.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
+            // find admission linked to this mobtua
+            const mtRec = allMobtua.find(r => r.id === id) || {};
+            const admRec = allAdmissions.find(r =>
+                r.id === mtRec.admissionId || r.studentName === mtRec.studentName) || {};
+            const d = admRec.data || {};
+            subtitle.textContent = admRec.studentName || mtRec.studentName || '';
+            const html = generateAdmissionHTML(d);
+            content.innerHTML = html;
+
+        } else if (type === 'mobtua') {
+            title.textContent = '📋 ใบมอบตัวนักเรียน';
+            const mtArr = allMobtua;
+            const mtRec = mtArr.find(r => r.id === id) || {};
+            const d = mtRec.data || {};
+            subtitle.textContent = `${mtRec.studentName || ''} · ${mtRec.classRoom || ''}`;
+            const html = generateMobtuaDocumentHTML(d, mtRec.staffVerified || {}, !!mtRec.staffVerified);
+            content.innerHTML = html;
+
+        } else if (type === 'appointment') {
+            title.textContent = '📅 ใบนัดหมายการมอบตัว';
+            const sourceArr = _cpvCol === 'admissions' ? allAdmissions : allMobtua;
+            const sourceRec = sourceArr.find(r => r.id === id) || {};
+            subtitle.textContent = sourceRec.studentName || '';
+            const html = generateAppointmentDoc(id, _cpvCol);
+            content.innerHTML = html;
+        }
+    } catch(e) {
+        content.innerHTML = `<div style="text-align:center;padding:2rem;color:#dc2626;">❌ เกิดข้อผิดพลาด: ${e.message}</div>`;
+        console.error('openCardPreview error:', e);
+    }
+}
+window.openCardPreview = openCardPreview;
+
+function closeCardPreviewModal() {
+    document.getElementById('cardPreviewModal').classList.remove('open');
+    document.getElementById('cpvContent').innerHTML = '';
+    _cpvType = ''; _cpvId = ''; _cpvCol = '';
+}
+window.closeCardPreviewModal = closeCardPreviewModal;
+
+function executeCpvPrint() {
+    // Use the existing stepperPrint which closes stepper then prints
+    // But first close the preview modal
+    closeCardPreviewModal();
+    setTimeout(() => {
+        stepperPrint(_cpvType || 'admission', _cpvId || _stepperRecId, _cpvCol || _stepperCol);
+    }, 80);
+}
+window.executeCpvPrint = executeCpvPrint;
+
+// Store values before closing for executeCpvPrint (since closeCardPreviewModal clears them)
+const _origClose = closeCardPreviewModal;
+window.closeCardPreviewModal = function() {
+    // Store type/id/col in cpvPrintBtn data for the print button to use
+    const btn = document.getElementById('cpvPrintBtn');
+    if (btn) {
+        btn.dataset.type = _cpvType;
+        btn.dataset.id   = _cpvId;
+        btn.dataset.col  = _cpvCol;
+    }
+    document.getElementById('cardPreviewModal').classList.remove('open');
+    document.getElementById('cpvContent').innerHTML = '';
+    _cpvType = ''; _cpvId = ''; _cpvCol = '';
+};
+
+// Override executeCpvPrint to read from dataset
+window.executeCpvPrint = function() {
+    const btn = document.getElementById('cpvPrintBtn');
+    const t = _cpvType || (btn?.dataset.type) || 'admission';
+    const i = _cpvId   || (btn?.dataset.id)   || _stepperRecId;
+    const c = _cpvCol  || (btn?.dataset.col)   || _stepperCol;
+    closeCardPreviewModal();
+    setTimeout(() => stepperPrint(t, i, c), 80);
+};
 
 function printLinkedAdmission(mobtuaId) {
     const mt = allMobtua.find(r => r.id === mobtuaId);

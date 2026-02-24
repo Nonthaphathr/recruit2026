@@ -303,7 +303,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 /* Print preview */
 .print-preview-wrap{border:1px solid var(--border);border-radius:var(--r-md);background:#f9f9f9;padding:.9rem;max-height:400px;overflow-y:auto;}
-.doc-preview-scroll{background:#d8dce4;padding:1rem;border-radius:var(--r-md);max-height:68vh;overflow-y:auto;overflow-x:auto;}
+.doc-preview-scroll{background:#ffffff;padding:1rem;border-radius:var(--r-md);max-height:68vh;overflow-y:auto;overflow-x:auto;}
 
 /* ══════════════════════════════════════════════
    VERIFY DOCS MODAL
@@ -1644,6 +1644,7 @@ function renderAdmissions() {
           <button class="btn-sm btn-print" onclick="printAdmissionById('${r.id}')" title="พิมพ์เอกสาร" style="font-size:1rem;padding:.25rem .5rem;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </button>
+          <button class="btn-sm" onclick="printAppointmentDoc('${r.id}','admissions')" title="พิมพ์ใบนัดหมาย" style="font-size:.85rem;padding:.25rem .45rem;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;line-height:1;">📅</button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\\'")}')" title="ลบ">🗑️</button>
         </div>
       </td>
@@ -1692,6 +1693,7 @@ function renderMobtua() {
           <button class="btn-sm btn-print" onclick="printMobtuaById('${r.id}')" title="พิมพ์เอกสาร" style="font-size:1rem;padding:.25rem .5rem;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </button>
+          <button class="btn-sm" onclick="printAppointmentDoc('${r.id}','mobtua')" title="พิมพ์ใบนัดหมาย" style="font-size:.85rem;padding:.25rem .45rem;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;line-height:1;">📅</button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\\'")}')" title="ลบ">🗑️</button>
         </div>
       </td>
@@ -1945,6 +1947,11 @@ async function saveEditAdmission() {
     await syncEditToMobtua(currentEditId, prefix, firstName, lastName, fullName, updatedData, studentName, _preSyncOldName);
     showToast('แก้ไขข้อมูลสำเร็จ', 'success');
     closeModal('modalEditAdmission');
+    if (_stepperReopenAfterEdit) {
+        const { id: sid, col: scol } = _stepperReopenAfterEdit;
+        _stepperReopenAfterEdit = null;
+        setTimeout(() => openInspectionStepper(sid, scol), 200);
+    }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
   }
@@ -2080,6 +2087,11 @@ async function saveEditMobtua() {
     );
     showToast('แก้ไขข้อมูลใบมอบตัวสำเร็จ', 'success');
     closeModal('modalEditMobtua');
+    if (_stepperReopenAfterEdit) {
+        const { id: sid, col: scol } = _stepperReopenAfterEdit;
+        _stepperReopenAfterEdit = null;
+        setTimeout(() => openInspectionStepper(sid, scol), 200);
+    }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
   }
@@ -2722,6 +2734,7 @@ window.syncVerifiedDocsFromMobtua = syncVerifiedDocsFromMobtua;
 let _stepperCurrentStep = 1;
 let _stepperRecId  = '';
 let _stepperCol    = '';  // 'admissions' | 'mobtua'
+let _stepperReopenAfterEdit = null; // { id, col } — reopen stepper after editing
 
 // ── Open from Notification modal ──────────────────────────────
 function startInspectionFlow() {
@@ -3140,8 +3153,15 @@ window.printLinkedAdmission = printLinkedAdmission;
 function openEditFromStepper() {
     const col = _stepperCol;
     const id  = _stepperRecId;
-    if (col === 'admissions') editAdmission(id);
-    else editMobtua(id);
+    // Close stepper first (z-index 6000 would cover edit modal z-index 3000)
+    closeInspectionStepper();
+    setTimeout(() => {
+        if (col === 'admissions') editAdmission(id);
+        else editMobtua(id);
+        // Re-open stepper after edit modal closes
+        // Patch save buttons to reopen stepper on success
+        _stepperReopenAfterEdit = { id, col };
+    }, 150);
 }
 window.openEditFromStepper = openEditFromStepper;
 

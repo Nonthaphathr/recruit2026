@@ -3887,6 +3887,65 @@
                         💾 บันทึกการตั้งค่า
                     </button>
                 </div>
+
+                <!-- ════ DANGER ZONE ════ -->
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 3px solid #dc2626;">
+                    <h4 style="margin-bottom: .5rem; color: #dc2626;">🗑️ ล้างข้อมูลในระบบ</h4>
+                    <p style="font-size:var(--text-sm); color:#64748b; margin-bottom:1rem; line-height:1.6;">
+                        ⚠️ <strong>คำเตือน:</strong> การล้างข้อมูลจะ<strong>ลบถาวร</strong>จาก Firestore และไม่สามารถกู้คืนได้<br>
+                        แนะนำ Export Excel ก่อนล้างข้อมูล
+                    </p>
+                    <div style="display:flex;flex-direction:column;gap:.6rem;">
+                        <button class="btn" onclick="confirmClearData('admissions')"
+                            style="width:100%;background:#fff5f5;border:2px solid #fca5a5;color:#dc2626;font-weight:700;">
+                            🗑️ ล้างข้อมูลใบสมัครทั้งหมด
+                        </button>
+                        <button class="btn" onclick="confirmClearData('mobtua')"
+                            style="width:100%;background:#fff5f5;border:2px solid #fca5a5;color:#dc2626;font-weight:700;">
+                            🗑️ ล้างข้อมูลใบมอบตัวทั้งหมด
+                        </button>
+                        <button class="btn" onclick="confirmClearData('all')"
+                            style="width:100%;background:#dc2626;color:#fff;font-weight:800;border:none;padding:.75rem;">
+                            ⚠️ ล้างข้อมูลทั้งหมด (ใบสมัคร + ใบมอบตัว)
+                        </button>
+                    </div>
+                    <div id="clearDataProgress" style="display:none;margin-top:1rem;">
+                        <div style="background:#f1f5f9;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#475569;">
+                            <div id="clearDataProgressText">กำลังลบข้อมูล...</div>
+                            <div style="margin-top:6px;background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden;">
+                                <div id="clearDataProgressBar" style="height:100%;background:#dc2626;width:0%;transition:width .3s;border-radius:99px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CLEAR DATA CONFIRM MODAL ══ -->
+    <div class="modal-overlay" id="clearDataModal" style="z-index:1100;">
+        <div class="modal-content" style="max-width:440px;border-top:4px solid #dc2626;">
+            <div class="modal-header" style="background:#fff5f5;">
+                <h3 style="color:#dc2626;">⚠️ ยืนยันการล้างข้อมูล</h3>
+                <button class="modal-close" onclick="closeClearDataModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;background:#fff;">
+                <p id="clearDataConfirmText" style="font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:1.2rem;"></p>
+                <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:10px 14px;margin-bottom:1.2rem;">
+                    <div style="font-size:.8rem;font-weight:700;color:#dc2626;margin-bottom:6px;">🔑 กรอกรหัสยืนยัน: <code>ลบข้อมูล</code></div>
+                    <input type="text" id="clearDataConfirmInput" class="form-control"
+                        placeholder='พิมพ์ "ลบข้อมูล" เพื่อยืนยัน'
+                        style="border:2px solid #fca5a5;font-size:.85rem;"
+                        oninput="const ok=this.value==='ลบข้อมูล';const btn=document.getElementById('clearDataConfirmBtn');btn.disabled=!ok;btn.style.opacity=ok?'1':'.6';btn.style.cursor=ok?'pointer':'not-allowed';">
+                </div>
+            </div>
+            <div class="modal-footer" style="background:#fff;border-top:1px solid #fee2e2;padding:1rem 1.5rem;display:flex;gap:.75rem;justify-content:flex-end;">
+                <button class="btn" onclick="closeClearDataModal()" style="background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;">ยกเลิก</button>
+                <button id="clearDataConfirmBtn" class="btn" onclick="executeClearData()"
+                    disabled
+                    style="background:#dc2626;color:#fff;font-weight:700;opacity:.6;cursor:not-allowed;">
+                    🗑️ ล้างข้อมูลเลย
+                </button>
             </div>
         </div>
     </div>
@@ -5053,6 +5112,104 @@
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
             }
         }
+
+        // ══════════════════════════════════════════════════
+        //  CLEAR DATA SYSTEM
+        // ══════════════════════════════════════════════════
+        let _clearDataTarget = ''; // 'admissions' | 'mobtua' | 'all'
+
+        function confirmClearData(target) {
+            _clearDataTarget = target;
+            const labels = {
+                admissions: 'ใบสมัครทั้งหมด',
+                mobtua: 'ใบมอบตัวทั้งหมด',
+                all: 'ใบสมัคร + ใบมอบตัวทั้งหมด'
+            };
+            document.getElementById('clearDataConfirmText').innerHTML =
+                `คุณกำลังจะ <strong style="color:#dc2626;">ลบ${labels[target]}</strong> ออกจากระบบทั้งหมด<br>
+                 ข้อมูลที่ลบไปแล้ว <strong>ไม่สามารถกู้คืนได้</strong> กรุณาตรวจสอบก่อนดำเนินการ`;
+            document.getElementById('clearDataConfirmInput').value = '';
+            document.getElementById('clearDataConfirmBtn').disabled = true;
+            document.getElementById('clearDataConfirmBtn').style.opacity = '.6';
+            document.getElementById('clearDataModal').classList.add('active');
+        }
+
+        function closeClearDataModal() {
+            document.getElementById('clearDataModal').classList.remove('active');
+            document.getElementById('clearDataConfirmInput').value = '';
+            _clearDataTarget = '';
+        }
+
+        async function deleteCollection(colName, progressCallback) {
+            const fs = window.firestore;
+            const db = window.db;
+            const snap = await fs.getDocs(fs.collection(db, colName));
+            const total = snap.docs.length;
+            let done = 0;
+            for (const d of snap.docs) {
+                await fs.deleteDoc(fs.doc(db, colName, d.id));
+                done++;
+                if (progressCallback) progressCallback(done, total, colName);
+                await new Promise(r => setTimeout(r, 30)); // small delay to avoid rate limit
+            }
+            return done;
+        }
+
+        async function executeClearData() {
+            const code = document.getElementById('clearDataConfirmInput').value;
+            if (code !== 'ลบข้อมูล') return;
+
+            closeClearDataModal();
+
+            const progDiv  = document.getElementById('clearDataProgress');
+            const progText = document.getElementById('clearDataProgressText');
+            const progBar  = document.getElementById('clearDataProgressBar');
+            progDiv.style.display = '';
+            progBar.style.width = '0%';
+
+            const updateProgress = (done, total, colName) => {
+                const pct = total > 0 ? Math.round((done/total)*100) : 100;
+                const label = colName === 'admissions' ? 'ใบสมัคร' : 'ใบมอบตัว';
+                progText.textContent = `กำลังลบ${label}... ${done}/${total} รายการ`;
+                progBar.style.width = pct + '%';
+            };
+
+            try {
+                if (_clearDataTarget === 'admissions' || _clearDataTarget === 'all') {
+                    progText.textContent = 'กำลังลบใบสมัคร...';
+                    const n = await deleteCollection('admissions', updateProgress);
+                    console.log(`Deleted ${n} admissions`);
+                }
+                if (_clearDataTarget === 'mobtua' || _clearDataTarget === 'all') {
+                    progBar.style.width = _clearDataTarget === 'all' ? '50%' : '0%';
+                    progText.textContent = 'กำลังลบใบมอบตัว...';
+                    const n = await deleteCollection('mobtua', (d,t,c) => {
+                        const base = _clearDataTarget === 'all' ? 50 : 0;
+                        const pct = base + (t > 0 ? Math.round((d/t)*50) : 50);
+                        progBar.style.width = pct + '%';
+                        progText.textContent = `กำลังลบใบมอบตัว... ${d}/${t} รายการ`;
+                    });
+                    console.log(`Deleted ${n} mobtua`);
+                }
+                progBar.style.width = '100%';
+                progText.textContent = '✅ ลบข้อมูลสำเร็จ';
+                setTimeout(() => {
+                    progDiv.style.display = 'none';
+                    progBar.style.width = '0%';
+                }, 3000);
+                // Reload history
+                if (typeof loadAdmissionHistory === 'function') loadAdmissionHistory();
+                if (typeof loadMobtuaHistory === 'function') loadMobtuaHistory();
+                showToast('ลบข้อมูลสำเร็จ ✅', 'success');
+            } catch(e) {
+                progText.textContent = '❌ เกิดข้อผิดพลาด: ' + e.message;
+                console.error('clearData error:', e);
+            }
+        }
+
+        window.confirmClearData  = confirmClearData;
+        window.closeClearDataModal = closeClearDataModal;
+        window.executeClearData  = executeClearData;
 
         function closeAdminModal() {
             document.getElementById('adminModal').classList.remove('active');

@@ -942,7 +942,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
   <div class="modal-box" style="max-width:780px;">
     <div class="modal-header">
       <h3>✏️ แก้ไขข้อมูลใบสมัคร</h3>
-      <button class="modal-close-btn" onclick="closeModal('modalEditAdmission')">✕</button>
+      <button class="modal-close-btn" onclick="closeModalAndResetZ('modalEditAdmission')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -1057,7 +1057,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalEditAdmission')">ยกเลิก</button>
+      <button class="btn-secondary" onclick="closeModalAndResetZ('modalEditAdmission')">ยกเลิก</button>
       <button class="btn-primary" onclick="saveEditAdmission()">💾 บันทึกการแก้ไข</button>
     </div>
   </div>
@@ -1086,7 +1086,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
   <div class="modal-box" style="max-width:780px;">
     <div class="modal-header">
       <h3>✏️ แก้ไขข้อมูลใบมอบตัว</h3>
-      <button class="modal-close-btn" onclick="closeModal('modalEditMobtua')">✕</button>
+      <button class="modal-close-btn" onclick="closeModalAndResetZ('modalEditMobtua')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -1197,7 +1197,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalEditMobtua')">ยกเลิก</button>
+      <button class="btn-secondary" onclick="closeModalAndResetZ('modalEditMobtua')">ยกเลิก</button>
       <button class="btn-primary" onclick="saveEditMobtua()">💾 บันทึกการแก้ไข</button>
     </div>
   </div>
@@ -1552,12 +1552,26 @@ function subscribeMobtua() {
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'mobtua', ...d.data() }));
 
     if (!isFirstLoadMobtua) {
-      const oldIds = new Set(allMobtua.map(r => r.id));
-      const added  = newRecords.filter(r => !oldIds.has(r.id));
-      added.forEach(r => {
-        addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
-        showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบมอบตัวเข้ามาใหม่');
-        highlightRowLater(r.id, 'mobtua');
+      // build old status map: id → status
+      const oldStatusMap = {};
+      allMobtua.forEach(r => { oldStatusMap[r.id] = r.status || ''; });
+
+      newRecords.forEach(r => {
+        const wasKnown  = r.id in oldStatusMap;
+        const oldStatus = oldStatusMap[r.id] || '';
+        const isDone    = r.status === 'done';
+
+        if (!wasKnown && isDone) {
+          // brand-new record that is already done (parent submitted directly)
+          addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
+          showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
+          highlightRowLater(r.id, 'mobtua');
+        } else if (wasKnown && oldStatus !== 'done' && isDone) {
+          // existing pending record → parent just completed it
+          addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
+          showToast(`📋 ใบมอบตัวเสร็จสมบูรณ์: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
+          highlightRowLater(r.id, 'mobtua');
+        }
       });
     }
     isFirstLoadMobtua = false;
@@ -1947,10 +1961,13 @@ async function saveEditAdmission() {
     await syncEditToMobtua(currentEditId, prefix, firstName, lastName, fullName, updatedData, studentName, _preSyncOldName);
     showToast('แก้ไขข้อมูลสำเร็จ', 'success');
     closeModal('modalEditAdmission');
+    // Reset z-index and refresh stepper step 1 with updated data
+    const adm = document.getElementById('modalEditAdmission');
+    if (adm) adm.style.zIndex = '';
     if (_stepperReopenAfterEdit) {
-        const { id: sid, col: scol } = _stepperReopenAfterEdit;
         _stepperReopenAfterEdit = null;
-        setTimeout(() => openInspectionStepper(sid, scol), 200);
+        // Reload step 1 detail with fresh data
+        setTimeout(() => { buildStepperStep1(); }, 150);
     }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
@@ -2087,10 +2104,11 @@ async function saveEditMobtua() {
     );
     showToast('แก้ไขข้อมูลใบมอบตัวสำเร็จ', 'success');
     closeModal('modalEditMobtua');
+    const mt = document.getElementById('modalEditMobtua');
+    if (mt) mt.style.zIndex = '';
     if (_stepperReopenAfterEdit) {
-        const { id: sid, col: scol } = _stepperReopenAfterEdit;
         _stepperReopenAfterEdit = null;
-        setTimeout(() => openInspectionStepper(sid, scol), 200);
+        setTimeout(() => { buildStepperStep1(); }, 150);
     }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
@@ -3153,15 +3171,15 @@ window.printLinkedAdmission = printLinkedAdmission;
 function openEditFromStepper() {
     const col = _stepperCol;
     const id  = _stepperRecId;
-    // Close stepper first (z-index 6000 would cover edit modal z-index 3000)
-    closeInspectionStepper();
-    setTimeout(() => {
-        if (col === 'admissions') editAdmission(id);
-        else editMobtua(id);
-        // Re-open stepper after edit modal closes
-        // Patch save buttons to reopen stepper on success
-        _stepperReopenAfterEdit = { id, col };
-    }, 150);
+    // Temporarily raise edit modal z-index above stepper (6000)
+    // so it floats on top without closing the stepper
+    const adm = document.getElementById('modalEditAdmission');
+    const mt  = document.getElementById('modalEditMobtua');
+    if (adm) adm.style.zIndex = '6500';
+    if (mt)  mt.style.zIndex  = '6500';
+    if (col === 'admissions') editAdmission(id);
+    else editMobtua(id);
+    _stepperReopenAfterEdit = { id, col };
 }
 window.openEditFromStepper = openEditFromStepper;
 
@@ -3870,6 +3888,14 @@ window.showToast = showToast;
    MODAL HELPERS
 ───────────────────────────────────────────────── */
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModalAndResetZ(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('open'); el.style.zIndex = ''; }
+    // If was opened from stepper, clear flag but don't reopen — let user choose
+    if (_stepperReopenAfterEdit && (id === 'modalEditAdmission' || id === 'modalEditMobtua')) {
+        _stepperReopenAfterEdit = null;
+    }
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 window.openModal  = openModal;
 window.closeModal = closeModal;

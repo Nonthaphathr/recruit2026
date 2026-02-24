@@ -5159,6 +5159,8 @@
             const code = document.getElementById('clearDataConfirmInput').value;
             if (code !== 'ลบข้อมูล') return;
 
+            // Save target BEFORE closing modal (closeClearDataModal resets _clearDataTarget)
+            const target = _clearDataTarget;
             closeClearDataModal();
 
             const progDiv  = document.getElementById('clearDataProgress');
@@ -5175,16 +5177,16 @@
             };
 
             try {
-                if (_clearDataTarget === 'admissions' || _clearDataTarget === 'all') {
+                if (target === 'admissions' || target === 'all') {
                     progText.textContent = 'กำลังลบใบสมัคร...';
                     const n = await deleteCollection('admissions', updateProgress);
                     console.log(`Deleted ${n} admissions`);
                 }
-                if (_clearDataTarget === 'mobtua' || _clearDataTarget === 'all') {
-                    progBar.style.width = _clearDataTarget === 'all' ? '50%' : '0%';
+                if (target === 'mobtua' || target === 'all') {
+                    progBar.style.width = target === 'all' ? '50%' : '0%';
                     progText.textContent = 'กำลังลบใบมอบตัว...';
                     const n = await deleteCollection('mobtua', (d,t,c) => {
-                        const base = _clearDataTarget === 'all' ? 50 : 0;
+                        const base = target === 'all' ? 50 : 0;
                         const pct = base + (t > 0 ? Math.round((d/t)*50) : 50);
                         progBar.style.width = pct + '%';
                         progText.textContent = `กำลังลบใบมอบตัว... ${d}/${t} รายการ`;

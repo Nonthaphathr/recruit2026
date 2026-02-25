@@ -873,11 +873,26 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
    PRINT
 ══════════════════════════════════════════════ */
 @media print {
+  @page { size: A4; margin: 8mm 10mm; }
   body > *:not(#printTarget){ display:none!important; }
   #printTarget{ display:block!important; visibility:visible!important; }
   #printTarget * { visibility:visible!important; }
-  .print-document{ box-shadow:none!important; width:100%!important; padding:5mm 8mm!important; }
-  .mobtua-doc    { box-shadow:none!important; width:100%!important; padding:5mm 10mm!important; font-size:13px!important; }
+  .print-document{
+    box-shadow:none!important;
+    width:100%!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    page-break-after:avoid!important;
+    break-after:avoid!important;
+  }
+  .mobtua-doc {
+    box-shadow:none!important;
+    width:100%!important;
+    padding:5mm 10mm!important;
+    font-size:13px!important;
+  }
   .mobtua-doc .mobtua-page-2 { border-top:none!important; }
 }
 #printTarget { display:none; }
@@ -4381,26 +4396,40 @@ window.dismissAndVerifyLatest = dismissAndVerifyLatest;
 window.ndaPreviewDoc          = ndaPreviewDoc;
 
 /* ── Note icon in table ── */
+// note storage for popup (avoid inline string escaping issues)
+const _noteStore = {};
+let _noteStoreIdx = 0;
+
 function noteIcon(note) {
     if (!note) return '';
-    const safe = note.replace(/'/g, "\'").replace(/"/g, '&quot;');
-    return `<button onclick="showNoteModal('${safe}')" title="ดูหมายเหตุ" style="background:none;border:none;cursor:pointer;padding:0 2px;vertical-align:middle;color:#ca8a04;font-size:.9rem;" aria-label="หมายเหตุ">💬</button>`;
+    const key = 'n' + (++_noteStoreIdx);
+    _noteStore[key] = note;
+    return `<button onclick="showNoteModal('${key}')" title="ดูหมายเหตุ" style="background:none;border:none;cursor:pointer;padding:0 2px;vertical-align:middle;color:#ca8a04;font-size:.9rem;" aria-label="หมายเหตุ">💬</button>`;
 }
-function showNoteModal(note) {
+function showNoteModal(key) {
+    const note = _noteStore[key] || key; // fallback: key itself if old style
     const existing = document.getElementById('notePopupModal');
     if (existing) existing.remove();
     const el = document.createElement('div');
     el.id = 'notePopupModal';
     el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    el.innerHTML = `
-      <div onclick="event.stopPropagation()" style="background:#fff;color:#1e293b;border-radius:14px;padding:1.25rem 1.5rem;width:min(400px,90vw);box-shadow:0 20px 50px rgba(0,0,0,.3);">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
-          <span style="font-size:1.3rem;">💬</span>
-          <strong style="font-size:.95rem;">หมายเหตุจากครู</strong>
-          <button onclick="document.getElementById('notePopupModal').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#64748b;">✕</button>
-        </div>
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem 1rem;font-size:.88rem;line-height:1.6;white-space:pre-wrap;">${note}</div>
-      </div>`;
+    const inner = document.createElement('div');
+    inner.style.cssText = 'background:#fff;color:#1e293b;border-radius:14px;padding:1.25rem 1.5rem;width:min(400px,90vw);box-shadow:0 20px 50px rgba(0,0,0,.3);';
+    inner.addEventListener('click', e => e.stopPropagation());
+    const closeBtn = document.createElement('button');
+    closeBtn.style.cssText = 'margin-left:auto;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#64748b;';
+    closeBtn.textContent = '✕';
+    closeBtn.onclick = () => el.remove();
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:.75rem;';
+    header.innerHTML = '<span style="font-size:1.3rem;">💬</span><strong style="font-size:.95rem;">หมายเหตุจากครู</strong>';
+    header.appendChild(closeBtn);
+    const body = document.createElement('div');
+    body.style.cssText = 'background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem 1rem;font-size:.88rem;line-height:1.6;white-space:pre-wrap;';
+    body.textContent = note;
+    inner.appendChild(header);
+    inner.appendChild(body);
+    el.appendChild(inner);
     el.addEventListener('click', () => el.remove());
     document.body.appendChild(el);
 }

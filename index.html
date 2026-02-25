@@ -4032,6 +4032,26 @@
         </div>
     </div>
 
+    <!-- Success Step Modal (admission / mobtua) -->
+    <div class="modal-overlay" id="successStepModal" style="z-index:1600;">
+        <div class="modal-content" style="max-width:480px;">
+            <div class="modal-header" id="successStepHeader" style="background:linear-gradient(135deg,#1e3a5f,#2d5986);color:#fff;">
+                <h3 id="successStepTitle">✅ บันทึกสำเร็จ</h3>
+                <button class="modal-close" onclick="closeSuccessStepModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="background:#fff;padding:1.75rem 2rem;">
+                <p id="successStepMsg1" style="font-size:1rem;font-weight:700;color:#1e3a5f;margin-bottom:.75rem;line-height:1.65;"></p>
+                <div style="background:#f0f7ff;border-left:4px solid #2d5986;border-radius:6px;padding:1rem 1.1rem;margin-bottom:0;">
+                    <p style="font-size:.88rem;color:#374151;font-weight:600;margin-bottom:.3rem;">📌 ขั้นตอนต่อไป</p>
+                    <p id="successStepMsg2" style="font-size:.9rem;color:#1e3a5f;line-height:1.7;margin:0;"></p>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content:center;">
+                <button class="btn btn-primary" onclick="closeSuccessStepModal()" style="padding:.7rem 2.5rem;font-size:1rem;background:linear-gradient(135deg,#1e3a5f,#2d5986);">รับทราบ</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast">
         <span id="toastMessage">บันทึกข้อมูลสำเร็จ</span>
@@ -4551,7 +4571,6 @@
                 );
 
                 console.log('Document written with ID:', docRef.id);
-                showToast('บันทึกข้อมูลสำเร็จ');
                 // สร้าง pending mobtua record อัตโนมัติ
                 await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
                 await loadHistory();
@@ -4561,6 +4580,7 @@
                 setDefaultDate();
                 _formDocChecks = {};
                 renderFormChecklist();
+                showSuccessStepModal('admission');
 
             } catch (error) {
                 console.error('Error adding document:', error);
@@ -5189,6 +5209,32 @@
                 loading.classList.remove('active');
             }
         }
+
+        function showSuccessStepModal(type) {
+            const modal = document.getElementById('successStepModal');
+            const title = document.getElementById('successStepTitle');
+            const msg1  = document.getElementById('successStepMsg1');
+            const msg2  = document.getElementById('successStepMsg2');
+            const header = document.getElementById('successStepHeader');
+            if (!modal) return;
+            if (type === 'admission') {
+                title.textContent = '✅ ใบสมัครบันทึกสำเร็จ';
+                header.style.background = 'linear-gradient(135deg,#1e3a5f,#2d5986)';
+                msg1.textContent = 'ใบสมัครถูกส่งเข้าระบบแล้ว ท่านสามารถแก้ไขได้ในแถบประวัติใบสมัคร';
+                msg2.textContent = 'โปรดนำเอกสารหลักฐานประกอบไปตรวจสอบกับครูผู้ตรวจยืนยันเอกสารในวันรับสมัคร';
+            } else {
+                title.textContent = '✅ ใบมอบตัวบันทึกสำเร็จ';
+                header.style.background = 'linear-gradient(135deg,#14532d,#166534)';
+                msg1.textContent = 'ใบมอบตัวถูกส่งเข้าระบบแล้ว ท่านสามารถแก้ไขได้ในแถบประวัติใบมอบตัว';
+                msg2.textContent = 'โปรดนำเอกสารหลักฐานประกอบไปตรวจสอบกับครูผู้ตรวจยืนยันเอกสารในวันมอบตัว';
+            }
+            modal.classList.add('active');
+        }
+        function closeSuccessStepModal() {
+            const modal = document.getElementById('successStepModal');
+            if (modal) modal.classList.remove('active');
+        }
+        window.closeSuccessStepModal = closeSuccessStepModal;
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -6241,7 +6287,7 @@
                     );
                     // ── Sync กลับไปยังใบสมัคร ──
                     await syncMobtuaToAdmission(_editingMobtuaId, d, d.mt_studentFullName || '');
-                    showToast('อัปเดตใบมอบตัวสำเร็จ ✅ (sync ไปใบสมัครแล้ว)');
+                    // toast handled by success modal
                 } else {
                     // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์)
                     const record = {
@@ -6261,12 +6307,12 @@
                         window.firestore.collection(window.db, 'mobtua'),
                         record
                     );
-                    showToast('บันทึกใบมอบตัวสำเร็จ');
+                    // toast handled by success modal
                 }
                 const html = generateMobtuaDocumentHTML(d, {}, false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
-                document.getElementById('mobtuaPreviewModal').classList.add('active');
+                showSuccessStepModal('mobtua');
                 await loadMobtuaHistory();
                 // reset state
                 _editingMobtuaId = '';

@@ -1660,6 +1660,26 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 <!-- ════════════════════════════════════════════════════════
      CARD PREVIEW MODAL — sits above stepper (z:6500), step 3 stays visible
 ════════════════════════════════════════════════════════ -->
+<!-- Paper Color Warning Modal -->
+<div id="paperWarningModal" style="display:none;position:fixed;inset:0;z-index:7000;background:rgba(10,20,40,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;max-width:380px;width:calc(100% - 2rem);box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:fadeInUp .2s ease;">
+    <div id="paperWarningHeader" style="padding:1rem 1.25rem;display:flex;align-items:center;gap:.7rem;">
+      <span style="font-size:2rem;" id="paperWarningEmoji">📄</span>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase;">ก่อนสั่งพิมพ์</div>
+        <div id="paperWarningGrade" style="font-size:1rem;font-weight:800;color:#fff;"></div>
+      </div>
+    </div>
+    <div style="padding:1.2rem 1.5rem 1rem;">
+      <p id="paperWarningMsg" style="font-size:.98rem;font-weight:600;color:#1e293b;line-height:1.65;margin:0 0 1.25rem;"></p>
+      <div style="display:flex;gap:.65rem;justify-content:flex-end;">
+        <button onclick="closePaperWarningModal()" style="padding:.55rem 1.2rem;border-radius:8px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">ยกเลิก</button>
+        <button id="paperWarningConfirmBtn" style="padding:.55rem 1.5rem;border-radius:8px;border:none;color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">สั่งพิมพ์เลย →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="cardPreviewModal" class="card-preview-modal">
   <div class="card-preview-box">
     <div class="cpv-header">
@@ -3554,10 +3574,8 @@ function buildStepperStep3() {
     // Card 3 logic — mobtua
     let card3 = '';
     if (col === 'mobtua') {
-        // กำลังดูใบมอบตัวอยู่แล้ว — ตรวจ status ว่ากรอกครบยัง
+        // กำลังดูใบมอบตัวอยู่แล้ว — ตรวจเฉพาะ status ว่าผู้ปกครองกรอกครบหรือยัง
         const mtDone = rec?.status === 'done';
-        const mtSv   = rec?.staffVerified || {};
-        const mtDocDone = MOBTUA_CHECKLIST_KEYS.every(k => mtSv[k] === true);
         if (!mtDone) {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
                 '⏳ ผู้ปกครองยังไม่กรอกข้อมูลให้ครบ',
@@ -3565,19 +3583,14 @@ function buildStepperStep3() {
                 '', true, '#94a3b8');
         } else {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
-                mtDocDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
-                mtDocDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
-                          : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
-                mtDocDone
-                    ? `openCardPreview('mobtua','${id}','mobtua')`
-                    : `stepperOpenMobtuaVerify('${id}')`,
+                'คลิกดูตัวอย่างและพิมพ์',
+                `<span class="print-card-badge ok">✅ พร้อมพิมพ์</span>`,
+                `openCardPreview('mobtua','${id}','mobtua')`,
                 false, '#15803d');
         }
     } else if (linkedMobtua) {
-        // ดูจากฝั่ง admission — ตรวจ status ของ linkedMobtua ว่ากรอกครบยัง
+        // ดูจากฝั่ง admission — ตรวจ status ของ linkedMobtua
         const mtDone = linkedMobtua.status === 'done';
-        const mtSv   = linkedMobtua.staffVerified || {};
-        const mtDocDone = MOBTUA_CHECKLIST_KEYS.every(k => mtSv[k] === true);
         if (!mtDone) {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
                 '⏳ ผู้ปกครองยังไม่กรอกข้อมูลให้ครบ',
@@ -3585,12 +3598,9 @@ function buildStepperStep3() {
                 '', true, '#94a3b8');
         } else {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
-                mtDocDone ? 'คลิกดูตัวอย่างและพิมพ์' : 'ต้องยืนยันหลักฐานก่อนพิมพ์',
-                mtDocDone ? `<span class="print-card-badge ok">✅ ครบถ้วน</span>`
-                          : `<span class="print-card-badge warn">⚠️ ยืนยันก่อนพิมพ์</span>`,
-                mtDocDone
-                    ? `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`
-                    : `stepperOpenMobtuaVerify('${linkedMobtua.id}')`,
+                'คลิกดูตัวอย่างและพิมพ์',
+                `<span class="print-card-badge ok">✅ พร้อมพิมพ์</span>`,
+                `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`,
                 false, '#15803d');
         }
     } else {
@@ -3605,8 +3615,8 @@ function buildStepperStep3() {
             col === 'admissions' ? 'แบบฟอร์มใบสมัครที่นักเรียนกรอก' : 'ใบสมัครที่เชื่อมโยง',
             verifyBadge,
             col === 'admissions'
-                ? `openCardPreview('admission','${id}','${col}')`
-                : `openCardPreview('linkedAdmission','${id}','${col}')`,
+                ? `openAdmissionCardWithWarning('admission','${id}','${col}')`
+                : `openAdmissionCardWithWarning('linkedAdmission','${id}','${col}')`,
             false, '#1e3352') +
         card('📅', 'ใบนัดหมายมอบตัว',
             missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
@@ -3664,6 +3674,48 @@ async function openCardPreview(type, id, col) {
     }
 }
 window.openCardPreview = openCardPreview;
+
+// ── Paper color warning before printing admission ──────────────
+function openAdmissionCardWithWarning(type, id, col) {
+    // หา gradeLevel จาก record
+    let grade = 'm1';
+    if (type === 'admission') {
+        const rec = allAdmissions.find(r => r.id === id);
+        grade = rec?.gradeLevel || 'm1';
+    } else {
+        // linkedAdmission — id คือ mobtua id
+        const mt = allMobtua.find(r => r.id === id);
+        const adm = mt ? allAdmissions.find(a => a.id === mt.admissionId || a.studentName === mt.studentName) : null;
+        grade = adm?.gradeLevel || 'm1';
+    }
+    const isM4 = grade === 'm4';
+    const modal = document.getElementById('paperWarningModal');
+    const header = document.getElementById('paperWarningHeader');
+    const emoji  = document.getElementById('paperWarningEmoji');
+    const gradeEl = document.getElementById('paperWarningGrade');
+    const msgEl  = document.getElementById('paperWarningMsg');
+    const confirmBtn = document.getElementById('paperWarningConfirmBtn');
+    if (!modal) { openCardPreview(type, id, col); return; }
+
+    header.style.background = isM4
+        ? 'linear-gradient(135deg,#be185d,#ec4899)'   // ชมพู ม.4
+        : 'linear-gradient(135deg,#a16207,#ca8a04)';  // เหลือง ม.1
+    emoji.textContent = isM4 ? '🩷' : '💛';
+    gradeEl.textContent = isM4 ? 'ใบสมัคร ม.4' : 'ใบสมัคร ม.1';
+    msgEl.textContent = isM4
+        ? 'โปรดใส่กระดาษสีชมพูในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ม.4'
+        : 'โปรดใส่กระดาษสีเหลืองในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ม.1';
+    confirmBtn.style.background = isM4 ? '#be185d' : '#a16207';
+    confirmBtn.onclick = () => { closePaperWarningModal(); openCardPreview(type, id, col); };
+
+    modal.style.display = 'flex';
+}
+function closePaperWarningModal() {
+    const modal = document.getElementById('paperWarningModal');
+    if (modal) modal.style.display = 'none';
+}
+window.openAdmissionCardWithWarning = openAdmissionCardWithWarning;
+window.closePaperWarningModal = closePaperWarningModal;
 
 function closeCardPreviewModal() {
     const modal = document.getElementById('cardPreviewModal');
@@ -3917,12 +3969,12 @@ function generateAppointmentHTML(rec, col) {
   <!-- Missing docs -->
   ${missingSection}
 
-  <!-- Appointment date — RED BOLD -->
-  <div style="background:#dc2626;color:#fff;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
-    <div style="font-size:11px;font-weight:600;opacity:.85;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">📅 วันนัดหมายมอบตัว</div>
-    <div style="font-size:20px;font-weight:900;line-height:1.2;">${apptDate}</div>
-    <div style="font-size:13px;font-weight:600;margin-top:4px;opacity:.9;">⏰ ${apptTime}</div>
-    <div style="font-size:11.5px;margin-top:4px;opacity:.85;">📍 ${apptPlace}</div>
+  <!-- Appointment date — BLUE BORDER -->
+  <div style="background:#fff;border:2.5px solid #1e3a8a;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
+    <div style="font-size:11px;font-weight:700;color:#1e3a8a;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">📅 วันนัดหมายมอบตัว</div>
+    <div style="font-size:22px;font-weight:900;line-height:1.2;color:#b91c1c;">${apptDate}</div>
+    <div style="font-size:13px;font-weight:700;margin-top:5px;color:#b91c1c;">⏰ ${apptTime}</div>
+    <div style="font-size:11.5px;margin-top:4px;color:#1e3a8a;font-weight:600;">📍 ${apptPlace}</div>
   </div>
 
   <!-- Instructions + QR -->

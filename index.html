@@ -3888,6 +3888,36 @@
                     </button>
                 </div>
 
+                <!-- ════ LINE Notify ════ -->
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 0.5rem; color: #00b900;">💬 แจ้งเตือน LINE กลุ่มครู</h4>
+                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
+                        เมื่อมีผู้สมัคร/มอบตัวใหม่ ระบบจะส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE ของครูโดยอัตโนมัติ<br>
+                        ใช้ <strong>Make.com</strong> เป็น Webhook proxy (ฟรี 1,000 ครั้ง/เดือน)
+                    </p>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="lineNotifyToggle" onchange="saveLineSettings()" style="width:20px; height:20px;">
+                            <span>เปิดใช้งานแจ้งเตือน LINE</span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top:0.75rem;">
+                        <label>Make.com Webhook URL:</label>
+                        <input type="url" class="form-control" id="makeWebhookUrl"
+                            placeholder="https://hook.us2.make.com/xxxxxxxxxxxxxxxx"
+                            style="font-size:0.82rem;">
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:0.75rem;">
+                        <button class="btn btn-primary" onclick="saveLineSettings()" style="flex:1; background:linear-gradient(135deg,#00b900,#00d400);">
+                            💾 บันทึกการตั้งค่า LINE
+                        </button>
+                        <button class="btn" onclick="testLineNotify()" style="flex-shrink:0; background:#f0fdf4; border:1px solid #86efac; color:#166534;">
+                            🧪 ทดสอบ
+                        </button>
+                    </div>
+                    <div id="lineSettingStatus" style="margin-top:8px; font-size:0.8rem; color:var(--text-light);"></div>
+                </div>
+
                 <!-- ════ DANGER ZONE ════ -->
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 3px solid #dc2626;">
                     <h4 style="margin-bottom: .5rem; color: #dc2626;">🗑️ ล้างข้อมูลในระบบ</h4>
@@ -4573,6 +4603,19 @@
                 console.log('Document written with ID:', docRef.id);
                 // สร้าง pending mobtua record อัตโนมัติ
                 await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
+                // แจ้งเตือน LINE กลุ่มครู
+                await sendLineNotify({
+                    type: 'admission',
+                    message: [
+                        '📋 มีใบสมัครเข้าเรียนใหม่!',
+                        `👤 ${record.studentName}`,
+                        `📚 ระดับชั้น: ${gradeText}`,
+                        `🏫 โรงเรียนเดิม: ${data.previousSchool || '-'}`,
+                        `📍 อ.${data.district || '-'} จ.${data.province || '-'}`,
+                        `📞 ${data.phone || '-'}`,
+                        `🕐 ${new Date().toLocaleString('th-TH')}`
+                    ].join('\n')
+                });
                 await loadHistory();
                 // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
                 document.getElementById('admissionForm').reset();
@@ -5254,6 +5297,7 @@
             if (password === '1111') {
                 loadAdminSettings();
                 loadAppointmentSettings();
+                loadLineSettings();
                 document.getElementById('adminModal').classList.add('active');
             } else if (password !== null) {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -6312,6 +6356,19 @@
                 const html = generateMobtuaDocumentHTML(d, {}, false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
+                // แจ้งเตือน LINE กลุ่มครู
+                const gradeLabel = (d.mt_classRoom || '').startsWith('ม.4') ? 'ม.4' : 'ม.1';
+                await sendLineNotify({
+                    type: 'mobtua',
+                    message: [
+                        '✅ มีใบมอบตัวนักเรียนใหม่!',
+                        `👤 ${d.mt_studentFullName || '-'}`,
+                        `📚 ระดับชั้น: ${gradeLabel} (${d.mt_classRoom || '-'})`,
+                        `👨‍👩‍👦 ผู้ปกครอง: ${d.mt_guardianName || '-'}`,
+                        `📞 ${d.mt_guardianPhone || d.mt_phone || '-'}`,
+                        `🕐 ${new Date().toLocaleString('th-TH')}`
+                    ].join('\n')
+                });
                 showSuccessStepModal('mobtua');
                 await loadMobtuaHistory();
                 // reset state
@@ -7325,6 +7382,76 @@ ${lines}
                 showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
             } finally {
                 showLoading(false);
+            }
+        }
+
+        // ════════════════════════════════════════════════════
+        //  LINE Notify via Make.com Webhook
+        // ════════════════════════════════════════════════════
+
+        function saveLineSettings() {
+            const enabled = document.getElementById('lineNotifyToggle')?.checked || false;
+            const url = document.getElementById('makeWebhookUrl')?.value.trim() || '';
+            localStorage.setItem('lineNotifyEnabled', enabled);
+            localStorage.setItem('makeWebhookUrl', url);
+            const status = document.getElementById('lineSettingStatus');
+            if (status) {
+                status.textContent = (enabled && url)
+                    ? '✅ บันทึกแล้ว พร้อมใช้งาน'
+                    : (!url ? '⚠️ กรุณากรอก Webhook URL' : '⏸️ ปิดใช้งานอยู่');
+            }
+            showToast('บันทึกการตั้งค่า LINE สำเร็จ');
+        }
+
+        function loadLineSettings() {
+            const toggle = document.getElementById('lineNotifyToggle');
+            const urlInput = document.getElementById('makeWebhookUrl');
+            const status = document.getElementById('lineSettingStatus');
+            if (toggle) toggle.checked = localStorage.getItem('lineNotifyEnabled') === 'true';
+            if (urlInput) urlInput.value = localStorage.getItem('makeWebhookUrl') || '';
+            if (status) {
+                const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
+                const url = localStorage.getItem('makeWebhookUrl') || '';
+                status.textContent = (enabled && url) ? '✅ พร้อมใช้งาน' : (url ? '⏸️ ปิดใช้งานอยู่' : '');
+            }
+        }
+
+        async function sendLineNotify(payload) {
+            const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
+            const webhookUrl = localStorage.getItem('makeWebhookUrl') || '';
+            if (!enabled || !webhookUrl) return;
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch(e) {
+                console.warn('LINE Notify failed:', e.message);
+            }
+        }
+
+        async function testLineNotify() {
+            const url = document.getElementById('makeWebhookUrl')?.value.trim();
+            if (!url) { showToast('กรุณากรอก Webhook URL ก่อน', 'error'); return; }
+            showToast('⏳ กำลังทดสอบ...');
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'test',
+                        message: [
+                            '🧪 ทดสอบระบบแจ้งเตือน',
+                            '🏫 โรงเรียนกระดุมทองวิทยา',
+                            '📋 ระบบรับสมัครนักเรียนออนไลน์',
+                            '✅ เชื่อมต่อสำเร็จ!'
+                        ].join('\n')
+                    })
+                });
+                showToast('✅ ส่งทดสอบสำเร็จ! ตรวจสอบกลุ่ม LINE ได้เลย');
+            } catch(e) {
+                showToast('❌ ส่งไม่สำเร็จ: ' + e.message, 'error');
             }
         }
 

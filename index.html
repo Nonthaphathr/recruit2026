@@ -4604,18 +4604,15 @@
                 // สร้าง pending mobtua record อัตโนมัติ
                 await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
                 // แจ้งเตือน LINE กลุ่มครู
-                await sendLineNotify({
-                    type: 'admission',
-                    message: [
-                        '📋 มีใบสมัครเข้าเรียนใหม่!',
-                        `👤 ${record.studentName}`,
-                        `📚 ระดับชั้น: ${gradeText}`,
-                        `🏫 โรงเรียนเดิม: ${data.previousSchool || '-'}`,
-                        `📍 อ.${data.district || '-'} จ.${data.province || '-'}`,
-                        `📞 ${data.phone || '-'}`,
-                        `🕐 ${new Date().toLocaleString('th-TH')}`
-                    ].join('\n')
-                });
+                await sendLineNotify(
+                    '📋 มีใบสมัครเข้าเรียนใหม่!\n' +
+                    `👤 ${record.studentName}\n` +
+                    `📚 ระดับชั้น: ${gradeText}\n` +
+                    `🏫 โรงเรียนเดิม: ${data.previousSchool || '-'}\n` +
+                    `📍 อ.${data.district || '-'} จ.${data.province || '-'}\n` +
+                    `📞 ${data.phone || '-'}\n` +
+                    `🕐 ${new Date().toLocaleString('th-TH')}`
+                );
                 await loadHistory();
                 // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
                 document.getElementById('admissionForm').reset();
@@ -6358,17 +6355,14 @@
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
                 // แจ้งเตือน LINE กลุ่มครู
                 const gradeLabel = (d.mt_classRoom || '').startsWith('ม.4') ? 'ม.4' : 'ม.1';
-                await sendLineNotify({
-                    type: 'mobtua',
-                    message: [
-                        '✅ มีใบมอบตัวนักเรียนใหม่!',
-                        `👤 ${d.mt_studentFullName || '-'}`,
-                        `📚 ระดับชั้น: ${gradeLabel} (${d.mt_classRoom || '-'})`,
-                        `👨‍👩‍👦 ผู้ปกครอง: ${d.mt_guardianName || '-'}`,
-                        `📞 ${d.mt_guardianPhone || d.mt_phone || '-'}`,
-                        `🕐 ${new Date().toLocaleString('th-TH')}`
-                    ].join('\n')
-                });
+                await sendLineNotify(
+                    '✅ มีใบมอบตัวนักเรียนใหม่!\n' +
+                    `👤 ${d.mt_studentFullName || '-'}\n` +
+                    `📚 ระดับชั้น: ${gradeLabel} (${d.mt_classRoom || '-'})\n` +
+                    `👨‍👩‍👦 ผู้ปกครอง: ${d.mt_guardianName || '-'}\n` +
+                    `📞 ${d.mt_guardianPhone || d.mt_phone || '-'}\n` +
+                    `🕐 ${new Date().toLocaleString('th-TH')}`
+                );
                 showSuccessStepModal('mobtua');
                 await loadMobtuaHistory();
                 // reset state
@@ -7421,10 +7415,24 @@ ${lines}
             const webhookUrl = localStorage.getItem('makeWebhookUrl') || '';
             if (!enabled || !webhookUrl) return;
             try {
+                // ส่ง field แยกกันเพื่อให้ Make.com ประกอบข้อความเอง
+                // หลีกเลี่ยงปัญหา \n และอักขระพิเศษทำให้ JSON เสีย
+                const lines = (payload.message || '').split('\n');
+                const body = {
+                    to:    'C723ea02b5ae387ef2823a283727ae9e8',
+                    type:  payload.type || 'info',
+                    l1:    lines[0] || '',
+                    l2:    lines[1] || '',
+                    l3:    lines[2] || '',
+                    l4:    lines[3] || '',
+                    l5:    lines[4] || '',
+                    l6:    lines[5] || '',
+                    l7:    lines[6] || ''
+                };
                 await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(body)
                 });
             } catch(e) {
                 console.warn('LINE Notify failed:', e.message);
@@ -7440,13 +7448,13 @@ ${lines}
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        to:   'C723ea02b5ae387ef2823a283727ae9e8',
                         type: 'test',
-                        message: [
-                            '🧪 ทดสอบระบบแจ้งเตือน',
-                            '🏫 โรงเรียนกระดุมทองวิทยา',
-                            '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                            '✅ เชื่อมต่อสำเร็จ!'
-                        ].join('\n')
+                        l1:   '🧪 ทดสอบระบบแจ้งเตือน',
+                        l2:   '🏫 โรงเรียนกระดุมทองวิทยา',
+                        l3:   '📋 ระบบรับสมัครนักเรียนออนไลน์',
+                        l4:   '✅ เชื่อมต่อสำเร็จ!',
+                        l5: '', l6: '', l7: ''
                     })
                 });
                 showToast('✅ ส่งทดสอบสำเร็จ! ตรวจสอบกลุ่ม LINE ได้เลย');

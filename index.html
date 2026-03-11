@@ -4604,7 +4604,8 @@
                     `🏫 โรงเรียนเดิม: ${data.previousSchool || '-'}\n` +
                     `📍 อ.${data.district || '-'} จ.${data.province || '-'}\n` +
                     `📞 ${data.phone || '-'}\n` +
-                    `🕐 ${new Date().toLocaleString('th-TH')}`
+                    `🕐 ${new Date().toLocaleString('th-TH')}\n` +
+                    `🔗 https://nonthaphathr.github.io/recruit2026/staff.html`
                 );
                 await loadHistory();
                 // ล้างฟอร์มและ autosave หลังบันทึกสำเร็จ
@@ -5075,25 +5076,33 @@
         }
 
         async function deleteHistoryRecord(id) {
-            // เช็คว่าล็อคอยู่ไหม
             if (localStorage.getItem('historyLocked') === 'true') {
                 showToast('รายการถูกล็อค ไม่สามารถลบได้', 'error');
                 return;
             }
-
             const password = prompt('กรุณาใส่รหัสผ่านเพื่อยืนยันการลบ:');
             if (password === null) return;
             if (password !== '1111') {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
                 return;
             }
-
-            if (!confirm('ยืนยันการลบรายการนี้? ไม่สามารถกู้คืนได้')) return;
-
+            if (!confirm('ยืนยันการลบรายการนี้? จะลบทั้งใบสมัครและใบมอบตัวที่เชื่อมกัน')) return;
             try {
                 showLoading(true);
+                // ลบ admission
                 await window.firestore.deleteDoc(window.firestore.doc(window.db, 'admissions', id));
-                showToast('ลบรายการสำเร็จ');
+                // หา mobtua ที่ผูกกับ admissionId นี้แล้วลบด้วย
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    window.firestore.where('admissionId', '==', id)
+                );
+                const snap = await window.firestore.getDocs(q);
+                const delPromises = [];
+                snap.forEach(d => delPromises.push(
+                    window.firestore.deleteDoc(window.firestore.doc(window.db, 'mobtua', d.id))
+                ));
+                await Promise.all(delPromises);
+                showToast(`ลบรายการสำเร็จ${delPromises.length > 0 ? ' (รวมใบมอบตัว)' : ''}`);
                 await loadHistory();
             } catch (error) {
                 console.error('Error deleting record:', error);
@@ -6354,7 +6363,8 @@
                     `📚 ระดับชั้น: ${gradeLabel} (${d.mt_classRoom || '-'})\n` +
                     `👨‍👩‍👦 ผู้ปกครอง: ${d.mt_guardianName || '-'}\n` +
                     `📞 ${d.mt_guardianPhone || d.mt_phone || '-'}\n` +
-                    `🕐 ${new Date().toLocaleString('th-TH')}`
+                    `🕐 ${new Date().toLocaleString('th-TH')}\n` +
+                    `🔗 https://nonthaphathr.github.io/recruit2026/staff.html`
                 );
                 showSuccessStepModal('mobtua');
                 await loadMobtuaHistory();
@@ -6474,11 +6484,19 @@
             const pw = prompt('กรุณาใส่รหัสผ่านเพื่อยืนยันการลบ:');
             if (pw === null) return;
             if (pw !== '1111') { showToast('รหัสผ่านไม่ถูกต้อง', 'error'); return; }
-            if (!confirm('ยืนยันการลบรายการนี้?')) return;
+            if (!confirm('ยืนยันการลบรายการนี้? จะลบทั้งใบมอบตัวและใบสมัครที่เชื่อมกัน')) return;
             try {
                 showLoading(true);
+                // ดึง admissionId จาก mobtua ก่อนลบ
+                const mtSnap = await window.firestore.getDoc(window.firestore.doc(window.db, 'mobtua', id));
+                const admissionId = mtSnap.exists() ? mtSnap.data().admissionId : null;
+                // ลบ mobtua
                 await window.firestore.deleteDoc(window.firestore.doc(window.db, 'mobtua', id));
-                showToast('ลบรายการสำเร็จ');
+                // ลบ admission ที่ผูกอยู่ด้วย (ถ้ามี)
+                if (admissionId) {
+                    await window.firestore.deleteDoc(window.firestore.doc(window.db, 'admissions', admissionId));
+                }
+                showToast(`ลบรายการสำเร็จ${admissionId ? ' (รวมใบสมัคร)' : ''}`);
                 await loadMobtuaHistory();
             } catch(e) {
                 showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');

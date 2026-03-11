@@ -7395,22 +7395,26 @@ ${lines}
 
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-            if (!enabled) return;
+            console.log('[LINE Notify] enabled:', enabled);
+            if (!enabled) { console.log('[LINE Notify] ปิดอยู่ กรุณาเปิด Toggle ใน Settings'); return; }
             try {
-                const lines = (payload.message || '').split('\n');
+                const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
+                const lines = msgText.split('\n');
                 const body = {
                     l1: lines[0] || '', l2: lines[1] || '',
                     l3: lines[2] || '', l4: lines[3] || '',
                     l5: lines[4] || '', l6: lines[5] || '',
                     l7: lines[6] || ''
                 };
-                await fetch(GAS_URL, {
+                console.log('[LINE Notify] กำลังส่ง...', body.l1);
+                const res = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(body)
                 });
+                console.log('[LINE Notify] ส่งแล้ว status:', res.status);
             } catch(e) {
-                console.warn('LINE Notify failed:', e.message);
+                console.warn('[LINE Notify] Error:', e.message);
             }
         }
 

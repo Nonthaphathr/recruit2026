@@ -3892,20 +3892,13 @@
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 0.5rem; color: #00b900;">💬 แจ้งเตือน LINE กลุ่มครู</h4>
                     <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
-                        เมื่อมีผู้สมัคร/มอบตัวใหม่ ระบบจะส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE ของครูโดยอัตโนมัติ<br>
-                        ใช้ <strong>Make.com</strong> เป็น Webhook proxy (ฟรี 1,000 ครั้ง/เดือน)
+                        เมื่อมีผู้สมัคร/มอบตัวใหม่ ระบบจะส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE ของครูโดยอัตโนมัติ
                     </p>
                     <div class="form-group">
                         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
                             <input type="checkbox" id="lineNotifyToggle" onchange="saveLineSettings()" style="width:20px; height:20px;">
                             <span>เปิดใช้งานแจ้งเตือน LINE</span>
                         </label>
-                    </div>
-                    <div class="form-group" style="margin-top:0.75rem;">
-                        <label>Make.com Webhook URL:</label>
-                        <input type="url" class="form-control" id="makeWebhookUrl"
-                            placeholder="https://hook.us2.make.com/xxxxxxxxxxxxxxxx"
-                            style="font-size:0.82rem;">
                     </div>
                     <div style="display:flex; gap:8px; margin-top:0.75rem;">
                         <button class="btn btn-primary" onclick="saveLineSettings()" style="flex:1; background:linear-gradient(135deg,#00b900,#00d400);">
@@ -7385,53 +7378,35 @@ ${lines}
 
         function saveLineSettings() {
             const enabled = document.getElementById('lineNotifyToggle')?.checked || false;
-            const url = document.getElementById('makeWebhookUrl')?.value.trim() || '';
             localStorage.setItem('lineNotifyEnabled', enabled);
-            localStorage.setItem('makeWebhookUrl', url);
             const status = document.getElementById('lineSettingStatus');
-            if (status) {
-                status.textContent = (enabled && url)
-                    ? '✅ บันทึกแล้ว พร้อมใช้งาน'
-                    : (!url ? '⚠️ กรุณากรอก Webhook URL' : '⏸️ ปิดใช้งานอยู่');
-            }
+            if (status) status.textContent = enabled ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
             showToast('บันทึกการตั้งค่า LINE สำเร็จ');
         }
 
         function loadLineSettings() {
             const toggle = document.getElementById('lineNotifyToggle');
-            const urlInput = document.getElementById('makeWebhookUrl');
             const status = document.getElementById('lineSettingStatus');
             if (toggle) toggle.checked = localStorage.getItem('lineNotifyEnabled') === 'true';
-            if (urlInput) urlInput.value = localStorage.getItem('makeWebhookUrl') || '';
-            if (status) {
-                const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-                const url = localStorage.getItem('makeWebhookUrl') || '';
-                status.textContent = (enabled && url) ? '✅ พร้อมใช้งาน' : (url ? '⏸️ ปิดใช้งานอยู่' : '');
-            }
+            if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
+
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
 
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-            const webhookUrl = localStorage.getItem('makeWebhookUrl') || '';
-            if (!enabled || !webhookUrl) return;
+            if (!enabled) return;
             try {
-                // ส่ง field แยกกันเพื่อให้ Make.com ประกอบข้อความเอง
-                // หลีกเลี่ยงปัญหา \n และอักขระพิเศษทำให้ JSON เสีย
                 const lines = (payload.message || '').split('\n');
                 const body = {
-                    to:    'C723ea02b5ae387ef2823a283727ae9e8',
-                    type:  payload.type || 'info',
-                    l1:    lines[0] || '',
-                    l2:    lines[1] || '',
-                    l3:    lines[2] || '',
-                    l4:    lines[3] || '',
-                    l5:    lines[4] || '',
-                    l6:    lines[5] || '',
-                    l7:    lines[6] || ''
+                    l1: lines[0] || '', l2: lines[1] || '',
+                    l3: lines[2] || '', l4: lines[3] || '',
+                    l5: lines[4] || '', l6: lines[5] || '',
+                    l7: lines[6] || ''
                 };
-                await fetch(webhookUrl, {
+                await fetch(GAS_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(body)
                 });
             } catch(e) {
@@ -7440,20 +7415,16 @@ ${lines}
         }
 
         async function testLineNotify() {
-            const url = document.getElementById('makeWebhookUrl')?.value.trim();
-            if (!url) { showToast('กรุณากรอก Webhook URL ก่อน', 'error'); return; }
             showToast('⏳ กำลังทดสอบ...');
             try {
-                await fetch(url, {
+                await fetch(GAS_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        to:   'C723ea02b5ae387ef2823a283727ae9e8',
-                        type: 'test',
-                        l1:   '🧪 ทดสอบระบบแจ้งเตือน',
-                        l2:   '🏫 โรงเรียนกระดุมทองวิทยา',
-                        l3:   '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                        l4:   '✅ เชื่อมต่อสำเร็จ!',
+                        l1: '🧪 ทดสอบระบบแจ้งเตือน',
+                        l2: '🏫 โรงเรียนกระดุมทองวิทยา',
+                        l3: '📋 ระบบรับสมัครนักเรียนออนไลน์',
+                        l4: '✅ เชื่อมต่อสำเร็จ!',
                         l5: '', l6: '', l7: ''
                     })
                 });

@@ -2548,13 +2548,35 @@ window.saveEditMobtua   = saveEditMobtua;
    DELETE
 ───────────────────────────────────────────────── */
 function confirmDelete(id, type, name) {
-  document.getElementById('confirmMsg').textContent = `ลบข้อมูลของ "${name}" ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้`;
+  const bothSides = type === 'mobtua' ? 'ใบมอบตัวและใบสมัครที่เชื่อมกัน' : 'ใบสมัครและใบมอบตัวที่เชื่อมกัน';
+  document.getElementById('confirmMsg').textContent = `ลบข้อมูลของ "${name}" ออกจากระบบ? จะลบ${bothSides} ไม่สามารถย้อนกลับได้`;
   const btn = document.getElementById('confirmDeleteBtn');
   btn.onclick = async () => {
     try {
-      const col = type === 'mobtua' ? 'mobtua' : 'admissions';
-      await window._fs.deleteDoc(window._fs.doc(window._db, col, id));
-      showToast('ลบข้อมูลสำเร็จ', 'success');
+      if (type === 'mobtua') {
+        // ดึง admissionId ก่อนลบ
+        const mtSnap = await window._fs.getDoc(window._fs.doc(window._db, 'mobtua', id));
+        const admissionId = mtSnap.exists() ? mtSnap.data().admissionId : null;
+        await window._fs.deleteDoc(window._fs.doc(window._db, 'mobtua', id));
+        if (admissionId) {
+          await window._fs.deleteDoc(window._fs.doc(window._db, 'admissions', admissionId));
+        }
+      } else {
+        // ลบ admission
+        await window._fs.deleteDoc(window._fs.doc(window._db, 'admissions', id));
+        // หา mobtua ที่ผูกกับ admissionId นี้
+        const q = window._fs.query(
+          window._fs.collection(window._db, 'mobtua'),
+          window._fs.where('admissionId', '==', id)
+        );
+        const snap = await window._fs.getDocs(q);
+        const delPromises = [];
+        snap.forEach(d => delPromises.push(
+          window._fs.deleteDoc(window._fs.doc(window._db, 'mobtua', d.id))
+        ));
+        await Promise.all(delPromises);
+      }
+      showToast('ลบข้อมูลสำเร็จ (ทั้งสองฝั่ง)', 'success');
       closeModal('modalConfirm');
     } catch(e) {
       showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');

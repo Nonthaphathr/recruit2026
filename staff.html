@@ -2214,9 +2214,9 @@ function editAdmission(id) {
   document.getElementById('eaDistrict').value        = d.district || '';
   document.getElementById('eaProvince').value        = d.province || '';
   document.getElementById('eaPostal').value          = d.postalCode || '';
-  document.getElementById('eaFatherName').value      = d.fatherName || '';
+  document.getElementById('eaFatherName').value      = d.fatherName || `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim() || '';
   document.getElementById('eaFatherOcc').value       = d.fatherOccupation || '';
-  document.getElementById('eaMotherName').value      = d.motherName || '';
+  document.getElementById('eaMotherName').value      = d.motherName || `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim() || '';
   document.getElementById('eaMotherOcc').value       = d.motherOccupation || '';
   document.getElementById('eaPrevSchool').value      = d.previousSchool || '';
   document.getElementById('eaSchoolSubdistrict').value = d.schoolSubdistrict || '';
@@ -3356,8 +3356,10 @@ function buildStepperStep1() {
             d.moo ? `หมู่ ${d.moo}` : '', d.village ? `บ้าน${d.village}` : '',
             d.subdistrict ? `ต.${d.subdistrict}` : '', d.district ? `อ.${d.district}` : '',
             d.province ? `จ.${d.province}` : '', d.postalCode || '']);
-        const fatherFull = `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim();
-        const motherFull = `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim();
+        const fatherFull = d.fatherName ||
+            `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim();
+        const motherFull = d.motherName ||
+            `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim();
 
         html = sec('👤 ข้อมูลนักเรียน') +
             row('ชื่อ-นามสกุล', `${d.prefix||''}${d.firstName||''} ${d.lastName||''}`.trim(), true) +
@@ -3386,8 +3388,8 @@ function buildStepperStep1() {
             d.mt_subdistrict ? `ต.${d.mt_subdistrict}` : '', d.mt_district ? `อ.${d.mt_district}` : '',
             d.mt_province ? `จ.${d.mt_province}` : '', d.mt_postalCode || '']);
         const guardianFull = `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim();
-        const fatherFull = `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim();
-        const motherFull = `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim();
+        const fatherFull = d.mt_fatherFullName || `${d.mt_fatherPrefix||''} ${d.mt_fatherFirstName||''} ${d.mt_fatherLastName||''}`.trim();
+        const motherFull = d.mt_motherFullName || `${d.mt_motherPrefix||''} ${d.mt_motherFirstName||''} ${d.mt_motherLastName||''}`.trim();
 
         html = sec('👤 ข้อมูลนักเรียน') +
             row('ชื่อ-นามสกุล', `${d.mt_studentPrefix||''}${d.mt_studentFirstName||''} ${d.mt_studentLastName||''}`.trim(), true) +

@@ -2277,13 +2277,23 @@ async function saveEditAdmission() {
     await syncEditToMobtua(currentEditId, prefix, firstName, lastName, fullName, updatedData, studentName, _preSyncOldName);
     showToast('แก้ไขข้อมูลสำเร็จ', 'success');
     closeModal('modalEditAdmission');
+    // อัปเดต allAdmissions ใน memory ทันที ก่อน rebuild stepper
+    const memIdx = allAdmissions.findIndex(r => r.id === currentEditId);
+    if (memIdx !== -1) {
+        allAdmissions[memIdx] = {
+            ...allAdmissions[memIdx],
+            studentName,
+            gradeLevel,
+            gradeText,
+            data: updatedData
+        };
+    }
     // Reset z-index and refresh stepper step 1 with updated data
     const adm = document.getElementById('modalEditAdmission');
     if (adm) adm.style.zIndex = '';
     if (_stepperReopenAfterEdit) {
         _stepperReopenAfterEdit = null;
-        // Reload step 1 detail with fresh data
-        setTimeout(() => { buildStepperStep1(); }, 150);
+        setTimeout(() => { buildStepperStep1(); }, 50);
     }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
@@ -2532,7 +2542,7 @@ async function saveEditMobtua() {
     if (mt) mt.style.zIndex = '';
     if (_stepperReopenAfterEdit) {
         _stepperReopenAfterEdit = null;
-        setTimeout(() => { buildStepperStep1(); }, 150);
+        setTimeout(() => { buildStepperStep1(); }, 50);
     }
   } catch(e) {
     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');

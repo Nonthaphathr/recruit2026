@@ -7409,7 +7409,7 @@ ${lines}
             if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
 
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwuh2m3U1eDqFXE917ToyqVfmr_HTLSB4XI5nbhvYE1huojp3jZm_GOmmds78yFC59i/exec';
 
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
@@ -7422,7 +7422,7 @@ ${lines}
                     l1: lines[0] || '', l2: lines[1] || '',
                     l3: lines[2] || '', l4: lines[3] || '',
                     l5: lines[4] || '', l6: lines[5] || '',
-                    l7: lines[6] || ''
+                    l7: lines[6] || '', l8: lines[7] || ''
                 };
                 console.log('[LINE Notify] กำลังส่ง...', body.l1);
                 const res = await fetch(GAS_URL, {
@@ -7447,7 +7447,8 @@ ${lines}
                         l2: '🏫 โรงเรียนกระดุมทองวิทยา',
                         l3: '📋 ระบบรับสมัครนักเรียนออนไลน์',
                         l4: '✅ เชื่อมต่อสำเร็จ!',
-                        l5: '', l6: '', l7: ''
+                        l5: '🔗 https://nonthaphathr.github.io/recruit2026/staff.html',
+                        l6: '', l7: '', l8: ''
                     })
                 });
                 showToast('✅ ส่งทดสอบสำเร็จ! ตรวจสอบกลุ่ม LINE ได้เลย');

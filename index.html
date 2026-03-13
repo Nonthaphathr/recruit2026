@@ -3823,22 +3823,52 @@
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 0.5rem; color: #0369a1;">🎨 ตั้งค่าสีกระดาษพิมพ์ใบสมัคร</h4>
                     <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
-                        ระบบจะแสดง modal แจ้งเตือนสีกระดาษก่อนพิมพ์ใบสมัครผ่านระบบครู (staff.html)
+                        ระบบจะแสดง modal แจ้งเตือนก่อนพิมพ์ใบสมัครผ่านระบบครู (staff.html) — กำหนดสีกระดาษและสี header ของ modal
                     </p>
-                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem;">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#ca8a04;">🟡 สีกระดาษ ม.1</label>
+                            <label style="font-weight:600;color:#ca8a04;">🟡 ชื่อสีกระดาษ ม.1</label>
                             <input type="text" class="form-control" id="paperColorM1"
                                 placeholder="เช่น สีเหลือง" style="margin-top:.4rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#be185d;">🌸 สีกระดาษ ม.4</label>
+                            <label style="font-weight:600;color:#be185d;">🌸 ชื่อสีกระดาษ ม.4</label>
                             <input type="text" class="form-control" id="paperColorM4"
                                 placeholder="เช่น สีชมพู" style="margin-top:.4rem;">
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="savePaperColorSettings()" style="width:100%;margin-top:.85rem;background:linear-gradient(135deg,#0369a1,#0284c7);">
-                        💾 บันทึกสีกระดาษ
+                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:.6rem;">สี Header ของ modal เตือนสีกระดาษ (ค่าเป็น CSS color เช่น #ca8a04 หรือ gold)</p>
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;color:#ca8a04;">🎨 สี Header modal ม.1</label>
+                            <div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem;">
+                                <input type="color" id="paperModalColorM1" value="#a16207"
+                                    style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;">
+                                <input type="text" class="form-control" id="paperModalColorM1Text"
+                                    placeholder="#a16207" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;color:#be185d;">🎨 สี Header modal ม.4</label>
+                            <div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem;">
+                                <input type="color" id="paperModalColorM4" value="#be185d"
+                                    style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;">
+                                <input type="text" class="form-control" id="paperModalColorM4Text"
+                                    placeholder="#be185d" style="flex:1;">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- preview -->
+                    <div style="display:flex;gap:.6rem;margin-bottom:.85rem;">
+                        <div id="paperColorPreviewM1" style="flex:1;border-radius:10px;padding:.6rem .85rem;font-size:.85rem;font-weight:700;color:#fff;text-align:center;background:linear-gradient(135deg,#a16207,#ca8a04);">
+                            ตัวอย่าง ม.1
+                        </div>
+                        <div id="paperColorPreviewM4" style="flex:1;border-radius:10px;padding:.6rem .85rem;font-size:.85rem;font-weight:700;color:#fff;text-align:center;background:linear-gradient(135deg,#be185d,#ec4899);">
+                            ตัวอย่าง ม.4
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="savePaperColorSettings()" style="width:100%;background:linear-gradient(135deg,#0369a1,#0284c7);">
+                        💾 บันทึกการตั้งค่าสีกระดาษ
                     </button>
                 </div>
 
@@ -5558,6 +5588,19 @@
             if (elM1) elM1.value = paperColorM1;
             if (elM4) elM4.value = paperColorM4;
 
+            const cm1 = localStorage.getItem('paperModalColorM1') || '#a16207';
+            const cm4 = localStorage.getItem('paperModalColorM4') || '#be185d';
+            const pickerM1 = document.getElementById('paperModalColorM1');
+            const textM1   = document.getElementById('paperModalColorM1Text');
+            const pickerM4 = document.getElementById('paperModalColorM4');
+            const textM4   = document.getElementById('paperModalColorM4Text');
+            if (pickerM1) pickerM1.value = /^#[0-9a-fA-F]{6}$/.test(cm1) ? cm1 : '#a16207';
+            if (textM1)   textM1.value   = cm1;
+            if (pickerM4) pickerM4.value = /^#[0-9a-fA-F]{6}$/.test(cm4) ? cm4 : '#be185d';
+            if (textM4)   textM4.value   = cm4;
+            _updatePaperColorPreviews();
+            _wirePaperColorPickers();
+
             renderChecklistAdmin();
         }
 
@@ -5570,7 +5613,8 @@
             'testModeEnabled','historyLocked','mobtuaLocked',
             'appointmentDateText','appointmentTimeText','appointmentPlaceText',
             'checklistItems','lineNotifyEnabled',
-            'paperColorM1','paperColorM4'
+            'paperColorM1','paperColorM4',
+            'paperModalColorM1','paperModalColorM4'
         ];
 
         async function syncSettingsToFirestore() {
@@ -7586,10 +7630,52 @@ ${lines}
         function savePaperColorSettings() {
             const m1 = document.getElementById('paperColorM1')?.value?.trim() || '';
             const m4 = document.getElementById('paperColorM4')?.value?.trim() || '';
+            const cm1Text = document.getElementById('paperModalColorM1Text')?.value?.trim() || '';
+            const cm4Text = document.getElementById('paperModalColorM4Text')?.value?.trim() || '';
+            const cm1Pick = document.getElementById('paperModalColorM1')?.value || '#a16207';
+            const cm4Pick = document.getElementById('paperModalColorM4')?.value || '#be185d';
+            // text field takes priority; fallback to color picker
+            const cm1 = cm1Text || cm1Pick;
+            const cm4 = cm4Text || cm4Pick;
             localStorage.setItem('paperColorM1', m1);
             localStorage.setItem('paperColorM4', m4);
-            showToast('บันทึกสีกระดาษสำเร็จ ✅');
+            localStorage.setItem('paperModalColorM1', cm1);
+            localStorage.setItem('paperModalColorM4', cm4);
+            showToast('บันทึกการตั้งค่าสีกระดาษสำเร็จ ✅');
             syncSettingsToFirestore();
+            // update preview
+            _updatePaperColorPreviews();
+        }
+
+        function _updatePaperColorPreviews() {
+            const cm1 = localStorage.getItem('paperModalColorM1') || '#a16207';
+            const cm4 = localStorage.getItem('paperModalColorM4') || '#be185d';
+            const p1 = document.getElementById('paperColorPreviewM1');
+            const p4 = document.getElementById('paperColorPreviewM4');
+            if (p1) p1.style.background = `linear-gradient(135deg, ${cm1}, ${cm1}cc)`;
+            if (p4) p4.style.background = `linear-gradient(135deg, ${cm4}, ${cm4}cc)`;
+        }
+
+        function _wirePaperColorPickers() {
+            // Sync color picker → text field
+            const pickerM1 = document.getElementById('paperModalColorM1');
+            const textM1   = document.getElementById('paperModalColorM1Text');
+            const pickerM4 = document.getElementById('paperModalColorM4');
+            const textM4   = document.getElementById('paperModalColorM4Text');
+            if (pickerM1 && textM1) {
+                pickerM1.addEventListener('input', () => { textM1.value = pickerM1.value; _updatePaperColorPreviews(); });
+                textM1.addEventListener('input',   () => {
+                    if (/^#[0-9a-fA-F]{6}$/.test(textM1.value)) { pickerM1.value = textM1.value; }
+                    _updatePaperColorPreviews();
+                });
+            }
+            if (pickerM4 && textM4) {
+                pickerM4.addEventListener('input', () => { textM4.value = pickerM4.value; _updatePaperColorPreviews(); });
+                textM4.addEventListener('input',   () => {
+                    if (/^#[0-9a-fA-F]{6}$/.test(textM4.value)) { pickerM4.value = textM4.value; }
+                    _updatePaperColorPreviews();
+                });
+            }
         }
 
         function saveLineSettings() {

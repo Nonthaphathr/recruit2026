@@ -1177,10 +1177,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 <!-- EDIT: Admission -->
 <div class="modal-backdrop" id="modalEditAdmission">
-  <div class="modal-box" style="max-width:780px;">
+  <div class="modal-box" style="max-width:820px;">
     <div class="modal-header">
       <h3>✏️ แก้ไขข้อมูลใบสมัคร</h3>
-      <button class="modal-close-btn" onclick="closeModalAndResetZ('modalEditAdmission')">✕</button>
+      <button class="modal-close-btn" onclick="confirmCloseEditModal('modalEditAdmission')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -1211,6 +1211,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
           </select>
         </div>
         <div class="form-group">
+          <label class="form-label">วันเกิด (เลขวัน)</label>
+          <input class="form-control" id="eaBirthDay" placeholder="เช่น 15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">เดือนเกิด</label>
+          <input class="form-control" id="eaBirthMonth" placeholder="เช่น มกราคม">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ปีเกิด (พ.ศ.)</label>
+          <input class="form-control" id="eaBirthYear" placeholder="เช่น 2554">
+        </div>
+        <div class="form-group">
           <label class="form-label">อายุ (ปี)</label>
           <input class="form-control" id="eaAge" type="number" min="1" max="99">
         </div>
@@ -1226,6 +1238,14 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
           <label class="form-label">หมู่เลือด</label>
           <input class="form-control" id="eaBloodType" placeholder="A / B / AB / O">
         </div>
+        <div class="form-group">
+          <label class="form-label">เลขบัตรประชาชน</label>
+          <input class="form-control" id="eaNationalId" placeholder="1-xxxx-xxxxx-xx-x">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อีเมล</label>
+          <input class="form-control" id="eaEmail" type="email">
+        </div>
         <!-- ที่อยู่ -->
         <div class="form-group full" style="font-weight:700;color:var(--gold);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.5rem;">🏠 ที่อยู่</div>
         <div class="form-group">
@@ -1235,6 +1255,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <div class="form-group">
           <label class="form-label">หมู่ที่</label>
           <input class="form-control" id="eaMoo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมู่บ้าน</label>
+          <input class="form-control" id="eaVillage" placeholder="ชื่อหมู่บ้าน">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ถนน</label>
+          <input class="form-control" id="eaRoad">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ซอย</label>
+          <input class="form-control" id="eaSoi">
         </div>
         <div class="form-group">
           <label class="form-label">ตำบล</label>
@@ -1256,8 +1288,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
           <label class="form-label">โทรศัพท์</label>
           <input class="form-control" id="eaPhone" type="tel">
         </div>
-        <!-- บิดา-มารดา -->
-        <div class="form-group full" style="font-weight:700;color:var(--gold);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.5rem;">👨‍👩‍👧 บิดา-มารดา</div>
+        <!-- บิดา -->
+        <div class="form-group full" style="font-weight:700;color:var(--gold);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.5rem;">👨 บิดา</div>
         <div class="form-group">
           <label class="form-label">ชื่อ-สกุลบิดา</label>
           <input class="form-control" id="eaFatherName">
@@ -1267,12 +1299,22 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
           <input class="form-control" id="eaFatherOcc">
         </div>
         <div class="form-group">
+          <label class="form-label">อายุบิดา (ปี)</label>
+          <input class="form-control" id="eaFatherAge" type="number">
+        </div>
+        <!-- มารดา -->
+        <div class="form-group full" style="font-weight:700;color:var(--gold);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.5rem;">👩 มารดา</div>
+        <div class="form-group">
           <label class="form-label">ชื่อ-สกุลมารดา</label>
           <input class="form-control" id="eaMotherName">
         </div>
         <div class="form-group">
           <label class="form-label">อาชีพมารดา</label>
           <input class="form-control" id="eaMotherOcc">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อายุมารดา (ปี)</label>
+          <input class="form-control" id="eaMotherAge" type="number">
         </div>
         <!-- โรงเรียนเดิม -->
         <div class="form-group full" style="font-weight:700;color:var(--gold);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.5rem;">🏫 โรงเรียนเดิม</div>
@@ -1295,7 +1337,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModalAndResetZ('modalEditAdmission')">ยกเลิก</button>
+      <button class="btn-secondary" onclick="confirmCloseEditModal('modalEditAdmission')">ยกเลิก</button>
       <button class="btn-primary" onclick="saveEditAdmission()">💾 บันทึกการแก้ไข</button>
     </div>
   </div>
@@ -1324,7 +1366,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
   <div class="modal-box" style="max-width:780px;">
     <div class="modal-header">
       <h3>✏️ แก้ไขข้อมูลใบมอบตัว</h3>
-      <button class="modal-close-btn" onclick="closeModalAndResetZ('modalEditMobtua')">✕</button>
+      <button class="modal-close-btn" onclick="confirmCloseEditModal('modalEditMobtua')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -1435,7 +1477,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModalAndResetZ('modalEditMobtua')">ยกเลิก</button>
+      <button class="btn-secondary" onclick="confirmCloseEditModal('modalEditMobtua')">ยกเลิก</button>
       <button class="btn-primary" onclick="saveEditMobtua()">💾 บันทึกการแก้ไข</button>
     </div>
   </div>
@@ -1688,13 +1730,28 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 <!-- ════════════════════════════════════════════════════════
      CARD PREVIEW MODAL — sits above stepper (z:6500), step 3 stays visible
 ════════════════════════════════════════════════════════ -->
+<!-- Sweet-Alert style: Confirm Discard Changes Modal -->
+<div id="confirmDiscardModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(10,20,40,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;max-width:380px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden;animation:fadeInUp .18s ease;">
+    <div style="padding:1.5rem 1.5rem .75rem;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">⚠️</div>
+      <div style="font-size:1.05rem;font-weight:800;color:#1e293b;margin-bottom:.4rem;">ยืนยันการปิด?</div>
+      <div style="font-size:.88rem;color:#64748b;line-height:1.65;">ข้อมูลที่แก้ไขอยู่จะไม่ถูกบันทึก<br>ต้องการออกโดยไม่บันทึกหรือไม่?</div>
+    </div>
+    <div style="display:flex;gap:.6rem;padding:.75rem 1.25rem 1.25rem;">
+      <button id="discardCancelBtn" style="flex:1;padding:.65rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;" onclick="closeConfirmDiscard()">กลับไปแก้ไข</button>
+      <button id="discardConfirmBtn" style="flex:1;padding:.65rem;border-radius:10px;border:none;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;" onclick="executeDiscardClose()">ออกโดยไม่บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- Step 2 Instruction Modal — "โปรดอ่านก่อนกรอก" -->
 <div id="step2InstructionModal" style="display:none;position:fixed;inset:0;z-index:7100;background:rgba(10,20,40,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:18px;max-width:460px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.28);overflow:hidden;animation:fadeInUp .22s ease;">
     <div style="padding:1.1rem 1.4rem;background:linear-gradient(135deg,#0f4c81,#1d6fb8);display:flex;align-items:center;gap:.75rem;">
       <span style="font-size:1.9rem;">📋</span>
       <div>
-        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.07em;text-transform:uppercase;">ก่อนตรวจเอกสาร</div>
+        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.07em;text-transform:uppercase;">ก่อนตรวจและยืนยันเอกสารประกอบในขั้นต่อไป</div>
         <div style="font-size:1rem;font-weight:800;color:#fff;">โปรดอ่านก่อนดำเนินการ</div>
       </div>
     </div>
@@ -2273,21 +2330,31 @@ function editAdmission(id) {
   document.getElementById('eaFullName').value        = d.fullName || rec.studentName || '';
   document.getElementById('eaNickname').value        = d.nickname || '';
   document.getElementById('eaGrade').value           = rec.gradeLevel || 'm1';
+  document.getElementById('eaBirthDay').value        = d.birthDay || '';
+  document.getElementById('eaBirthMonth').value      = d.birthMonth || '';
+  document.getElementById('eaBirthYear').value       = d.birthYear || '';
   document.getElementById('eaAge').value             = d.age || '';
   document.getElementById('eaHeight').value          = d.height || '';
   document.getElementById('eaWeight').value          = d.weight || '';
   document.getElementById('eaBloodType').value       = d.bloodType || '';
+  document.getElementById('eaNationalId').value      = d.nationalId || d.nationalIdClean || '';
+  document.getElementById('eaEmail').value           = d.email || '';
   document.getElementById('eaPhone').value           = d.phone || '';
   document.getElementById('eaHouseNo').value         = d.houseNumber || '';
   document.getElementById('eaMoo').value             = d.moo || '';
+  document.getElementById('eaVillage').value         = d.village || '';
+  document.getElementById('eaRoad').value            = d.road || '';
+  document.getElementById('eaSoi').value             = d.soi || '';
   document.getElementById('eaSubdistrict').value     = d.subdistrict || '';
   document.getElementById('eaDistrict').value        = d.district || '';
   document.getElementById('eaProvince').value        = d.province || '';
   document.getElementById('eaPostal').value          = d.postalCode || '';
   document.getElementById('eaFatherName').value      = d.fatherName || `${d.fatherPrefix||''} ${d.fatherFirstName||''} ${d.fatherLastName||''}`.trim() || '';
   document.getElementById('eaFatherOcc').value       = d.fatherOccupation || '';
+  document.getElementById('eaFatherAge').value       = d.fatherAge || '';
   document.getElementById('eaMotherName').value      = d.motherName || `${d.motherPrefix||''} ${d.motherFirstName||''} ${d.motherLastName||''}`.trim() || '';
   document.getElementById('eaMotherOcc').value       = d.motherOccupation || '';
+  document.getElementById('eaMotherAge').value       = d.motherAge || '';
   document.getElementById('eaPrevSchool').value      = d.previousSchool || '';
   document.getElementById('eaSchoolSubdistrict').value = d.schoolSubdistrict || '';
   document.getElementById('eaSchoolDistrict').value  = d.schoolDistrict || '';
@@ -2314,21 +2381,31 @@ async function saveEditAdmission() {
     lastName,
     gradeLevel,
     nickname:        document.getElementById('eaNickname').value.trim(),
+    birthDay:        document.getElementById('eaBirthDay').value.trim(),
+    birthMonth:      document.getElementById('eaBirthMonth').value.trim(),
+    birthYear:       document.getElementById('eaBirthYear').value.trim(),
     age:             document.getElementById('eaAge').value.trim(),
     height:          document.getElementById('eaHeight').value.trim(),
     weight:          document.getElementById('eaWeight').value.trim(),
     bloodType:       document.getElementById('eaBloodType').value.trim(),
+    nationalId:      document.getElementById('eaNationalId').value.trim(),
+    email:           document.getElementById('eaEmail').value.trim(),
     phone:           document.getElementById('eaPhone').value.trim(),
     houseNumber:     document.getElementById('eaHouseNo').value.trim(),
     moo:             document.getElementById('eaMoo').value.trim(),
+    village:         document.getElementById('eaVillage').value.trim(),
+    road:            document.getElementById('eaRoad').value.trim(),
+    soi:             document.getElementById('eaSoi').value.trim(),
     subdistrict:     document.getElementById('eaSubdistrict').value.trim(),
     district:        document.getElementById('eaDistrict').value.trim(),
     province:        document.getElementById('eaProvince').value.trim(),
     postalCode:      document.getElementById('eaPostal').value.trim(),
     fatherName:      document.getElementById('eaFatherName').value.trim(),
     fatherOccupation: document.getElementById('eaFatherOcc').value.trim(),
+    fatherAge:       document.getElementById('eaFatherAge').value.trim(),
     motherName:      document.getElementById('eaMotherName').value.trim(),
     motherOccupation: document.getElementById('eaMotherOcc').value.trim(),
+    motherAge:       document.getElementById('eaMotherAge').value.trim(),
     previousSchool:  document.getElementById('eaPrevSchool').value.trim(),
     schoolSubdistrict: document.getElementById('eaSchoolSubdistrict').value.trim(),
     schoolDistrict:  document.getElementById('eaSchoolDistrict').value.trim(),
@@ -3853,18 +3930,23 @@ function openAdmissionCardWithWarning(type, id, col) {
     const confirmBtn = document.getElementById('paperWarningConfirmBtn');
     if (!modal) { openCardPreview(type, id, col); return; }
 
-    header.style.background = isM4
-        ? 'linear-gradient(135deg,#be185d,#ec4899)'   // ชมพู ม.4
-        : 'linear-gradient(135deg,#a16207,#ca8a04)';  // เหลือง ม.1
+    // Read modal header colors from settings (set in index.html admin settings)
+    const defaultCm1 = '#a16207';
+    const defaultCm4 = '#be185d';
+    const cm1 = localStorage.getItem('paperModalColorM1') || defaultCm1;
+    const cm4 = localStorage.getItem('paperModalColorM4') || defaultCm4;
+    const headerColor = isM4 ? cm4 : cm1;
+
+    header.style.background = `linear-gradient(135deg, ${headerColor}, ${headerColor}cc)`;
     emoji.textContent = isM4 ? '🩷' : '💛';
     gradeEl.textContent = isM4 ? 'ใบสมัคร ม.4' : 'ใบสมัคร ม.1';
 
-    // Read paper color from settings (set in index.html admin settings)
+    // Read paper color text from settings
     const colorM1 = localStorage.getItem('paperColorM1') || 'สีเหลือง';
     const colorM4 = localStorage.getItem('paperColorM4') || 'สีชมพู';
     const paperColor = isM4 ? colorM4 : colorM1;
     msgEl.textContent = `โปรดใส่กระดาษ${paperColor}ในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ${isM4 ? 'ม.4' : 'ม.1'}`;
-    confirmBtn.style.background = isM4 ? '#be185d' : '#a16207';
+    confirmBtn.style.background = headerColor;
     confirmBtn.onclick = () => { closePaperWarningModal(); openCardPreview(type, id, col); };
 
     modal.style.display = 'flex';
@@ -4709,11 +4791,44 @@ function closeModalAndResetZ(id) {
     }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Confirm discard changes before closing edit modals ──────────
+let _pendingCloseModalId = null;
+function confirmCloseEditModal(id) {
+    _pendingCloseModalId = id;
+    const modal = document.getElementById('confirmDiscardModal');
+    if (modal) modal.style.display = 'flex';
+}
+function closeConfirmDiscard() {
+    _pendingCloseModalId = null;
+    const modal = document.getElementById('confirmDiscardModal');
+    if (modal) modal.style.display = 'none';
+}
+function executeDiscardClose() {
+    const modal = document.getElementById('confirmDiscardModal');
+    if (modal) modal.style.display = 'none';
+    if (_pendingCloseModalId) {
+        closeModalAndResetZ(_pendingCloseModalId);
+        _pendingCloseModalId = null;
+    }
+}
+window.confirmCloseEditModal = confirmCloseEditModal;
+window.closeConfirmDiscard   = closeConfirmDiscard;
+window.executeDiscardClose   = executeDiscardClose;
+
 window.openModal  = openModal;
 window.closeModal = closeModal;
-// close on backdrop click
+// close on backdrop click — use confirm for edit modals
 document.querySelectorAll('.modal-backdrop').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  el.addEventListener('click', e => {
+    if (e.target !== el) return;
+    const id = el.id;
+    if (id === 'modalEditAdmission' || id === 'modalEditMobtua') {
+        confirmCloseEditModal(id);
+    } else {
+        el.classList.remove('open');
+    }
+  });
 });
 
 /* ─────────────────────────────────────────────────

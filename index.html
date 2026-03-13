@@ -1200,8 +1200,9 @@
         .print-document .field-value {
             font-weight: 600;
             border-bottom: 1px dotted #333;
-            min-width: 100px;
+            min-width: 80px;
             display: inline-block;
+            text-align: center;
         }
 
         .print-document .checkbox-line {
@@ -2485,7 +2486,7 @@
                     style="width:100%;box-sizing:border-box;padding:.55rem .75rem .55rem 2.2rem;border:1.5px solid var(--border,#e2e8f0);border-radius:10px;font-size:.9rem;font-family:inherit;outline:none;background:var(--bg-card,#fff);color:var(--text-primary,#1e293b);">
             </div>
             <div id="pendingMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:.75rem;max-height:52vh;overflow-y:auto;"></div>
-            <button class="btn btn-outline" style="margin-top:1rem;width:100%;" onclick="openBlankMobtuaForm()">
+            <button id="blankMobtuaBtn" class="btn btn-outline" style="margin-top:1rem;width:100%;display:none;" onclick="openBlankMobtuaForm()">
                 ➕ กรอกใบมอบตัวใหม่ (ไม่ได้สมัครออนไลน์)
             </button>
         </div>
@@ -2718,8 +2719,8 @@
                             <input type="text" class="form-control" name="soi" placeholder="เช่น สุขสันต์">
                         </div>
                         <div class="form-group">
-                            <label>บ้าน/หมู่บ้าน</label>
-                            <input type="text" class="form-control" name="village" placeholder="เช่น บ้านโนนสวรรค์">
+                            <label>ชื่อหมู่บ้าน</label>
+                            <input type="text" class="form-control" name="village" placeholder="เช่น บ้านหนองดุม">
                         </div>
                     </div>
 
@@ -3818,6 +3819,29 @@
                     </div>
                 </div>
 
+                <!-- ════ PAPER COLOR SETTINGS ════ -->
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 0.5rem; color: #0369a1;">🎨 ตั้งค่าสีกระดาษพิมพ์ใบสมัคร</h4>
+                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
+                        ระบบจะแสดง modal แจ้งเตือนสีกระดาษก่อนพิมพ์ใบสมัครผ่านระบบครู (staff.html)
+                    </p>
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;color:#ca8a04;">🟡 สีกระดาษ ม.1</label>
+                            <input type="text" class="form-control" id="paperColorM1"
+                                placeholder="เช่น สีเหลือง" style="margin-top:.4rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:600;color:#be185d;">🌸 สีกระดาษ ม.4</label>
+                            <input type="text" class="form-control" id="paperColorM4"
+                                placeholder="เช่น สีชมพู" style="margin-top:.4rem;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="savePaperColorSettings()" style="width:100%;margin-top:.85rem;background:linear-gradient(135deg,#0369a1,#0284c7);">
+                        💾 บันทึกสีกระดาษ
+                    </button>
+                </div>
+
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: #b45309;">🔒 ล็อกเมนูใบมอบตัว</h4>
                     <div class="form-group">
@@ -4428,27 +4452,27 @@
                     <div class="doc-content">
                         <div class="field-line" style="margin-top: 8px;">
                             <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span>
-                            <span class="field-value">${data.prefix || ''}${data.fullName || '..........................................'}</span>
+                            <span class="field-value">${data.prefix || ''}${data.fullName || ''}</span>
                             <span class="field-label">ชื่อเล่น</span>
-                            <span class="field-value">${data.nickname || '..............'}</span>
+                            <span class="field-value">${data.nickname || ''}</span>
                             <span class="field-label">เกิดวันที่</span>
                             <span class="field-value">${formatThaiDate(data.birthDate)}</span>
                         </div>
 
                         <div class="field-line">
                             <span class="field-label">อายุ</span>
-                            <span class="field-value">${data.age || '............'}</span>
+                            <span class="field-value">${data.age || ''}</span>
                             <span class="field-label">ปี</span>
                         </div>
                         <div class="field-line">
                             <span class="field-label">ส่วนสูง</span>
-                            <span class="field-value">${data.height || '..................'}</span>
+                            <span class="field-value">${data.height || ''}</span>
                             <span class="field-label">เซนติเมตร</span>
                             <span class="field-label">น้ำหนัก</span>
-                            <span class="field-value">${data.weight || '....................'}</span>
+                            <span class="field-value">${data.weight || ''}</span>
                             <span class="field-label">กิโลกรัม</span>
                             <span class="field-label">หมู่เลือด</span>
-                            <span class="field-value">${data.bloodType || '.................................'}</span>
+                            <span class="field-value">${data.bloodType || ''}</span>
                         </div>
 
                         <div class="field-line">
@@ -4460,65 +4484,65 @@
 
                         <div class="field-line">
                             <span class="field-label">ชื่อ-สกุลบิดา</span>
-                            <span class="field-value">${data.fatherName || '.....................................................................'}</span>
+                            <span class="field-value">${data.fatherName || ''}</span>
                             <span class="field-label">อายุ</span>
-                            <span class="field-value">${data.fatherAge || '........................'}</span>
+                            <span class="field-value">${data.fatherAge || ''}</span>
                             <span class="field-label">อาชีพ</span>
-                            <span class="field-value">${data.fatherOccupation || '.....................................'}</span>
+                            <span class="field-value">${data.fatherOccupation || ''}</span>
                         </div>
 
                         <div class="field-line">
                             <span class="field-label">ชื่อ-สกุลมารดา</span>
-                            <span class="field-value">${data.motherName || '.....................................................................'}</span>
+                            <span class="field-value">${data.motherName || ''}</span>
                             <span class="field-label">อายุ</span>
-                            <span class="field-value">${data.motherAge || '........................'}</span>
+                            <span class="field-value">${data.motherAge || ''}</span>
                             <span class="field-label">อาชีพ</span>
-                            <span class="field-value">${data.motherOccupation || '.....................................'}</span>
+                            <span class="field-value">${data.motherOccupation || ''}</span>
                         </div>
 
                         <div class="field-line" style="margin-top: 6px;">
                             <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span>
-                            <span class="field-value">${data.houseNumber || '……………'}</span>
+                            <span class="field-value">${data.houseNumber || ''}</span>
                             <span class="field-label">หมู่ที่</span>
-                            <span class="field-value">${data.moo || '………'}</span>
+                            <span class="field-value">${data.moo || ''}</span>
                             <span class="field-label">ถนน</span>
-                            <span class="field-value">${data.road || '…........……………………'}</span>
+                            <span class="field-value">${data.road || ''}</span>
                             <span class="field-label">ซอย</span>
-                            <span class="field-value">${data.soi || '......................'}</span>
+                            <span class="field-value">${data.soi || ''}</span>
                         </div>
 
                         <div class="field-line">
                             <span class="field-label">บ้าน</span>
-                            <span class="field-value">${data.village || '..................................'}</span>
+                            <span class="field-value">${data.village || ''}</span>
                             <span class="field-label">ตำบล</span>
-                            <span class="field-value">${data.subdistrict || '…………………'}</span>
+                            <span class="field-value">${data.subdistrict || ''}</span>
                             <span class="field-label">อำเภอ</span>
-                            <span class="field-value">${data.district || '……………………..'}</span>
+                            <span class="field-value">${data.district || ''}</span>
                             <span class="field-label">จังหวัด</span>
-                            <span class="field-value">${data.province || '…………….....………….'}</span>
+                            <span class="field-value">${data.province || ''}</span>
                         </div>
 
                         <div class="field-line">
                             <span class="field-label">รหัสไปรษณีย์</span>
-                            <span class="field-value">${data.postalCode || '……............……………'}</span>
+                            <span class="field-value">${data.postalCode || ''}</span>
                             <span class="field-label">โทรศัพท์</span>
-                            <span class="field-value">${data.phone || '.…..………...........................................…....'}</span>
+                            <span class="field-value">${data.phone || ''}</span>
                             <span class="field-label">E-mail</span>
-                            <span class="field-value">${data.email || '………………….………………………………………'}</span>
+                            <span class="field-value">${data.email || ''}</span>
                         </div>
 
                         <div class="field-line" style="margin-top: 6px;">
                             <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
-                            <span class="field-value">${data.previousSchool || '……………………………………………………………………………..………..'}</span>
+                            <span class="field-value">${data.previousSchool || ''}</span>
                         </div>
 
                         <div class="field-line">
                             <span class="field-label">ตำบล</span>
-                            <span class="field-value">${data.schoolSubdistrict || '……………………….'}</span>
+                            <span class="field-value">${data.schoolSubdistrict || ''}</span>
                             <span class="field-label">อำเภอ</span>
-                            <span class="field-value">${data.schoolDistrict || '…...…………………………..'}</span>
+                            <span class="field-value">${data.schoolDistrict || ''}</span>
                             <span class="field-label">จังหวัด</span>
-                            <span class="field-value">${data.schoolProvince || '…………………………………….'}</span>
+                            <span class="field-value">${data.schoolProvince || ''}</span>
                         </div>
 
                         <p style="margin-top: 8px; font-weight: 600;">4. ความสามารถพิเศษ</p>
@@ -4910,6 +4934,9 @@
             s3.classList.add('active');
             document.getElementById('pendingListTitle').textContent =
                 `📋 รายการรอมอบตัว ${grade === 'm4' ? 'ม.4' : 'ม.1'} — เลือกชื่อนักเรียน`;
+            // ซ่อนปุ่มกรอกใบมอบตัวใหม่ สำหรับ ม.4
+            const blankBtn = document.getElementById('blankMobtuaBtn');
+            if (blankBtn) blankBtn.style.display = grade === 'm4' ? 'none' : '';
             // reset search
             const searchEl = document.getElementById('pendingSearchInput');
             if (searchEl) searchEl.value = '';
@@ -5524,6 +5551,13 @@
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             document.getElementById('mobtuaLockToggle').checked = mobtuaLocked;
 
+            const paperColorM1 = localStorage.getItem('paperColorM1') || '';
+            const paperColorM4 = localStorage.getItem('paperColorM4') || '';
+            const elM1 = document.getElementById('paperColorM1');
+            const elM4 = document.getElementById('paperColorM4');
+            if (elM1) elM1.value = paperColorM1;
+            if (elM4) elM4.value = paperColorM4;
+
             renderChecklistAdmin();
         }
 
@@ -5535,7 +5569,8 @@
             'alertEnabled','alertMessage','defaultAcademicYear',
             'testModeEnabled','historyLocked','mobtuaLocked',
             'appointmentDateText','appointmentTimeText','appointmentPlaceText',
-            'checklistItems','lineNotifyEnabled'
+            'checklistItems','lineNotifyEnabled',
+            'paperColorM1','paperColorM4'
         ];
 
         async function syncSettingsToFirestore() {
@@ -7547,6 +7582,15 @@ ${lines}
         // ════════════════════════════════════════════════════
         //  LINE Notify via Make.com Webhook
         // ════════════════════════════════════════════════════
+
+        function savePaperColorSettings() {
+            const m1 = document.getElementById('paperColorM1')?.value?.trim() || '';
+            const m4 = document.getElementById('paperColorM4')?.value?.trim() || '';
+            localStorage.setItem('paperColorM1', m1);
+            localStorage.setItem('paperColorM4', m4);
+            showToast('บันทึกสีกระดาษสำเร็จ ✅');
+            syncSettingsToFirestore();
+        }
 
         function saveLineSettings() {
             const enabled = document.getElementById('lineNotifyToggle')?.checked || false;

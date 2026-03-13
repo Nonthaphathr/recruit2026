@@ -894,6 +894,21 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
     font-size:13px!important;
   }
   .mobtua-doc .mobtua-page-2 { border-top:none!important; }
+  /* หน้า 2 ใบนัดหมาย */
+  .appt-page2 {
+    page-break-before: always !important;
+    break-before: always !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  .appt-page2 img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }
 #printTarget { display:none; }
 
@@ -4048,6 +4063,19 @@ function generateAppointmentHTML(rec, col) {
   <div style="border-top:1.5px solid #e5e7eb;padding-top:12px;font-size:11px;color:#94a3b8;text-align:center;">
     * กรุณานำเอกสารที่ขาดมายื่นในวันมอบตัว · พิมพ์หรือบันทึกใบนัดหมายนี้ไว้เป็นหลักฐาน<br>
     ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา · ออกใบนัดหมาย ณ วันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}
+  </div>
+</div>
+
+<!-- หน้า 2: คู่มือ/แนวทาง — แสดงเต็ม A4 -->
+<div class="appt-page2" style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;width:100%;page-break-before:always;break-before:always;margin:0;padding:0;box-sizing:border-box;">
+  <img src="https://nonthaphathr.github.io/uploadimg/guiderecruit.png"
+       alt="คู่มือการรับสมัครและมอบตัว"
+       style="width:100%;height:auto;display:block;margin:0;padding:0;"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+  <div style="display:none;align-items:center;justify-content:center;min-height:400px;color:#94a3b8;font-size:14px;flex-direction:column;gap:8px;">
+    <div style="font-size:2.5rem;">🖼️</div>
+    <div>ไม่สามารถโหลดรูปภาพได้</div>
+    <div style="font-size:12px;">https://nonthaphathr.github.io/uploadimg/guiderecruit.png</div>
   </div>
 </div>`;
 }

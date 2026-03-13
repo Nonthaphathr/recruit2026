@@ -1650,9 +1650,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       <div style="margin-top:1.2rem;">
         <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:8px;flex-wrap:wrap;">
           <label style="font-size:.95rem;font-weight:700;color:var(--gold);">📝 หมายเหตุ</label>
-          <button onclick="fillMissingDocsNote()" style="font-size:.8rem;padding:.3rem .85rem;border-radius:99px;border:1.5px solid #f59e0b;background:#fffbeb;color:#92400e;cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:600;white-space:nowrap;transition:all .15s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
-            📋 ดึงรายการเอกสารที่ยังขาด
-          </button>
+          <span style="font-size:.75rem;color:#64748b;font-style:italic;">ระบบจะเติมรายการขาดต่อท้ายอัตโนมัติเมื่อกด "ยืนยันและถัดไป"</span>
         </div>
         <textarea class="verify-note-area" id="stepperVerifyNote"
           style="font-size:.95rem;padding:.75rem 1rem;border-radius:12px;"
@@ -1690,6 +1688,38 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 <!-- ════════════════════════════════════════════════════════
      CARD PREVIEW MODAL — sits above stepper (z:6500), step 3 stays visible
 ════════════════════════════════════════════════════════ -->
+<!-- Step 2 Instruction Modal — "โปรดอ่านก่อนกรอก" -->
+<div id="step2InstructionModal" style="display:none;position:fixed;inset:0;z-index:7100;background:rgba(10,20,40,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;max-width:460px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.28);overflow:hidden;animation:fadeInUp .22s ease;">
+    <div style="padding:1.1rem 1.4rem;background:linear-gradient(135deg,#0f4c81,#1d6fb8);display:flex;align-items:center;gap:.75rem;">
+      <span style="font-size:1.9rem;">📋</span>
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.07em;text-transform:uppercase;">ก่อนตรวจเอกสาร</div>
+        <div style="font-size:1rem;font-weight:800;color:#fff;">โปรดอ่านก่อนดำเนินการ</div>
+      </div>
+    </div>
+    <div style="padding:1.25rem 1.5rem 1rem;">
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;font-size:.92rem;line-height:1.75;color:#0c4a6e;">
+        <p style="font-weight:700;color:#0369a1;margin-bottom:.5rem;">🗂️ วิธีการตรวจเอกสาร</p>
+        <ol style="padding-left:1.2rem;margin:0;">
+          <li>ตรวจสอบรายละเอียดนักเรียนให้ถูกต้องก่อน</li>
+          <li>ขอดูหลักฐานจากผู้ปกครองทีละรายการ</li>
+          <li>กดติ๊กหลักฐานที่ได้รับครบแล้วทีละรายการ</li>
+          <li>หากยังขาดเอกสารใด ระบบจะบันทึกไว้ให้อัตโนมัติ</li>
+        </ol>
+      </div>
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1.1rem;font-size:.88rem;line-height:1.65;color:#78350f;">
+        <span style="font-weight:700;color:#92400e;">📝 หมายเหตุ — กรณีมีข้อมูลที่เจ้าหน้าที่งานทะเบียนควรทราบ</span><br>
+        โปรดระบุในช่องหมายเหตุที่ขั้นตอนนี้ เช่น นักเรียนมีเอกสารพิเศษ, ข้อมูลไม่ตรงกัน, หรือหมายเหตุอื่น ๆ ที่ควรบันทึกไว้
+      </div>
+      <div style="display:flex;gap:.65rem;justify-content:flex-end;">
+        <button onclick="closeStep2InstructionModal(false)" style="padding:.55rem 1.2rem;border-radius:8px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">ย้อนกลับ</button>
+        <button onclick="closeStep2InstructionModal(true)" style="padding:.55rem 1.5rem;border-radius:8px;border:none;background:linear-gradient(135deg,#0f4c81,#1d6fb8);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">เข้าใจแล้ว เริ่มตรวจ →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Paper Color Warning Modal -->
 <div id="paperWarningModal" style="display:none;position:fixed;inset:0;z-index:7000;background:rgba(10,20,40,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:16px;max-width:380px;width:calc(100% - 2rem);box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:fadeInUp .2s ease;">
@@ -1705,6 +1735,31 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       <div style="display:flex;gap:.65rem;justify-content:flex-end;">
         <button onclick="closePaperWarningModal()" style="padding:.55rem 1.2rem;border-radius:8px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">ยกเลิก</button>
         <button id="paperWarningConfirmBtn" style="padding:.55rem 1.5rem;border-radius:8px;border:none;color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">สั่งพิมพ์เลย →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobtua Incomplete Data Warning Modal -->
+<div id="mobtuaIncompleteModal" style="display:none;position:fixed;inset:0;z-index:7050;background:rgba(10,20,40,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;max-width:400px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden;animation:fadeInUp .22s ease;">
+    <div style="padding:1.1rem 1.4rem;background:linear-gradient(135deg,#b91c1c,#dc2626);display:flex;align-items:center;gap:.75rem;">
+      <span style="font-size:1.9rem;">⚠️</span>
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.07em;text-transform:uppercase;">ใบมอบตัว</div>
+        <div style="font-size:1rem;font-weight:800;color:#fff;">ข้อมูลยังไม่ครบถ้วน</div>
+      </div>
+    </div>
+    <div style="padding:1.25rem 1.5rem 1rem;">
+      <p style="font-size:.95rem;color:#1e293b;line-height:1.7;margin:0 0 .6rem;">
+        ผู้ปกครองของนักเรียน <strong id="mobtuaIncompleteStudentName"></strong> ยังไม่ได้กรอกข้อมูลใบมอบตัวให้ครบถ้วน
+      </p>
+      <p style="font-size:.85rem;color:#64748b;line-height:1.6;margin:0 0 1.25rem;">
+        คุณสามารถย้อนกลับและรอผู้ปกครองกรอกข้อมูล หรือเข้าตรวจเอกสารเพื่อบันทึกข้อมูลเพิ่มเติมด้วยตนเอง
+      </p>
+      <div style="display:flex;gap:.65rem;justify-content:flex-end;">
+        <button onclick="closeMobtuaIncompleteModal()" style="padding:.55rem 1.2rem;border-radius:8px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">← ย้อนกลับ</button>
+        <button onclick="closeMobtuaIncompleteModal(true)" style="padding:.55rem 1.4rem;border-radius:8px;border:none;background:linear-gradient(135deg,#b91c1c,#dc2626);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">เข้าตรวจเอกสาร →</button>
       </div>
     </div>
   </div>
@@ -2035,7 +2090,7 @@ function renderMobtua() {
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-verify" onclick="openInspectionStepper('${r.id}','mobtua')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
+          <button class="btn-sm btn-verify" onclick="openMobtuaWithCheck('${r.id}')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
             ตรวจเอกสาร
           </button>
@@ -3267,11 +3322,36 @@ function closeInspectionStepper() {
 }
 window.closeInspectionStepper = closeInspectionStepper;
 
+// ── Step 2 Instruction Modal ────────────────────────────────────
+let _pendingStep2Continue = false;
+function showStep2InstructionModal() {
+    const modal = document.getElementById('step2InstructionModal');
+    if (modal) modal.style.display = 'flex';
+}
+function closeStep2InstructionModal(proceed) {
+    const modal = document.getElementById('step2InstructionModal');
+    if (modal) modal.style.display = 'none';
+    if (proceed) {
+        // actually navigate to step 2
+        goToStep(2);
+    }
+    // else do nothing (stay on step 1)
+}
+window.closeStep2InstructionModal = closeStep2InstructionModal;
+
 // ── Step navigation ────────────────────────────────────────────
 async function stepperNav(dir) {
     const nextStep = _stepperCurrentStep + dir;
-    // Going forward from step 2 → save verify
+
+    // Going forward from step 1 → show instruction modal instead of jumping directly
+    if (dir > 0 && _stepperCurrentStep === 1) {
+        showStep2InstructionModal();
+        return;
+    }
+
+    // Going forward from step 2 → auto-fill missing docs note, then save
     if (dir > 0 && _stepperCurrentStep === 2) {
+        autoAppendMissingDocsNote();
         await saveStepperVerify();
     }
     if (nextStep < 1 || nextStep > 3) return;
@@ -3536,24 +3616,36 @@ function stepperToggleVerify(itemKey, idx) {
 }
 window.stepperToggleVerify = stepperToggleVerify;
 
-function fillMissingDocsNote() {
+function autoAppendMissingDocsNote() {
     const col = _stepperCol;
     const arr = col === 'admissions' ? allAdmissions : allMobtua;
     const rec = arr.find(r => r.id === _stepperRecId);
     if (!rec) return;
     const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
-    // Use current draft (not yet saved) to find unticked items
     const missing = items.filter(k => !_verifyDraft[k]);
     const noteEl = document.getElementById('stepperVerifyNote');
     if (!noteEl) return;
+
+    let appendText = '';
     if (missing.length === 0) {
-        noteEl.value = 'เอกสารครบถ้วนทุกรายการ ✅';
+        appendText = 'เอกสารครบถ้วนทุกรายการ ✅';
     } else {
         const lines = missing.map((doc, i) => `${i + 1}. ${doc}`).join('\n');
-        noteEl.value = `เอกสารที่ยังขาด ${missing.length} รายการ:\n${lines}`;
+        appendText = `เอกสารที่ยังขาด ${missing.length} รายการ:\n${lines}`;
     }
-    noteEl.focus();
+
+    const existing = noteEl.value.trim();
+    if (existing) {
+        // append after existing note, separated by newline
+        noteEl.value = existing + '\n' + appendText;
+    } else {
+        noteEl.value = appendText;
+    }
 }
+window.autoAppendMissingDocsNote = autoAppendMissingDocsNote;
+
+// keep old name as alias for backward compat
+function fillMissingDocsNote() { autoAppendMissingDocsNote(); }
 window.fillMissingDocsNote = fillMissingDocsNote;
 
 async function saveStepperVerify() {
@@ -3766,9 +3858,12 @@ function openAdmissionCardWithWarning(type, id, col) {
         : 'linear-gradient(135deg,#a16207,#ca8a04)';  // เหลือง ม.1
     emoji.textContent = isM4 ? '🩷' : '💛';
     gradeEl.textContent = isM4 ? 'ใบสมัคร ม.4' : 'ใบสมัคร ม.1';
-    msgEl.textContent = isM4
-        ? 'โปรดใส่กระดาษสีชมพูในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ม.4'
-        : 'โปรดใส่กระดาษสีเหลืองในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ม.1';
+
+    // Read paper color from settings (set in index.html admin settings)
+    const colorM1 = localStorage.getItem('paperColorM1') || 'สีเหลือง';
+    const colorM4 = localStorage.getItem('paperColorM4') || 'สีชมพู';
+    const paperColor = isM4 ? colorM4 : colorM1;
+    msgEl.textContent = `โปรดใส่กระดาษ${paperColor}ในเครื่องพิมพ์เพื่อพิมพ์ใบสมัคร ${isM4 ? 'ม.4' : 'ม.1'}`;
     confirmBtn.style.background = isM4 ? '#be185d' : '#a16207';
     confirmBtn.onclick = () => { closePaperWarningModal(); openCardPreview(type, id, col); };
 
@@ -3780,6 +3875,34 @@ function closePaperWarningModal() {
 }
 window.openAdmissionCardWithWarning = openAdmissionCardWithWarning;
 window.closePaperWarningModal = closePaperWarningModal;
+
+// ── Mobtua incomplete data warning ─────────────────────────────
+let _pendingMobtuaInspectId = null;
+function openMobtuaWithCheck(id) {
+    const rec = allMobtua.find(r => r.id === id);
+    if (!rec) { openInspectionStepper(id, 'mobtua'); return; }
+    // Check if parent has filled data: status === 'done' means they submitted
+    const isDone = rec.status === 'done';
+    if (!isDone) {
+        _pendingMobtuaInspectId = id;
+        const nameEl = document.getElementById('mobtuaIncompleteStudentName');
+        if (nameEl) nameEl.textContent = rec.studentName || 'ไม่ระบุ';
+        const modal = document.getElementById('mobtuaIncompleteModal');
+        if (modal) modal.style.display = 'flex';
+    } else {
+        openInspectionStepper(id, 'mobtua');
+    }
+}
+function closeMobtuaIncompleteModal(proceed) {
+    const modal = document.getElementById('mobtuaIncompleteModal');
+    if (modal) modal.style.display = 'none';
+    if (proceed && _pendingMobtuaInspectId) {
+        openInspectionStepper(_pendingMobtuaInspectId, 'mobtua');
+    }
+    _pendingMobtuaInspectId = null;
+}
+window.openMobtuaWithCheck = openMobtuaWithCheck;
+window.closeMobtuaIncompleteModal = closeMobtuaIncompleteModal;
 
 function closeCardPreviewModal() {
     const modal = document.getElementById('cardPreviewModal');

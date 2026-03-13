@@ -2479,7 +2479,12 @@
         <div class="grade-step" id="landingStep3Mobtua">
             <button class="step-back-btn" onclick="backToStep2Mobtua()">← กลับ</button>
             <p class="grade-step-title" id="pendingListTitle">📋 รายการรอมอบตัว ม.1</p>
-            <div id="pendingMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:1rem;max-height:55vh;overflow-y:auto;"></div>
+            <div style="position:relative;margin-top:.75rem;">
+                <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none;">🔍</span>
+                <input type="text" id="pendingSearchInput" placeholder="ค้นหาชื่อนักเรียน..." oninput="filterPendingList()"
+                    style="width:100%;box-sizing:border-box;padding:.55rem .75rem .55rem 2.2rem;border:1.5px solid var(--border,#e2e8f0);border-radius:10px;font-size:.9rem;font-family:inherit;outline:none;background:var(--bg-card,#fff);color:var(--text-primary,#1e293b);">
+            </div>
+            <div id="pendingMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:.75rem;max-height:52vh;overflow-y:auto;"></div>
             <button class="btn btn-outline" style="margin-top:1rem;width:100%;" onclick="openBlankMobtuaForm()">
                 ➕ กรอกใบมอบตัวใหม่ (ไม่ได้สมัครออนไลน์)
             </button>
@@ -4813,14 +4818,62 @@
         }
 
         /* ── แสดง Step 3: รายการรอมอบตัวตาม grade ── */
+        let _pendingRecordsAll = [];
+
+        function renderPendingCards(records) {
+            const listEl = document.getElementById('pendingMobtuaList');
+            if (records.length === 0) {
+                listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
+                    <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
+                    <p style="font-weight:600;margin-bottom:.5rem;">ไม่พบรายการที่ตรงกัน</p>
+                    <p style="font-size:.82rem;">ลองค้นหาด้วยคำอื่น</p>
+                </div>`;
+                return;
+            }
+            listEl.innerHTML = records.map(rec => {
+                const isDone   = rec.status === 'done';
+                const icon     = isDone ? '✅' : '📋';
+                const statusLabel = isDone ? 'กรอกแล้ว' : 'รอกรอกข้อมูล';
+                const statusCls   = isDone ? 'status-done' : 'status-pending';
+                const cardCls     = isDone ? 'done-card' : '';
+                let dateStr = '';
+                if (rec.createdAt?.toDate) {
+                    dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'});
+                }
+                const schStr   = rec.data?.previousSchool ? `<span style="font-size:.73rem;color:#9333ea;background:#f3e8ff;padding:1px 7px;border-radius:99px;margin-left:4px;">${rec.data.previousSchool}</span>` : '';
+                const guardianInfo = rec.guardianName ? ` · ผปค: ${rec.guardianName}` : '';
+                return `<button class="pending-mobtua-card ${cardCls}" onclick="openPendingMobtua('${rec.id}')">
+                    <div class="pending-mobtua-card-icon">${icon}</div>
+                    <div class="pending-mobtua-card-body">
+                        <div class="pending-mobtua-card-name">${rec.studentName || '(ไม่ระบุชื่อ)'}${schStr}</div>
+                        <div class="pending-mobtua-card-detail">${rec.academicYear || ''}${rec.classRoom ? ' · ' + rec.classRoom : ''}${guardianInfo}</div>
+                        ${dateStr ? `<div class="pending-mobtua-card-detail" style="color:#94a3b8;">สมัคร ${dateStr}</div>` : ''}
+                    </div>
+                    <span class="pending-mobtua-status ${statusCls}">${statusLabel}</span>
+                </button>`;
+            }).join('');
+        }
+
+        function filterPendingList() {
+            const q = (document.getElementById('pendingSearchInput')?.value || '').trim().toLowerCase();
+            if (!q) { renderPendingCards(_pendingRecordsAll); return; }
+            const filtered = _pendingRecordsAll.filter(r =>
+                (r.studentName || '').toLowerCase().includes(q) ||
+                (r.guardianName || '').toLowerCase().includes(q)
+            );
+            renderPendingCards(filtered);
+        }
+
         async function showPendingMobtuaList(grade) {
             _pendingMobtuaGrade = grade;
-            // ซ่อน step2 เปิด step3 — ใช้ active class เหมือนกัน
             document.getElementById('landingStep2Mobtua').classList.remove('active');
             const s3 = document.getElementById('landingStep3Mobtua');
             s3.classList.add('active');
             document.getElementById('pendingListTitle').textContent =
                 `📋 รายการรอมอบตัว ${grade === 'm4' ? 'ม.4' : 'ม.1'} — เลือกชื่อนักเรียน`;
+            // reset search
+            const searchEl = document.getElementById('pendingSearchInput');
+            if (searchEl) searchEl.value = '';
 
             const listEl = document.getElementById('pendingMobtuaList');
             listEl.innerHTML = '<p style="text-align:center;color:#64748b;font-size:.85rem;padding:1.5rem 0;">⏳ กำลังโหลดรายการ...</p>';
@@ -4834,12 +4887,12 @@
                 const records = [];
                 snap.forEach(d => {
                     const rec = { id: d.id, ...d.data() };
-                    // กรองตาม gradeLevel ที่บันทึกไว้ หรือ classRoom prefix
                     const recGrade = rec.gradeLevel || (rec.classRoom?.startsWith('ม.4') ? 'm4' : 'm1');
                     if (recGrade === grade) records.push(rec);
                 });
 
                 if (records.length === 0) {
+                    _pendingRecordsAll = [];
                     listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
                         <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
                         <p style="font-weight:600;margin-bottom:.5rem;">ยังไม่มีรายการรอมอบตัว</p>
@@ -4847,29 +4900,8 @@
                     </div>`;
                     return;
                 }
-
-                listEl.innerHTML = records.map(rec => {
-                    const isDone   = rec.status === 'done';
-                    const icon     = isDone ? '✅' : '📋';
-                    const statusLabel = isDone ? 'กรอกแล้ว' : 'รอกรอกข้อมูล';
-                    const statusCls   = isDone ? 'status-done' : 'status-pending';
-                    const cardCls     = isDone ? 'done-card' : '';
-                    let dateStr = '';
-                    if (rec.createdAt?.toDate) {
-                        dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'});
-                    }
-                    const schStr   = rec.data?.previousSchool ? `<span style="font-size:.73rem;color:#9333ea;background:#f3e8ff;padding:1px 7px;border-radius:99px;margin-left:4px;">${rec.data.previousSchool}</span>` : '';
-                    const guardianInfo = rec.guardianName ? ` · ผปค: ${rec.guardianName}` : '';
-                    return `<button class="pending-mobtua-card ${cardCls}" onclick="openPendingMobtua('${rec.id}')">
-                        <div class="pending-mobtua-card-icon">${icon}</div>
-                        <div class="pending-mobtua-card-body">
-                            <div class="pending-mobtua-card-name">${rec.studentName || '(ไม่ระบุชื่อ)'}${schStr}</div>
-                            <div class="pending-mobtua-card-detail">${rec.academicYear || ''}${rec.classRoom ? ' · ' + rec.classRoom : ''}${guardianInfo}</div>
-                            ${dateStr ? `<div class="pending-mobtua-card-detail" style="color:#94a3b8;">สมัคร ${dateStr}</div>` : ''}
-                        </div>
-                        <span class="pending-mobtua-status ${statusCls}">${statusLabel}</span>
-                    </button>`;
-                }).join('');
+                _pendingRecordsAll = records;
+                renderPendingCards(records);
             } catch(e) {
                 listEl.innerHTML = `<p style="color:#dc2626;text-align:center;padding:1rem;">⚠️ เกิดข้อผิดพลาด: ${e.message}</p>`;
             }
@@ -7409,7 +7441,7 @@ ${lines}
             if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
 
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwuh2m3U1eDqFXE917ToyqVfmr_HTLSB4XI5nbhvYE1huojp3jZm_GOmmds78yFC59i/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
 
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';

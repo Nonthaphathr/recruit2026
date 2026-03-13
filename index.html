@@ -4080,6 +4080,24 @@
         </div>
     </div>
 
+    <!-- Modal เตือนข้อมูลไม่ครบ -->
+    <div class="modal-overlay" id="incompleteModal" style="z-index:1700;">
+        <div class="modal-content" style="max-width:460px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#b45309,#d97706);color:#fff;">
+                <h3>⚠️ ข้อมูลยังไม่ครบถ้วน</h3>
+            </div>
+            <div class="modal-body" style="background:#fff;padding:1.5rem 1.75rem;">
+                <p style="font-size:.95rem;font-weight:700;color:#92400e;margin-bottom:.75rem;">ช่องที่มีเครื่องหมาย <span style="color:#dc2626;">*</span> ยังกรอกไม่ครบ:</p>
+                <ul id="incompleteMsgList" style="margin:0 0 1rem 0;padding-left:1.4rem;font-size:.88rem;color:#374151;line-height:2;"></ul>
+                <p style="font-size:.85rem;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:.75rem;margin:0;">คุณยังสามารถ <strong>บันทึกก่อนได้</strong> และกลับมากรอกข้อมูลที่ขาดในภายหลัง</p>
+            </div>
+            <div class="modal-footer" style="gap:.75rem;justify-content:flex-end;">
+                <button class="btn btn-outline" onclick="document.getElementById('incompleteModal').classList.remove('active')" style="font-size:.9rem;">✏️ กรอกต่อให้ครบ</button>
+                <button class="btn btn-primary" id="incompleteConfirmBtn" style="font-size:.9rem;background:linear-gradient(135deg,#b45309,#d97706);border-color:#b45309;">💾 ยืนยันบันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast">
         <span id="toastMessage">บันทึกข้อมูลสำเร็จ</span>
@@ -4088,7 +4106,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -4104,7 +4122,7 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.firestore = { collection, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
+        window.firestore = { collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
 
         console.log('Firebase initialized successfully!');
     </script>
@@ -4308,6 +4326,26 @@
         function validateForm() {
             const form = document.getElementById('admissionForm');
             return form.checkValidity();
+        }
+
+        // คืน array ของ label ที่ยังไม่ได้กรอก (required fields)
+        function getMissingFields() {
+            const form = document.getElementById('admissionForm');
+            const missing = [];
+            form.querySelectorAll('[required]').forEach(el => {
+                if (!el.value || !el.value.trim()) {
+                    // หา label ที่ใกล้ที่สุด
+                    const group = el.closest('.form-group');
+                    let label = '';
+                    if (group) {
+                        const lbl = group.querySelector('label');
+                        if (lbl) label = lbl.textContent.replace(/\*/g, '').trim();
+                    }
+                    if (!label) label = el.placeholder || el.name || 'ไม่ระบุ';
+                    missing.push(label);
+                }
+            });
+            return missing;
         }
 
         function formatThaiDate(dateString) {
@@ -4529,11 +4567,6 @@
 
         function previewDocument() {
             try {
-                if (!validateForm()) {
-                    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
-                    document.getElementById('admissionForm').reportValidity();
-                    return;
-                }
                 const data = getFormData();
                 const html = generateDocumentHTML(data, {}, false);
                 const previewArea = document.getElementById('previewArea');
@@ -4553,21 +4586,27 @@
         }
 
         async function saveDocument() {
+            const missing = getMissingFields();
+            if (missing.length > 0) {
+                // แสดง modal เตือน — ให้เลือกกรอกต่อ หรือยืนยันบันทึก
+                const list = document.getElementById('incompleteMsgList');
+                list.innerHTML = missing.map(m => `<li>${m}</li>`).join('');
+                const modal = document.getElementById('incompleteModal');
+                modal.classList.add('active');
+                // ปุ่มยืนยันบันทึก — ปิด modal แล้วบันทึกเลย
+                document.getElementById('incompleteConfirmBtn').onclick = async () => {
+                    modal.classList.remove('active');
+                    await _doSaveDocument();
+                };
+                return;
+            }
+            await _doSaveDocument();
+        }
+
+        async function _doSaveDocument() {
             try {
-                if (!validateForm()) {
-                    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
-                    document.getElementById('admissionForm').reportValidity();
-                    return;
-                }
                 const data = getFormData();
                 await saveToFirestore(data);
-                const html = generateDocumentHTML(data, {}, false);
-                const previewArea = document.getElementById('previewArea');
-                const printArea   = document.getElementById('printArea');
-                const modal       = document.getElementById('previewModal');
-                if (previewArea) previewArea.innerHTML = html;
-                if (printArea)   printArea.innerHTML   = html;
-                if (modal)       modal.classList.add('active');
             } catch (err) {
                 console.error('saveDocument error:', err);
                 showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -5256,6 +5295,7 @@
             const locked = document.getElementById('historyLockToggle').checked;
             localStorage.setItem('historyLocked', locked);
             applyHistoryLockUI(locked);
+            syncSettingsToFirestore();
         }
 
         function applyHistoryLockUI(locked) {
@@ -5290,20 +5330,46 @@
             const msg1  = document.getElementById('successStepMsg1');
             const msg2  = document.getElementById('successStepMsg2');
             const header = document.getElementById('successStepHeader');
+            const footer = modal?.querySelector('.modal-footer');
             if (!modal) return;
             if (type === 'admission') {
-                title.textContent = '✅ ใบสมัครบันทึกสำเร็จ';
-                header.style.background = 'linear-gradient(135deg,#1e3a5f,#2d5986)';
-                msg1.textContent = 'ใบสมัครถูกส่งเข้าระบบแล้ว ท่านสามารถแก้ไขได้ในแถบประวัติใบสมัคร';
-                msg2.textContent = 'โปรดนำเอกสารหลักฐานประกอบไปตรวจสอบกับครูผู้ตรวจยืนยันเอกสารในวันรับสมัคร';
+                title.textContent = '✅ ส่งใบสมัครสำเร็จ!';
+                header.style.background = 'linear-gradient(135deg,#166534,#15803d)';
+                msg1.textContent = '🎉 ใบสมัครของนักเรียนถูกบันทึกเข้าระบบเรียบร้อยแล้ว';
+                msg2.textContent = 'โปรดนำเอกสารหลักฐานมายื่นกับครูผู้ตรวจในวันรับสมัคร และรอรับใบนัดหมายมอบตัว';
+                if (footer) footer.innerHTML = `
+                    <button class="btn btn-primary" onclick="closeSuccessAndGoHome()"
+                        style="padding:.75rem 2rem;font-size:1rem;background:linear-gradient(135deg,#166534,#15803d);border-color:#166534;width:100%;border-radius:10px;">
+                        🏠 กลับหน้าหลัก
+                    </button>`;
             } else {
                 title.textContent = '✅ ใบมอบตัวบันทึกสำเร็จ';
                 header.style.background = 'linear-gradient(135deg,#14532d,#166534)';
                 msg1.textContent = 'ใบมอบตัวถูกส่งเข้าระบบแล้ว ท่านสามารถแก้ไขได้ในแถบประวัติใบมอบตัว';
                 msg2.textContent = 'โปรดนำเอกสารหลักฐานประกอบไปตรวจสอบกับครูผู้ตรวจยืนยันเอกสารในวันมอบตัว';
+                if (footer) footer.innerHTML = `
+                    <button class="btn btn-primary" onclick="closeSuccessStepModal()"
+                        style="padding:.7rem 2.5rem;font-size:1rem;background:linear-gradient(135deg,#1e3a5f,#2d5986);">
+                        รับทราบ
+                    </button>`;
             }
             modal.classList.add('active');
         }
+
+        function closeSuccessAndGoHome() {
+            closeSuccessStepModal();
+            // กลับหน้า Landing
+            document.getElementById('mainContainer').classList.add('hidden');
+            const landing = document.getElementById('landingPage');
+            if (landing) landing.classList.remove('hidden');
+            // reset step ของ landing
+            document.getElementById('landingStep2Admission')?.classList.remove('active');
+            document.getElementById('landingStep2Mobtua')?.classList.remove('active');
+            document.getElementById('landingStep3Mobtua')?.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.closeSuccessAndGoHome = closeSuccessAndGoHome;
+
         function closeSuccessStepModal() {
             const modal = document.getElementById('successStepModal');
             if (modal) modal.classList.remove('active');
@@ -5461,6 +5527,52 @@
             renderChecklistAdmin();
         }
 
+        // ══════════════════════════════════════════════════
+        //  SETTINGS SYNC — localStorage ↔ Firestore
+        //  ทุก setItem ที่สำคัญจะ sync ไป doc 'settings/global'
+        // ══════════════════════════════════════════════════
+        const SETTINGS_KEYS = [
+            'alertEnabled','alertMessage','defaultAcademicYear',
+            'testModeEnabled','historyLocked','mobtuaLocked',
+            'appointmentDateText','appointmentTimeText','appointmentPlaceText',
+            'checklistItems','lineNotifyEnabled'
+        ];
+
+        async function syncSettingsToFirestore() {
+            try {
+                const fs = window.firestore;
+                const payload = { updatedAt: fs.serverTimestamp() };
+                SETTINGS_KEYS.forEach(k => {
+                    payload[k] = localStorage.getItem(k) ?? '';
+                });
+                await fs.setDoc(fs.doc(window.db, 'settings', 'global'), payload, { merge: true });
+                console.log('[Settings] synced to Firestore');
+            } catch(e) { console.warn('syncSettings error:', e.message); }
+        }
+
+        async function loadSettingsFromFirestore() {
+            try {
+                const fs = window.firestore;
+                const snap = await fs.getDoc(fs.doc(window.db, 'settings', 'global'));
+                if (!snap.exists()) return;
+                const d = snap.data();
+                SETTINGS_KEYS.forEach(k => {
+                    if (d[k] !== undefined && d[k] !== null && d[k] !== '') {
+                        localStorage.setItem(k, d[k]);
+                    }
+                });
+                // apply settings to UI immediately
+                const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
+                toggleTestModeButton(testModeEnabled);
+                const historyLocked = localStorage.getItem('historyLocked') === 'true';
+                applyHistoryLockUI(historyLocked);
+                const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
+                applyMobtuaLock(mobtuaLocked);
+                showAlertIfEnabled();
+                console.log('[Settings] loaded from Firestore');
+            } catch(e) { console.warn('loadSettings error:', e.message); }
+        }
+
         // ===== CHECKLIST MANAGEMENT =====
         const DEFAULT_CHECKLIST = [
             'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
@@ -5528,6 +5640,7 @@
             input.value = '';
             renderChecklistAdmin();
             showToast('เพิ่มรายการแล้ว');
+            syncSettingsToFirestore();
         }
 
         function removeChecklistItem(index) {
@@ -5536,6 +5649,7 @@
             localStorage.setItem('checklistItems', JSON.stringify(items));
             renderChecklistAdmin();
             showToast('ลบรายการแล้ว');
+            syncSettingsToFirestore();
         }
 
         function saveChecklistItems() {
@@ -5669,6 +5783,7 @@
             localStorage.setItem('mobtuaLocked', locked);
             applyMobtuaLock(locked);
             showToast(locked ? '🔒 ล็อกเมนูใบมอบตัวแล้ว' : '🔓 ปลดล็อกเมนูใบมอบตัวแล้ว');
+            syncSettingsToFirestore();
         }
 
         function applyMobtuaLock(locked) {
@@ -5706,6 +5821,7 @@
             localStorage.setItem('appointmentTimeText',  timeText);
             localStorage.setItem('appointmentPlaceText', placeText);
             showToast('บันทึกวันนัดหมายสำเร็จ ✅');
+            syncSettingsToFirestore();
         }
 
         function loadAppointmentSettings() {
@@ -5722,12 +5838,14 @@
             localStorage.setItem('defaultAcademicYear', year);
             document.getElementById('academicYear').value = year;
             showToast('บันทึกปีการศึกษาสำเร็จ');
+            syncSettingsToFirestore();
         }
 
         function toggleTestMode() {
             const enabled = document.getElementById('testModeToggle').checked;
             localStorage.setItem('testModeEnabled', enabled);
             toggleTestModeButton(enabled);
+            syncSettingsToFirestore();
         }
 
         function toggleTestModeButton(show) {
@@ -5938,16 +6056,16 @@
         function toggleAlert() {
             const enabled = document.getElementById('alertToggle').checked;
             localStorage.setItem('alertEnabled', enabled);
+            syncSettingsToFirestore();
         }
 
         function saveAlertSettings() {
             const enabled = document.getElementById('alertToggle').checked;
             const message = document.getElementById('alertMessage').value;
-            
             localStorage.setItem('alertEnabled', enabled);
             localStorage.setItem('alertMessage', message);
-            
             showToast('บันทึกการตั้งค่าสำเร็จ');
+            syncSettingsToFirestore();
         }
 
         async function exportToExcel() {
@@ -6902,6 +7020,10 @@
         // เรียกใช้เมื่อโหลดหน้า
         window.addEventListener('DOMContentLoaded', () => {
             loadHistory();
+            // โหลด Settings จาก Firestore ก่อน (ข้ามเครื่อง)
+            loadSettingsFromFirestore().then(() => {
+                setTimeout(showAlertIfEnabled, 300);
+            });
             setTimeout(showAlertIfEnabled, 500);
             setupMobtuaEvents();
 
@@ -7432,6 +7554,7 @@ ${lines}
             const status = document.getElementById('lineSettingStatus');
             if (status) status.textContent = enabled ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
             showToast('บันทึกการตั้งค่า LINE สำเร็จ');
+            syncSettingsToFirestore();
         }
 
         function loadLineSettings() {

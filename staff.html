@@ -927,7 +927,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .print-document .doc-content p{margin-bottom:4px;}
 .print-document .field-line{display:flex;align-items:baseline;gap:4px;margin:3px 0;line-height:1.6;flex-wrap:wrap;}
 .print-document .field-label{font-size:14px;white-space:nowrap;}
-.print-document .field-value{font-weight:600;border-bottom:1px dotted #333;min-width:80px;display:inline-block;}
+.print-document .field-value{font-weight:600;border-bottom:1px dotted #333;min-width:80px;display:inline-block;text-align:center;}
 .print-document .checkbox-line{display:flex;align-items:flex-start;gap:6px;margin:2px 0 2px 25px;line-height:1.4;}
 .print-document .doc-checkbox{display:inline-block;width:13px;height:13px;min-width:13px;min-height:13px;border:1.5px solid #333;background:white;position:relative;flex-shrink:0;margin-top:3px;}
 .print-document .doc-checkbox.checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:bold;color:#333;line-height:1;}
@@ -2801,67 +2801,67 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
     <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}</div>
   </div>
   <div class="doc-title-section">
-    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา ${data.academicYear||'.........................'}</div>
+    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา <span class="field-value" style="min-width:80px;">${data.academicYear||''}</span></div>
     <div style="text-align:center;font-size:14px;margin:4px 0;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
   </div>
   <div class="doc-content">
     <div class="field-line" style="margin-top:8px;">
-      <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span><span class="field-value">${data.prefix||''}${data.fullName||'..........................................'}</span>
-      <span class="field-label">ชื่อเล่น</span><span class="field-value">${data.nickname||'..............'}</span>
-      <span class="field-label">เกิดวันที่</span><span class="field-value">${formatThaiDate(data.birthDate)}</span>
+      <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span><span class="field-value" style="min-width:180px;">${data.prefix||''}${data.fullName||''}</span>
+      <span class="field-label">ชื่อเล่น</span><span class="field-value" style="min-width:70px;">${data.nickname||''}</span>
+      <span class="field-label">เกิดวันที่</span><span class="field-value" style="min-width:120px;">${(data.birthDay&&data.birthMonth) ? `${data.birthDay} ${data.birthMonth} ${data.birthYear||''}` : (data.birthDate ? formatThaiDate(data.birthDate) : '')}</span>
     </div>
     <div class="field-line">
-      <span class="field-label">อายุ</span><span class="field-value">${data.age||'............'}</span><span class="field-label">ปี</span>
+      <span class="field-label">อายุ</span><span class="field-value" style="min-width:50px;">${data.age||''}</span><span class="field-label">ปี</span>
     </div>
     <div class="field-line">
-      <span class="field-label">ส่วนสูง</span><span class="field-value">${data.height||'..................'}</span><span class="field-label">เซนติเมตร</span>
-      <span class="field-label">น้ำหนัก</span><span class="field-value">${data.weight||'....................'}</span><span class="field-label">กิโลกรัม</span>
-      <span class="field-label">หมู่เลือด</span><span class="field-value">${data.bloodType||'.................................'}</span>
+      <span class="field-label">ส่วนสูง</span><span class="field-value" style="min-width:60px;">${data.height||''}</span><span class="field-label">เซนติเมตร</span>
+      <span class="field-label">น้ำหนัก</span><span class="field-value" style="min-width:60px;">${data.weight||''}</span><span class="field-label">กิโลกรัม</span>
+      <span class="field-label">หมู่เลือด</span><span class="field-value" style="min-width:50px;">${data.bloodType||''}</span>
     </div>
     <div class="field-line">
       <span class="field-label">เลขประจำตัวประชาชน</span>
       <div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">${formatIdBoxes(data.nationalIdClean||data.nationalId)}</div>
     </div>
     <div class="field-line">
-      <span class="field-label">ชื่อ-สกุลบิดา</span><span class="field-value">${data.fatherName||'.....................................................................'}</span>
-      <span class="field-label">อายุ</span><span class="field-value">${data.fatherAge||'........................'}</span>
-      <span class="field-label">อาชีพ</span><span class="field-value">${data.fatherOccupation||'.....................................'}</span>
+      <span class="field-label">ชื่อ-สกุลบิดา</span><span class="field-value" style="min-width:160px;">${data.fatherName||''}</span>
+      <span class="field-label">อายุ</span><span class="field-value" style="min-width:50px;">${data.fatherAge||''}</span>
+      <span class="field-label">อาชีพ</span><span class="field-value" style="min-width:100px;">${data.fatherOccupation||''}</span>
     </div>
     <div class="field-line">
-      <span class="field-label">ชื่อ-สกุลมารดา</span><span class="field-value">${data.motherName||'.....................................................................'}</span>
-      <span class="field-label">อายุ</span><span class="field-value">${data.motherAge||'........................'}</span>
-      <span class="field-label">อาชีพ</span><span class="field-value">${data.motherOccupation||'.....................................'}</span>
+      <span class="field-label">ชื่อ-สกุลมารดา</span><span class="field-value" style="min-width:160px;">${data.motherName||''}</span>
+      <span class="field-label">อายุ</span><span class="field-value" style="min-width:50px;">${data.motherAge||''}</span>
+      <span class="field-label">อาชีพ</span><span class="field-value" style="min-width:100px;">${data.motherOccupation||''}</span>
     </div>
     <div class="field-line" style="margin-top:6px;">
-      <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span><span class="field-value">${data.houseNumber||'……………'}</span>
-      <span class="field-label">หมู่ที่</span><span class="field-value">${data.moo||'………'}</span>
-      <span class="field-label">ถนน</span><span class="field-value">${data.road||'…........……………………'}</span>
-      <span class="field-label">ซอย</span><span class="field-value">${data.soi||'....................'}</span>
+      <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span><span class="field-value" style="min-width:55px;">${data.houseNumber||''}</span>
+      <span class="field-label">หมู่ที่</span><span class="field-value" style="min-width:40px;">${data.moo||''}</span>
+      <span class="field-label">บ้าน</span><span class="field-value" style="min-width:90px;">${data.village||''}</span>
+      <span class="field-label">ถนน</span><span class="field-value" style="min-width:80px;">${data.road||''}</span>
+      <span class="field-label">ซอย</span><span class="field-value" style="min-width:60px;">${data.soi||''}</span>
     </div>
     <div class="field-line">
-      <span class="field-label">บ้าน</span><span class="field-value">${data.village||'..................................'}</span>
-      <span class="field-label">ตำบล</span><span class="field-value">${data.subdistrict||'…………………'}</span>
-      <span class="field-label">อำเภอ</span><span class="field-value">${data.district||'……………………..'}</span>
-      <span class="field-label">จังหวัด</span><span class="field-value">${data.province||'…………….....………….'}</span>
+      <span class="field-label">ตำบล</span><span class="field-value" style="min-width:90px;">${data.subdistrict||''}</span>
+      <span class="field-label">อำเภอ</span><span class="field-value" style="min-width:90px;">${data.district||''}</span>
+      <span class="field-label">จังหวัด</span><span class="field-value" style="min-width:90px;">${data.province||''}</span>
+      <span class="field-label">รหัสไปรษณีย์</span><span class="field-value" style="min-width:55px;">${data.postalCode||''}</span>
     </div>
     <div class="field-line">
-      <span class="field-label">รหัสไปรษณีย์</span><span class="field-value">${data.postalCode||'……............……………'}</span>
-      <span class="field-label">โทรศัพท์</span><span class="field-value">${data.phone||'.…..………...........................................…....'}</span>
-      <span class="field-label">E-mail</span><span class="field-value">${data.email||'………………….………………………………………'}</span>
+      <span class="field-label">โทรศัพท์</span><span class="field-value" style="min-width:110px;">${data.phone||''}</span>
+      <span class="field-label">E-mail</span><span class="field-value" style="min-width:160px;">${data.email||''}</span>
     </div>
     <div class="field-line" style="margin-top:6px;">
       <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
-      <span class="field-value">${data.previousSchool||'……………………………………………………………………………..………..'}</span>
+      <span class="field-value" style="min-width:180px;">${data.previousSchool||''}</span>
     </div>
     <div class="field-line">
-      <span class="field-label">ตำบล</span><span class="field-value">${data.schoolSubdistrict||'……………………….'}</span>
-      <span class="field-label">อำเภอ</span><span class="field-value">${data.schoolDistrict||'…...…………………………..'}</span>
-      <span class="field-label">จังหวัด</span><span class="field-value">${data.schoolProvince||'…………………………………….'}</span>
+      <span class="field-label">ตำบล</span><span class="field-value" style="min-width:90px;">${data.schoolSubdistrict||''}</span>
+      <span class="field-label">อำเภอ</span><span class="field-value" style="min-width:90px;">${data.schoolDistrict||''}</span>
+      <span class="field-label">จังหวัด</span><span class="field-value" style="min-width:90px;">${data.schoolProvince||''}</span>
     </div>
     <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
-    <div class="checkbox-line">${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <strong>${talents.includes('sports')?(data.sportsType||''):'................................................................................'}</strong></div>
-    <div class="checkbox-line">${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${talents.includes('music')?(data.musicType||''):'.............................................................'}</strong></div>
-    <div class="checkbox-line">${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <strong>${talents.includes('other')?(data.otherTalent||''):'........................................................................................................'}</strong></div>
+    <div class="checkbox-line">${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <span class="field-value" style="min-width:200px;">${talents.includes('sports')?(data.sportsType||''):''}</span></div>
+    <div class="checkbox-line">${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <span class="field-value" style="min-width:200px;">${talents.includes('music')?(data.musicType||''):''}</span></div>
+    <div class="checkbox-line">${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <span class="field-value" style="min-width:200px;">${talents.includes('other')?(data.otherTalent||''):''}</span></div>
   </div>
   <div class="signature-section" style="text-align:right;margin-top:12px;">
     <p>ลงชื่อ..........................................................................ผู้สมัคร</p>

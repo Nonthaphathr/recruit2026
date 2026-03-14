@@ -1299,6 +1299,11 @@
             display: none;
         }
 
+        /* Blank print area — hidden on screen */
+        #blankPrintArea {
+            display: none;
+        }
+
         @media print {
             *, *::before, *::after {
                 background: transparent !important;
@@ -1353,6 +1358,33 @@
 
             body[data-print="mobtua"] #mobtuaPrintArea * {
                 visibility: visible !important;
+            }
+
+            /* ใบสมัคร/ใบมอบตัว เปล่า */
+            body[data-print="blank"] #blankPrintArea {
+                display: block !important;
+                visibility: visible !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+            body[data-print="blank"] #blankPrintArea * {
+                visibility: visible !important;
+            }
+            body[data-print="blank"] .blank-doc-page {
+                width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 8mm 10mm !important;
+                page-break-after: always;
+            }
+            body[data-print="blank"] .blank-doc-page:last-child {
+                page-break-after: avoid;
             }
 
             /* ===== บันทึกข้อความรายงานประจำวัน ===== */
@@ -2148,6 +2180,9 @@
                 <a href="staff.html" target="_blank" class="report-btn" style="text-decoration:none; color:white;">
                     🖥️ ระบบครู
                 </a>
+                <button class="report-btn" onclick="openBlankPrintModal()" title="พิมพ์เอกสารกระดาษ (ไม่มีข้อมูล)">
+                    🖨️ พิมพ์เอกสารกระดาษ
+                </button>
                 <button class="report-btn" onclick="openReportPage()" title="รายงานประจำวัน">
                     📊 รายงาน
                 </button>
@@ -2486,7 +2521,7 @@
                     style="width:100%;box-sizing:border-box;padding:.55rem .75rem .55rem 2.2rem;border:1.5px solid var(--border,#e2e8f0);border-radius:10px;font-size:.9rem;font-family:inherit;outline:none;background:var(--bg-card,#fff);color:var(--text-primary,#1e293b);">
             </div>
             <div id="pendingMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:.75rem;max-height:52vh;overflow-y:auto;"></div>
-            <button id="blankMobtuaBtn" class="btn btn-outline" style="margin-top:1rem;width:100%;display:none;" onclick="openBlankMobtuaForm()">
+            <button id="blankMobtuaBtn" class="btn btn-outline" style="margin-top:1rem;width:100%;" onclick="openBlankMobtuaForm()">
                 ➕ กรอกใบมอบตัวใหม่ (ไม่ได้สมัครออนไลน์)
             </button>
         </div>
@@ -3761,6 +3796,52 @@
         </div>
     </div>
 
+    <!-- Blank Print Modal -->
+    <div class="modal-overlay" id="blankPrintModal">
+        <div class="modal-content" style="max-width:460px;">
+            <div class="modal-header">
+                <h3>🖨️ พิมพ์เอกสารกระดาษ (กรณีฉุกเฉิน)</h3>
+                <button class="modal-close" onclick="closeBlankPrintModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="background:white;padding:1.5rem;">
+                <p style="font-size:.9rem;color:#64748b;margin-bottom:1.25rem;line-height:1.7;">
+                    พิมพ์แบบฟอร์มเปล่าสำหรับให้นักเรียน/ผู้ปกครองกรอกด้วยลายมือ ใช้ในกรณีที่ไม่มีอินเทอร์เน็ต หรือเกิดเหตุฉุกเฉิน
+                </p>
+
+                <!-- ใบสมัคร -->
+                <div style="border:1.5px solid #e2e8f0;border-radius:12px;padding:1rem;margin-bottom:.85rem;">
+                    <div style="font-weight:700;font-size:.95rem;color:#1e293b;margin-bottom:.65rem;">📋 ใบสมัครเข้าเรียน</div>
+                    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+                        <button onclick="printBlankAdmission('m1')"
+                            style="flex:1;min-width:120px;padding:.6rem .9rem;border-radius:9px;border:none;background:linear-gradient(135deg,#a16207,#ca8a04);color:#fff;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">
+                            🟡 ม.1 (วก.กทว.202)
+                        </button>
+                        <button onclick="printBlankAdmission('m4')"
+                            style="flex:1;min-width:120px;padding:.6rem .9rem;border-radius:9px;border:none;background:linear-gradient(135deg,#be185d,#ec4899);color:#fff;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">
+                            🌸 ม.4 (วก.กทว.203)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ใบมอบตัว -->
+                <div style="border:1.5px solid #e2e8f0;border-radius:12px;padding:1rem;">
+                    <div style="font-weight:700;font-size:.95rem;color:#1e293b;margin-bottom:.65rem;">📄 ใบมอบตัวนักเรียน</div>
+                    <button onclick="printBlankMobtua()"
+                        style="width:100%;padding:.6rem .9rem;border-radius:9px;border:none;background:linear-gradient(135deg,#0f4c81,#1d6fb8);color:#fff;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;">
+                        📋 ใบมอบตัว (วก.กทว.205) — 2 หน้า
+                    </button>
+                </div>
+
+                <p style="font-size:.75rem;color:#94a3b8;margin-top:1rem;text-align:center;">
+                    หลังพิมพ์เสร็จ ให้นำข้อมูลมากรอกในระบบออนไลน์ภายหลัง
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden blank print area -->
+    <div id="blankPrintArea"></div>
+
     <!-- Admin Settings Modal -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
@@ -3817,59 +3898,6 @@
                             เมื่อล็อค ปุ่มแก้ไขและลบจะถูกซ่อน ต้องปลดล็อคด้วยรหัสแอดมิน
                         </p>
                     </div>
-                </div>
-
-                <!-- ════ PAPER COLOR SETTINGS ════ -->
-                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
-                    <h4 style="margin-bottom: 0.5rem; color: #0369a1;">🎨 ตั้งค่าสีกระดาษพิมพ์ใบสมัคร</h4>
-                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
-                        ระบบจะแสดง modal แจ้งเตือนก่อนพิมพ์ใบสมัครผ่านระบบครู (staff.html) — กำหนดสีกระดาษและสี header ของ modal
-                    </p>
-                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#ca8a04;">🟡 ชื่อสีกระดาษ ม.1</label>
-                            <input type="text" class="form-control" id="paperColorM1"
-                                placeholder="เช่น สีเหลือง" style="margin-top:.4rem;">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#be185d;">🌸 ชื่อสีกระดาษ ม.4</label>
-                            <input type="text" class="form-control" id="paperColorM4"
-                                placeholder="เช่น สีชมพู" style="margin-top:.4rem;">
-                        </div>
-                    </div>
-                    <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:.6rem;">สี Header ของ modal เตือนสีกระดาษ (ค่าเป็น CSS color เช่น #ca8a04 หรือ gold)</p>
-                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#ca8a04;">🎨 สี Header modal ม.1</label>
-                            <div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem;">
-                                <input type="color" id="paperModalColorM1" value="#a16207"
-                                    style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;">
-                                <input type="text" class="form-control" id="paperModalColorM1Text"
-                                    placeholder="#a16207" style="flex:1;">
-                            </div>
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="font-weight:600;color:#be185d;">🎨 สี Header modal ม.4</label>
-                            <div style="display:flex;gap:.5rem;align-items:center;margin-top:.4rem;">
-                                <input type="color" id="paperModalColorM4" value="#be185d"
-                                    style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;">
-                                <input type="text" class="form-control" id="paperModalColorM4Text"
-                                    placeholder="#be185d" style="flex:1;">
-                            </div>
-                        </div>
-                    </div>
-                    <!-- preview -->
-                    <div style="display:flex;gap:.6rem;margin-bottom:.85rem;">
-                        <div id="paperColorPreviewM1" style="flex:1;border-radius:10px;padding:.6rem .85rem;font-size:.85rem;font-weight:700;color:#fff;text-align:center;background:linear-gradient(135deg,#a16207,#ca8a04);">
-                            ตัวอย่าง ม.1
-                        </div>
-                        <div id="paperColorPreviewM4" style="flex:1;border-radius:10px;padding:.6rem .85rem;font-size:.85rem;font-weight:700;color:#fff;text-align:center;background:linear-gradient(135deg,#be185d,#ec4899);">
-                            ตัวอย่าง ม.4
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="savePaperColorSettings()" style="width:100%;background:linear-gradient(135deg,#0369a1,#0284c7);">
-                        💾 บันทึกการตั้งค่าสีกระดาษ
-                    </button>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
@@ -5581,26 +5609,6 @@
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             document.getElementById('mobtuaLockToggle').checked = mobtuaLocked;
 
-            const paperColorM1 = localStorage.getItem('paperColorM1') || '';
-            const paperColorM4 = localStorage.getItem('paperColorM4') || '';
-            const elM1 = document.getElementById('paperColorM1');
-            const elM4 = document.getElementById('paperColorM4');
-            if (elM1) elM1.value = paperColorM1;
-            if (elM4) elM4.value = paperColorM4;
-
-            const cm1 = localStorage.getItem('paperModalColorM1') || '#a16207';
-            const cm4 = localStorage.getItem('paperModalColorM4') || '#be185d';
-            const pickerM1 = document.getElementById('paperModalColorM1');
-            const textM1   = document.getElementById('paperModalColorM1Text');
-            const pickerM4 = document.getElementById('paperModalColorM4');
-            const textM4   = document.getElementById('paperModalColorM4Text');
-            if (pickerM1) pickerM1.value = /^#[0-9a-fA-F]{6}$/.test(cm1) ? cm1 : '#a16207';
-            if (textM1)   textM1.value   = cm1;
-            if (pickerM4) pickerM4.value = /^#[0-9a-fA-F]{6}$/.test(cm4) ? cm4 : '#be185d';
-            if (textM4)   textM4.value   = cm4;
-            _updatePaperColorPreviews();
-            _wirePaperColorPickers();
-
             renderChecklistAdmin();
         }
 
@@ -5612,9 +5620,7 @@
             'alertEnabled','alertMessage','defaultAcademicYear',
             'testModeEnabled','historyLocked','mobtuaLocked',
             'appointmentDateText','appointmentTimeText','appointmentPlaceText',
-            'checklistItems','lineNotifyEnabled',
-            'paperColorM1','paperColorM4',
-            'paperModalColorM1','paperModalColorM4'
+            'checklistItems','lineNotifyEnabled'
         ];
 
         async function syncSettingsToFirestore() {
@@ -7624,59 +7630,271 @@ ${lines}
         }
 
         // ════════════════════════════════════════════════════
-        //  LINE Notify via Make.com Webhook
+        //  BLANK PRINT — พิมพ์เอกสารเปล่า (ไม่มีข้อมูล)
         // ════════════════════════════════════════════════════
 
-        function savePaperColorSettings() {
-            const m1 = document.getElementById('paperColorM1')?.value?.trim() || '';
-            const m4 = document.getElementById('paperColorM4')?.value?.trim() || '';
-            const cm1Text = document.getElementById('paperModalColorM1Text')?.value?.trim() || '';
-            const cm4Text = document.getElementById('paperModalColorM4Text')?.value?.trim() || '';
-            const cm1Pick = document.getElementById('paperModalColorM1')?.value || '#a16207';
-            const cm4Pick = document.getElementById('paperModalColorM4')?.value || '#be185d';
-            // text field takes priority; fallback to color picker
-            const cm1 = cm1Text || cm1Pick;
-            const cm4 = cm4Text || cm4Pick;
-            localStorage.setItem('paperColorM1', m1);
-            localStorage.setItem('paperColorM4', m4);
-            localStorage.setItem('paperModalColorM1', cm1);
-            localStorage.setItem('paperModalColorM4', cm4);
-            showToast('บันทึกการตั้งค่าสีกระดาษสำเร็จ ✅');
-            syncSettingsToFirestore();
-            // update preview
-            _updatePaperColorPreviews();
+        function openBlankPrintModal() {
+            document.getElementById('blankPrintModal').classList.add('active');
+        }
+        function closeBlankPrintModal() {
+            document.getElementById('blankPrintModal').classList.remove('active');
         }
 
-        function _updatePaperColorPreviews() {
-            const cm1 = localStorage.getItem('paperModalColorM1') || '#a16207';
-            const cm4 = localStorage.getItem('paperModalColorM4') || '#be185d';
-            const p1 = document.getElementById('paperColorPreviewM1');
-            const p4 = document.getElementById('paperColorPreviewM4');
-            if (p1) p1.style.background = `linear-gradient(135deg, ${cm1}, ${cm1}cc)`;
-            if (p4) p4.style.background = `linear-gradient(135deg, ${cm4}, ${cm4}cc)`;
+        function generateBlankAdmissionHTML(grade) {
+            const isM4 = grade === 'm4';
+            const gradeText = isM4 ? 'มัธยมศึกษาปีที่ 4' : 'มัธยมศึกษาปีที่ 1';
+            const code = isM4 ? 'วก.กทว.203' : 'วก.กทว.202';
+            const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+            const fv = (w) => `<span class="field-value" style="min-width:${w};display:inline-block;">&nbsp;</span>`;
+            const idBoxes = () => {
+                let s = '';
+                for (let i = 0; i < 13; i++) {
+                    if (i===1||i===5||i===10||i===12) s += '<span class="id-dash"></span>';
+                    s += '<span class="id-box">&nbsp;</span>';
+                }
+                return s;
+            };
+            const cb = () => '<span class="doc-checkbox"></span>';
+            const dots = (n) => '.'.repeat(n);
+            return `
+<div class="blank-doc-page print-document">
+  <div class="doc-code">${code}</div>
+  <div class="doc-header">
+    <div class="doc-logo-section"><img src="${logo}" class="doc-logo" alt="โลโก้"></div>
+    <div class="doc-school-info">วันที่ ${fv('120px')}</div>
+  </div>
+  <div class="doc-title-section">
+    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${gradeText} ปีการศึกษา ${dots(17)}</div>
+    <div style="text-align:center;font-size:14px;margin:4px 0;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
+  </div>
+  <div class="doc-content">
+    <div class="field-line" style="margin-top:8px;">
+      <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span>${fv('175px')}
+      <span class="field-label">ชื่อเล่น</span>${fv('70px')}
+      <span class="field-label">เกิดวันที่</span>${fv('140px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">อายุ</span>${fv('50px')}<span class="field-label">ปี</span>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ส่วนสูง</span>${fv('60px')}<span class="field-label">เซนติเมตร</span>
+      <span class="field-label">น้ำหนัก</span>${fv('60px')}<span class="field-label">กิโลกรัม</span>
+      <span class="field-label">หมู่เลือด</span>${fv('50px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">เลขประจำตัวประชาชน</span>
+      <div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">${idBoxes()}</div>
+    </div>
+    <div class="field-line">
+      <span class="field-label">ชื่อ-สกุลบิดา</span>${fv('160px')}
+      <span class="field-label">อายุ</span>${fv('50px')}
+      <span class="field-label">อาชีพ</span>${fv('100px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">ชื่อ-สกุลมารดา</span>${fv('160px')}
+      <span class="field-label">อายุ</span>${fv('50px')}
+      <span class="field-label">อาชีพ</span>${fv('100px')}
+    </div>
+    <div class="field-line" style="margin-top:6px;">
+      <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span>${fv('55px')}
+      <span class="field-label">หมู่ที่</span>${fv('40px')}
+      <span class="field-label">บ้าน</span>${fv('90px')}
+      <span class="field-label">ถนน</span>${fv('80px')}
+      <span class="field-label">ซอย</span>${fv('60px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">ตำบล</span>${fv('90px')}
+      <span class="field-label">อำเภอ</span>${fv('90px')}
+      <span class="field-label">จังหวัด</span>${fv('90px')}
+      <span class="field-label">รหัสไปรษณีย์</span>${fv('55px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">โทรศัพท์</span>${fv('110px')}
+      <span class="field-label">E-mail</span>${fv('160px')}
+    </div>
+    <div class="field-line" style="margin-top:6px;">
+      <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>${fv('180px')}
+    </div>
+    <div class="field-line">
+      <span class="field-label">ตำบล</span>${fv('90px')}
+      <span class="field-label">อำเภอ</span>${fv('90px')}
+      <span class="field-label">จังหวัด</span>${fv('90px')}
+    </div>
+    <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
+    <div class="checkbox-line">${cb()} เป็นนักกีฬา(ระบุประเภท) <strong>${dots(72)}</strong></div>
+    <div class="checkbox-line">${cb()} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${dots(61)}</strong></div>
+    <div class="checkbox-line">${cb()} อื่นๆ(ระบุ) <strong>${dots(88)}</strong></div>
+  </div>
+  <div class="signature-section" style="text-align:right;margin-top:12px;">
+    <p>ลงชื่อ..........................................................................ผู้สมัคร</p>
+    <p style="margin-right:1cm;">( ${dots(40)} )</p>
+    <p>วันที่.................เดือน...............................พ.ศ................</p>
+  </div>
+  <div class="approval-section">
+    <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาทะเบียนบ้านของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาบัตรประชาชนของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาสูติบัตรของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาทะเบียนบ้านของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาบัตรประชาชนของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาทะเบียนบ้านของมารดา</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาบัตรประชาชนของมารดา</div>
+    </div>
+    <div style="text-align:right;margin-top:12px;">
+      <p>ลงชื่อ.............................................................กรรมการรับสมัคร</p>
+      <p style="margin-right:3cm;">(.......................................................)</p>
+      <p>วันที่.................เดือน..............................พ.ศ...............</p>
+    </div>
+  </div>
+</div>`;
         }
 
-        function _wirePaperColorPickers() {
-            // Sync color picker → text field
-            const pickerM1 = document.getElementById('paperModalColorM1');
-            const textM1   = document.getElementById('paperModalColorM1Text');
-            const pickerM4 = document.getElementById('paperModalColorM4');
-            const textM4   = document.getElementById('paperModalColorM4Text');
-            if (pickerM1 && textM1) {
-                pickerM1.addEventListener('input', () => { textM1.value = pickerM1.value; _updatePaperColorPreviews(); });
-                textM1.addEventListener('input',   () => {
-                    if (/^#[0-9a-fA-F]{6}$/.test(textM1.value)) { pickerM1.value = textM1.value; }
-                    _updatePaperColorPreviews();
-                });
-            }
-            if (pickerM4 && textM4) {
-                pickerM4.addEventListener('input', () => { textM4.value = pickerM4.value; _updatePaperColorPreviews(); });
-                textM4.addEventListener('input',   () => {
-                    if (/^#[0-9a-fA-F]{6}$/.test(textM4.value)) { pickerM4.value = textM4.value; }
-                    _updatePaperColorPreviews();
-                });
-            }
+        function generateBlankMobtuaHTML() {
+            const logo = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+            const v = (w) => `<span class="mt-line" style="min-width:${w};display:inline-block;">&nbsp;</span>`;
+            const cb = () => '<span class="mt-box"></span>';
+            const idB = () => {
+                let s = '';
+                for (let i = 0; i < 13; i++) {
+                    if (i===1||i===5||i===10||i===12) s += '<span class="mt-id-dash"></span>';
+                    s += '<span class="mt-id-box">&nbsp;</span>';
+                }
+                return s;
+            };
+            const parentOpts = ['อยู่ร่วมกัน','แยกกันอยู่','อย่าร้าง','บิดาเสียชีวิต','มารดาเสียชีวิต'];
+            const parentCbs = parentOpts.map(o=>`${cb()} ${o}`).join(' &nbsp; ');
+            return `
+<div class="blank-doc-page mobtua-page-1" style="font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.55;color:#000;background:white;padding:8mm 10mm;">
+  <div class="mt-code">วก.กทว.205</div>
+  <div class="mt-doc-header-row">
+    <img src="${logo}" class="mt-logo" alt="โลโก้">
+    <div class="mt-title-center">
+      <h2 style="font-size:17px;font-weight:700;margin:0;">ใบมอบตัวนักเรียน</h2>
+      <p style="font-size:15px;font-weight:600;margin:2px 0 0;">โรงเรียนกระดุมทองวิทยา</p>
+    </div>
+    <div class="mt-topright">
+      <div>เลขประจำตัว ${v('80px')}</div>
+      <div>เข้าเรียนชั้น ${v('60px')}</div>
+      <div>ปีการศึกษา ${v('60px')}</div>
+    </div>
+  </div>
+  <p class="mt-section-title">ข้อมูลนักเรียน <span style="font-weight:400;font-size:12px;">(กรอกข้อมูลด้วยลายมือบรรจง)</span></p>
+  <p class="mt-para mt-nowrap">ข้าพเจ้า(ชื่อผู้ปกครอง) ${v('150px')} เลขประจำตัวประชาชน ${v('130px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${v('100px')} สถานที่ทำงาน ${v('180px')}</p>
+  <p class="mt-para mt-nowrap">ที่อยู่ปัจจุบัน บ้านเลขที่ ${v('35px')} หมู่ ${v('25px')} ตำบล ${v('80px')} อำเภอ ${v('80px')} จังหวัด ${v('70px')}</p>
+  <p class="mt-para mt-nowrap">รหัสไปรษณีย์ ${v('45px')} โทรศัพท์บ้าน ${v('90px')} โทรศัพท์มือถือ ${v('90px')}</p>
+  <p class="mt-para mt-nowrap">เกี่ยวข้องกับนักเรียนโดยเป็น ${cb()} บิดา &nbsp; ${cb()} มารดา &nbsp; อื่นๆ ระบุ ${v('70px')} &nbsp; รายได้ต่อเดือน ${v('55px')} บาท</p>
+  <p class="mt-section-title" style="margin-top:6px;">ขอทำใบมอบตัวนักเรียนให้ไว้ต่อผู้อำนวยการโรงเรียนกระดุมทองวิทยา</p>
+  <p class="mt-para mt-nowrap">ด้วย (ชื่อ–สกุลนักเรียน) ${v('200px')} ชื่อเล่น ${v('70px')}</p>
+  <p class="mt-para mt-nowrap">เกิดวันที่ ${v('22px')} เดือน ${v('70px')} พ.ศ. ${v('42px')} สัญชาติ ${v('55px')} เชื้อชาติ ${v('55px')}</p>
+  <p class="mt-para mt-nowrap">ศาสนา ${v('48px')} ส่วนสูง ${v('35px')} ซ.ม. น้ำหนัก ${v('35px')} ก.ก. โรคประจำตัว (ถ้ามี) ${v('90px')}</p>
+  <p class="mt-para">เลขที่บัตรประจำตัวประชาชนนักเรียน <span class="mt-id-boxes">${idB()}</span></p>
+  <p class="mt-section-title">ที่อยู่นักเรียน(ตามทะเบียนบ้าน)</p>
+  <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${v('100px')} บ้านเลขที่ ${v('30px')} หมู่ ${v('25px')} ตำบล ${v('80px')}</p>
+  <p class="mt-para mt-nowrap">อำเภอ ${v('75px')} จังหวัด ${v('75px')} รหัสไปรษณีย์ ${v('45px')} โทรศัพท์มือถือ ${v('85px')}</p>
+  <p class="mt-section-title">ที่อยู่นักเรียน(ปัจจุบัน)</p>
+  <p class="mt-para mt-nowrap">รหัสประจำบ้าน ${v('100px')} บ้านเลขที่ ${v('30px')} หมู่ ${v('25px')} ตำบล ${v('80px')}</p>
+  <p class="mt-para mt-nowrap">อำเภอ ${v('75px')} จังหวัด ${v('75px')} รหัสไปรษณีย์ ${v('45px')} โทรศัพท์มือถือ ${v('85px')}</p>
+  <p class="mt-para mt-nowrap">การพักนอนของนักเรียน ${cb()} อาศัยอยู่กับญาติ &nbsp; ${cb()} อาศัยอยู่กับบิดามารดา &nbsp; ${cb()} อื่นๆ ระบุ ${v('70px')}</p>
+  <p class="mt-para mt-nowrap">ความด้อยโอกาส &nbsp; ${cb()} ด้อยโอกาส &nbsp;&nbsp; ${cb()} ไม่ด้อยโอกาส</p>
+  <p class="mt-para mt-nowrap">การเดินทางมาโรงเรียน &nbsp; ${cb()} เดินเท้า &nbsp; ${cb()} จักรยาน &nbsp; ${cb()} รถรับส่ง &nbsp; ${cb()} รถจักรยานยนต์ &nbsp; ${cb()} อื่นๆ ระบุ ${v('60px')}</p>
+  <p class="mt-para mt-nowrap">เวลาในการเดินทางมาโรงเรียน ${v('35px')} นาที &nbsp; ระยะทางจากบ้านมาโรงเรียน ${v('90px')}</p>
+  <p class="mt-para mt-nowrap">นักเรียนมีจำนวนพี่น้อง ${v('28px')} คน (รวมตัวนักเรียนด้วย) &nbsp; จำนวนพี่ชาย ${v('22px')} คน &nbsp; จำนวนน้องชาย ${v('22px')} คน</p>
+  <p class="mt-para mt-nowrap">จำนวนพี่สาว ${v('22px')} คน &nbsp; จำนวนน้องสาว ${v('22px')} คน &nbsp; จำนวนพี่น้องที่กำลังศึกษาอยู่ ${v('30px')} คน</p>
+  <p class="mt-para mt-nowrap">นักเรียนเป็นบุตรคนที่ ${v('28px')} ในจำนวนพี่น้อง ${v('28px')} คน (รวมตัวนักเรียนด้วย)</p>
+  <p class="mt-section-title">ข้อมูลของบิดามารดา</p>
+  <p class="mt-para mt-nowrap"><strong>บิดา</strong> ${v('180px')} เลขประจำตัวประชาชน ${v('115px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${v('42px')} เชื้อชาติ ${v('42px')} ศาสนา ${v('42px')} &nbsp; (&nbsp;&nbsp;) มีชีวิตอยู่ &nbsp; (&nbsp;&nbsp;) เสียชีวิต &nbsp; การศึกษา ${v('55px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${v('75px')} สถานที่ทำงาน ${v('85px')} ตำบล ${v('65px')} อำเภอ ${v('65px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${v('65px')} รายได้/เดือน ${v('48px')} บาท &nbsp; โทรศัพท์มือถือ ${v('85px')}</p>
+  <p class="mt-para mt-nowrap" style="margin-top:5px;"><strong>มารดา</strong> ${v('180px')} เลขประจำตัวประชาชน ${v('115px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${v('42px')} เชื้อชาติ ${v('42px')} ศาสนา ${v('42px')} &nbsp; (&nbsp;&nbsp;) มีชีวิตอยู่ &nbsp; (&nbsp;&nbsp;) เสียชีวิต &nbsp; การศึกษา ${v('55px')}</p>
+  <p class="mt-para mt-nowrap">อาชีพ ${v('75px')} สถานที่ทำงาน ${v('85px')} ตำบล ${v('65px')} อำเภอ ${v('65px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${v('65px')} รายได้/เดือน ${v('48px')} บาท &nbsp; โทรศัพท์มือถือ ${v('85px')}</p>
+</div>
+
+<div class="blank-doc-page mobtua-page-2" style="font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.55;color:#000;background:white;padding:8mm 10mm;page-break-before:always;">
+  <div class="mt-code" style="margin-top:4px;">วก.กทว.205</div>
+  <p class="mt-para mt-nowrap" style="margin-top:4px;">สถานภาพของบิดา มารดา &nbsp; ${parentCbs} &nbsp; อื่นๆ ระบุ ${v('70px')}</p>
+  <p class="mt-section-title">ข้อมูลผู้ปกครอง (กรณีที่นักเรียนไม่ได้อยู่กับบิดา/มารดา)</p>
+  <p class="mt-para mt-nowrap">ชื่อ-สกุล ${v('180px')} เกี่ยวข้องกับนักเรียนเป็น ${v('80px')}</p>
+  <p class="mt-para mt-nowrap">สัญชาติ ${v('48px')} เชื้อชาติ ${v('48px')} ศาสนา ${v('48px')} อาชีพ ${v('75px')} รายได้/เดือน ${v('48px')} บาท</p>
+  <p class="mt-para mt-nowrap">อยู่บ้านเลขที่ ${v('30px')} หมู่ที่ ${v('22px')} ถนน ${v('75px')} ตำบล ${v('75px')} อำเภอ ${v('75px')}</p>
+  <p class="mt-para mt-nowrap">จังหวัด ${v('65px')} สถานที่ทำงาน ${v('95px')} โทรศัพท์มือถือ ${v('90px')}</p>
+  <p class="mt-para" style="margin-top:10px;">บัดนี้ ${v('200px')} ได้เข้าเป็นนักเรียนโรงเรียนกระดุมทองวิทยาเรียบร้อยแล้ว</p>
+  <p class="mt-para">ข้าพเจ้าขอสัญญาว่าจะเป็นผู้ปกครอง คอยกำกับ ดูแล และเอาใจใส่ ${v('200px')} ตั้งใจศึกษา</p>
+  <p class="mt-para">เอาใจใส่ต่อการเรียนให้ดีอย่างสม่ำเสมอและจะอบรม ตักเตือน สั่งสอนให้ประพฤติและปฏิบัติตนตามกฎระเบียบ วินัย และข้อบังคับของทางโรงเรียนอย่างดีทุกประการ</p>
+  <p class="mt-para">ทั้งจะเป็นผู้อุปถัมภ์ค่าใช้จ่ายต่างๆ อุปกรณ์การเรียนให้เพียงพอตามระเบียบของโรงเรียนนี้ ข้าพเจ้ายินดีมอบนักเรียนในความปกครอง</p>
+  <p class="mt-para">ของข้าพเจ้าให้ดำเนินการตามระเบียบข้อบังคับทุกประการ หากกระทำผิดกฎระเบียบวินัย ข้อบังคับของโรงเรียน ขอให้โรงเรียน</p>
+  <p class="mt-para">ได้ดำเนินการลงโทษตามกฎระเบียบของโรงเรียน ตามควรแก่กรณี ข้าพเจ้าได้อ่านความทั้งหมดถูกต้อง ครบถ้วนสมบูรณ์แล้ว</p>
+  <p class="mt-para">จึงลงลายมือชื่อไว้เป็นหลักฐาน</p>
+  <div class="mt-sig-row">
+    <div class="mt-sig-block">
+      <p>ลงชื่อ......................................................................ผู้ปกครอง</p>
+      <p>(${v('150px')})</p>
+      <p>วันที่..............เดือน.....................พ.ศ..............</p>
+    </div>
+    <div class="mt-sig-block">
+      <p>ลงชื่อ......................................................................ผู้รับมอบตัว</p>
+      <p>(${v('150px')})</p>
+      <p>วันที่..............เดือน.....................พ.ศ..............</p>
+    </div>
+  </div>
+  <div style="margin-top:18px;border-top:1px solid #333;padding-top:10px;">
+    <p style="font-weight:600;margin-bottom:8px;">ตรวจหลักฐานการมอบตัว (สำหรับเจ้าหน้าที่)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:13px;">
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนา ปพ.1 (ฉบับจบการศึกษา)</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาทะเบียนบ้านของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาบัตรประชาชนของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาสูติบัตรของนักเรียน</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาทะเบียนบ้านของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาบัตรประชาชนของบิดา</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาทะเบียนบ้านของมารดา</div>
+      <div class="checkbox-line" style="margin:2px 0;"><span class="mt-box"></span> สำเนาบัตรประชาชนของมารดา</div>
+    </div>
+    <div style="text-align:right;margin-top:12px;">
+      <p>ลงชื่อ.............................................................กรรมการรับมอบตัว</p>
+      <p style="margin-right:3cm;">(.......................................................)</p>
+      <p>วันที่.................เดือน..............................พ.ศ...............</p>
+    </div>
+  </div>
+</div>`;
         }
+
+        function printBlankAdmission(grade) {
+            const html = generateBlankAdmissionHTML(grade);
+            document.getElementById('blankPrintArea').innerHTML = html;
+            closeBlankPrintModal();
+            document.body.setAttribute('data-print', 'blank');
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    document.body.removeAttribute('data-print');
+                    document.getElementById('blankPrintArea').innerHTML = '';
+                }, 1500);
+            }, 120);
+        }
+
+        function printBlankMobtua() {
+            const html = generateBlankMobtuaHTML();
+            document.getElementById('blankPrintArea').innerHTML = html;
+            closeBlankPrintModal();
+            document.body.setAttribute('data-print', 'blank');
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    document.body.removeAttribute('data-print');
+                    document.getElementById('blankPrintArea').innerHTML = '';
+                }, 1500);
+            }, 120);
+        }
+
+        // ════════════════════════════════════════════════════
+        //  LINE Notify via Make.com Webhook
+        // ════════════════════════════════════════════════════
 
         function saveLineSettings() {
             const enabled = document.getElementById('lineNotifyToggle')?.checked || false;

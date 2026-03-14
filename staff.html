@@ -2861,7 +2861,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
       <span class="field-label">E-mail</span><span class="field-value" style="min-width:160px;">${data.email||''}</span>
     </div>
     <div class="field-line" style="margin-top:6px;">
-      <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
+      <span class="field-label">3. ปัจจุบันกำลังจบ${data.gradeLevel==='m4' ? 'ชั้นมัธยมศึกษาปีที่ 3' : 'ชั้นประถมศึกษาปีที่ 6'} จากโรงเรียน</span>
       <span class="field-value" style="min-width:180px;">${data.previousSchool||''}</span>
     </div>
     <div class="field-line">

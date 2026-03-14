@@ -921,7 +921,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .print-document .doc-logo-section{text-align:center;flex:1;}
 .print-document .doc-logo{width:110px;height:110px;margin:0 auto;}
 .print-document .doc-school-info{position:absolute;right:0;top:0;text-align:right;font-size:13px;line-height:1.5;}
-.print-document .doc-photo-box{width:1.5in;height:1.5in;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666;line-height:1.5;margin-top:6px;margin-left:auto;}
+.print-document .doc-photo-box{width:3cm;height:4cm;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666;line-height:1.5;margin-top:6px;margin-left:auto;}
 .print-document .doc-title-section{text-align:center;margin-top:8px;}
 .print-document .doc-title{text-align:center;font-size:16px;font-weight:700;margin:5px 0;}
 .print-document .doc-content{margin-bottom:5px;}
@@ -1690,15 +1690,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         ✅ กดที่รายการเพื่อยืนยันว่าได้รับเอกสารแล้ว
       </p>
       <div class="verify-checklist" id="stepperVerifyChecklist"></div>
-      <div style="margin-top:1.2rem;">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:8px;flex-wrap:wrap;">
-          <label style="font-size:.95rem;font-weight:700;color:var(--gold);">📝 หมายเหตุ</label>
-          <span style="font-size:.75rem;color:#64748b;font-style:italic;">ระบบจะเติมรายการขาดต่อท้ายอัตโนมัติเมื่อกด "ยืนยันและถัดไป"</span>
-        </div>
-        <textarea class="verify-note-area" id="stepperVerifyNote"
-          style="font-size:.95rem;padding:.75rem 1rem;border-radius:12px;"
-          placeholder="เช่น รอสำเนาบัตรประชาชนมารดา..."></textarea>
-      </div>
+      <!-- stepperVerifyNote ซ่อนไว้ ใช้ส่งข้อมูลเบื้องหลัง ไม่แสดง UI -->
+      <textarea id="stepperVerifyNote" style="display:none;"></textarea>
     </div>
 
     <!-- STEP 3: สั่งพิมพ์ -->
@@ -1731,6 +1724,76 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 <!-- ════════════════════════════════════════════════════════
      CARD PREVIEW MODAL — sits above stepper (z:6500), step 3 stays visible
 ════════════════════════════════════════════════════════ -->
+<!-- Step 1 Instruction Modal — ก่อนเข้า stepper -->
+<div id="step1InstructionModal" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(5,15,35,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;max-width:500px;width:calc(100% - 2rem);box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;animation:fadeInUp .25s ease;">
+
+    <!-- Header ไฟ/แถบสีเตือน -->
+    <div style="background:linear-gradient(135deg,#b45309,#d97706);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
+      <div style="width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;">📋</div>
+      <div>
+        <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">ก่อนดำเนินการตรวจเอกสาร</div>
+        <div style="font-size:1.05rem;font-weight:800;color:#fff;line-height:1.3;">โปรดอ่านคำแนะนำก่อนเริ่ม</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:1.4rem 1.5rem 1.1rem;">
+
+      <!-- ข้อ 1 — ตรวจสอบข้อมูล -->
+      <div style="display:flex;gap:.9rem;align-items:flex-start;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;">
+        <div style="width:36px;height:36px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;margin-top:1px;">🔍</div>
+        <div>
+          <div style="font-weight:800;font-size:.95rem;color:#92400e;margin-bottom:.35rem;">ตรวจสอบความถูกต้องของข้อมูล</div>
+          <div style="font-size:.88rem;color:#78350f;line-height:1.75;">
+            โปรดตรวจสอบข้อมูลที่นักเรียนกรอกในระบบ เช่น<br>
+            <span style="display:inline-flex;align-items:center;gap:4px;margin:.2rem 0;">
+              <span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0;"></span>
+              <strong>ชื่อ-สกุล</strong>
+            </span>&nbsp;&nbsp;
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0;"></span>
+              <strong>วันเกิด</strong>
+            </span>&nbsp;&nbsp;
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0;"></span>
+              <strong>เลขบัตรประชาชน</strong>
+            </span>
+            <br>โดยเทียบกับ<strong>เอกสารหลักฐานตัวจริง</strong>ที่นักเรียนนำมา
+          </div>
+        </div>
+      </div>
+
+      <!-- ข้อ 2 — แก้ไขข้อมูล -->
+      <div style="display:flex;gap:.9rem;align-items:flex-start;background:#eff6ff;border:1.5px solid #93c5fd;border-radius:14px;padding:1rem 1.1rem;margin-bottom:1.1rem;">
+        <div style="width:36px;height:36px;background:#2563eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;margin-top:1px;">✏️</div>
+        <div>
+          <div style="font-weight:800;font-size:.95rem;color:#1e40af;margin-bottom:.35rem;">พบข้อมูลไม่ถูกต้อง?</div>
+          <div style="font-size:.88rem;color:#1e3a8a;line-height:1.75;">
+            กรณีพบข้อมูลผิดพลาด ให้กดปุ่ม<br>
+            <span style="display:inline-flex;align-items:center;gap:6px;background:#2563eb;color:#fff;padding:3px 12px;border-radius:8px;font-size:.82rem;font-weight:700;margin-top:4px;">
+              ✏️ แก้ไขข้อมูล
+            </span>
+            <span style="font-size:.84rem;"> ที่มุมขวาของหน้าจอ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ปุ่ม -->
+      <div style="display:flex;gap:.65rem;justify-content:flex-end;">
+        <button onclick="closeStep1InstructionModal(false)"
+          style="padding:.6rem 1.25rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">
+          ← ยกเลิก
+        </button>
+        <button onclick="closeStep1InstructionModal(true)"
+          style="padding:.6rem 1.6rem;border-radius:10px;border:none;background:linear-gradient(135deg,#b45309,#d97706);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;letter-spacing:.02em;">
+          รับทราบ — เริ่มตรวจ →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Sweet-Alert style: Confirm Discard Changes Modal -->
 <div id="confirmDiscardModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(10,20,40,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:18px;max-width:380px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden;animation:fadeInUp .18s ease;">
@@ -1747,32 +1810,72 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 </div>
 
 <!-- Step 2 Instruction Modal — "โปรดอ่านก่อนกรอก" -->
-<div id="step2InstructionModal" style="display:none;position:fixed;inset:0;z-index:7100;background:rgba(10,20,40,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:18px;max-width:460px;width:calc(100% - 2rem);box-shadow:0 24px 64px rgba(0,0,0,.28);overflow:hidden;animation:fadeInUp .22s ease;">
-    <div style="padding:1.1rem 1.4rem;background:linear-gradient(135deg,#0f4c81,#1d6fb8);display:flex;align-items:center;gap:.75rem;">
-      <span style="font-size:1.9rem;">📋</span>
+<div id="step2InstructionModal" style="display:none;position:fixed;inset:0;z-index:7100;background:rgba(5,15,35,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;max-width:480px;width:calc(100% - 2rem);box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;animation:fadeInUp .25s ease;">
+    <!-- Header — ธีมส้มทอง เหมือน step1 -->
+    <div style="background:linear-gradient(135deg,#b45309,#d97706);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
+      <div style="width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;">📂</div>
       <div>
-        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.07em;text-transform:uppercase;">ก่อนตรวจและยืนยันเอกสารประกอบในขั้นต่อไป</div>
-        <div style="font-size:1rem;font-weight:800;color:#fff;">โปรดอ่านก่อนดำเนินการ</div>
+        <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">ก่อนตรวจและยืนยันเอกสารประกอบในขั้นต่อไป</div>
+        <div style="font-size:1.05rem;font-weight:800;color:#fff;line-height:1.3;">โปรดอ่านก่อนดำเนินการ</div>
       </div>
     </div>
-    <div style="padding:1.25rem 1.5rem 1rem;">
-      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;font-size:.92rem;line-height:1.75;color:#0c4a6e;">
-        <p style="font-weight:700;color:#0369a1;margin-bottom:.5rem;">🗂️ วิธีการตรวจเอกสาร</p>
-        <ol style="padding-left:1.2rem;margin:0;">
+    <!-- Body -->
+    <div style="padding:1.3rem 1.5rem 1.1rem;">
+      <!-- วิธีตรวจเอกสาร -->
+      <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
+          <div style="width:30px;height:30px;background:#f59e0b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🗂️</div>
+          <div style="font-weight:800;font-size:.95rem;color:#92400e;">วิธีการตรวจเอกสาร</div>
+        </div>
+        <ol style="padding-left:1.2rem;margin:0;font-size:.88rem;color:#78350f;line-height:1.8;">
           <li>ตรวจสอบรายละเอียดนักเรียนให้ถูกต้องก่อน</li>
           <li>ขอดูหลักฐานจากผู้ปกครองทีละรายการ</li>
           <li>กดติ๊กหลักฐานที่ได้รับครบแล้วทีละรายการ</li>
           <li>หากยังขาดเอกสารใด ระบบจะบันทึกไว้ให้อัตโนมัติ</li>
         </ol>
       </div>
-      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1.1rem;font-size:.88rem;line-height:1.65;color:#78350f;">
-        <span style="font-weight:700;color:#92400e;">📝 หมายเหตุ — กรณีมีข้อมูลที่เจ้าหน้าที่งานทะเบียนควรทราบ</span><br>
-        โปรดระบุในช่องหมายเหตุที่ขั้นตอนนี้ เช่น นักเรียนมีเอกสารพิเศษ, ข้อมูลไม่ตรงกัน, หรือหมายเหตุอื่น ๆ ที่ควรบันทึกไว้
+      <!-- หมายเหตุ -->
+      <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:14px;padding:.9rem 1.1rem;margin-bottom:1.1rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem;">
+          <div style="width:30px;height:30px;background:#ea580c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📝</div>
+          <div style="font-weight:800;font-size:.9rem;color:#9a3412;">ช่องหมายเหตุ</div>
+        </div>
+        <div style="font-size:.87rem;color:#7c2d12;line-height:1.7;">กรณีมีข้อมูลที่เจ้าหน้าที่งานทะเบียนควรทราบ โปรดระบุในช่องหมายเหตุ เช่น เอกสารพิเศษ, ข้อมูลไม่ตรงกัน</div>
       </div>
+      <!-- ปุ่ม -->
       <div style="display:flex;gap:.65rem;justify-content:flex-end;">
-        <button onclick="closeStep2InstructionModal(false)" style="padding:.55rem 1.2rem;border-radius:8px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">ย้อนกลับ</button>
-        <button onclick="closeStep2InstructionModal(true)" style="padding:.55rem 1.5rem;border-radius:8px;border:none;background:linear-gradient(135deg,#0f4c81,#1d6fb8);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">เข้าใจแล้ว เริ่มตรวจ →</button>
+        <button onclick="closeStep2InstructionModal(false)" style="padding:.6rem 1.25rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">ย้อนกลับ</button>
+        <button onclick="closeStep2InstructionModal(true)" style="padding:.6rem 1.6rem;border-radius:10px;border:none;background:linear-gradient(135deg,#b45309,#d97706);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;letter-spacing:.02em;">เข้าใจแล้ว เริ่มตรวจ →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Incomplete Docs Reason Modal -->
+<div id="incompleteDocsModal" style="display:none;position:fixed;inset:0;z-index:9200;background:rgba(5,15,35,.78);backdrop-filter:blur(6px);align-items:center;justify-content:center;overflow-y:auto;">
+  <div style="background:#fff;border-radius:20px;max-width:520px;width:calc(100% - 2rem);box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;animation:fadeInUp .25s ease;margin:1rem auto;">
+    <div style="background:linear-gradient(135deg,#b45309,#d97706);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
+      <div style="width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;">📝</div>
+      <div>
+        <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">เอกสารยังไม่ครบถ้วน</div>
+        <div style="font-size:1.05rem;font-weight:800;color:#fff;line-height:1.3;">โปรดระบุหมายเหตุสำหรับเอกสารที่ยังขาด</div>
+      </div>
+    </div>
+    <div style="padding:1.3rem 1.5rem 1.1rem;">
+      <p style="font-size:.88rem;color:#64748b;margin:0 0 1rem;line-height:1.65;">
+        รายการด้านล่างนี้ยังไม่ได้รับการยืนยัน โปรดระบุเหตุผลหรือหมายเหตุสำหรับแต่ละรายการ เพื่อบันทึกไว้สำหรับการติดตามภายหลัง
+      </p>
+      <div id="incompleteDocsList" style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.1rem;max-height:55vh;overflow-y:auto;"></div>
+      <div style="display:flex;gap:.65rem;justify-content:flex-end;">
+        <button onclick="closeIncompleteDocsModal()"
+          style="padding:.6rem 1.25rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">
+          ← ย้อนกลับ
+        </button>
+        <button onclick="confirmIncompleteDocs()"
+          style="padding:.6rem 1.6rem;border-radius:10px;border:none;background:linear-gradient(135deg,#b45309,#d97706);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;">
+          บันทึกและไปสั่งพิมพ์ →
+        </button>
       </div>
     </div>
   </div>
@@ -2099,6 +2202,15 @@ function renderAdmissions() {
     const gradeLabel = r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
     const gradeCls   = r.gradeLevel === 'm4' ? 'badge-m4' : 'badge-m1';
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    const sv = r.staffVerified || {};
+    const admKeys = ADMISSION_CHECKLIST_KEYS;
+    // เขียว = ครูเคยผ่าน stepper มาแล้ว (มี docVerifiedAt หรือติ๊กอย่างน้อย 1 รายการ)
+    const isStaffDone = !!(r.docVerifiedAt) || admKeys.some(k => sv[k] === true);
+    const printBtnStyle = isStaffDone
+      ? 'background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;cursor:pointer;'
+      : 'background:#f1f5f9;border:1.5px solid #e2e8f0;color:#cbd5e1;cursor:not-allowed;opacity:.5;';
+    const printDisabled = isStaffDone ? '' : 'disabled';
+    const printTitle = isStaffDone ? 'พิมพ์เอกสาร (ตรวจแล้ว)' : 'พิมพ์เอกสาร (ยังไม่ตรวจ)';
     return `<tr id="row-admission-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
       <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)} ${noteIcon(r.docVerifiedNote)} ${allMobtua.some(m => m.admissionId === r.id || m.studentName === r.studentName) ? '<span class="linked-badge">📋</span>' : ''}</td>
@@ -2110,6 +2222,10 @@ function renderAdmissions() {
           <button class="btn-sm btn-verify" onclick="openInspectionStepper('${r.id}','admissions')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
             ตรวจเอกสาร
+          </button>
+          <button class="btn-sm" ${printDisabled} onclick="${isStaffDone ? `jumpToPrint('${r.id}','admissions')` : ''}" title="${printTitle}"
+            style="padding:.45rem .65rem;font-size:.85rem;border-radius:8px;${printBtnStyle}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','admission','${(r.studentName||'').replace(/'/g,"\'")}')" title="ลบ">🗑️</button>
         </div>
@@ -2140,17 +2256,51 @@ function renderMobtua() {
   }
   tbody.innerHTML = rows.map((r, i) => {
     const todayBadge = isToday(r.createdAt) ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    const sv = r.staffVerified || {};
+    const isPending = r.status === 'pending';
+    const isDone    = r.status === 'done';
+
+    // "ตรวจเสร็จสิ้น" badge = ครูผ่าน stepper มาแล้ว (มี docVerifiedAt หรือติ๊ก≥1)
+    const isStaffDone = !!(r.docVerifiedAt) || Object.values(sv).some(v => v === true);
+
+    // Badge สถานะใบมอบตัว
+    let statusBadge = '';
+    if (isPending) {
+      statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;white-space:nowrap;">⏳ รอผู้ปกครองกรอก</span>`;
+    } else if (isStaffDone) {
+      statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;white-space:nowrap;">✅ ตรวจเสร็จสิ้น</span>`;
+    } else if (isDone) {
+      statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;white-space:nowrap;">🔵 พร้อมให้ตรวจและยืนยัน</span>`;
+    }
+
+    // print button — เขียวเมื่อ !pending (ผู้ปกครองกรอกมาแล้ว ครูเข้าตรวจได้)
+    const canPrint = !isPending;
+    const printBtnStyle = canPrint
+      ? 'background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;cursor:pointer;'
+      : 'background:#f1f5f9;border:1.5px solid #e2e8f0;color:#cbd5e1;cursor:not-allowed;opacity:.5;';
+    const printDisabled = canPrint ? '' : 'disabled';
+    const printTitle = canPrint ? 'พิมพ์เอกสาร' : 'พิมพ์เอกสาร (ยังไม่ตรวจ)';
+
+    // ปุ่มตรวจเอกสาร: ล็อกถ้า pending
+    const verifyBtnAttr = isPending
+      ? `disabled style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;opacity:.45;cursor:not-allowed;" title="รอผู้ปกครองกรอกข้อมูลก่อน"`
+      : `onclick="openMobtuaWithCheck('${r.id}')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;"`;
+
     return `<tr id="row-mobtua-${r.id}" class="${isToday(r.createdAt) ? 'new-row' : ''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${docStatusBadge(r)} ${noteIcon(r.docVerifiedNote)} ${r.admissionId || allAdmissions.some(a => a.studentName === r.studentName) ? '<span class="linked-adm-badge">📄</span>' : ''} ${r.status==='pending' ? '<span class="pending-badge linked-badge">⏳รอ</span>' : ''}</td>
+      <td class="td-name">${r.studentName || '—'} ${todayBadge} ${statusBadge} ${noteIcon(r.docVerifiedNote)} ${r.admissionId || allAdmissions.some(a => a.studentName === r.studentName) ? '<span class="linked-adm-badge">📄</span>' : ''}</td>
       <td class="td-muted">${r.guardianName || '—'}</td>
       <td class="td-muted">${r.classRoom || '—'}</td>
       <td class="td-muted">${thaiDate(r.createdAt)}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-verify" onclick="openMobtuaWithCheck('${r.id}')" style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;">
+          <button class="btn-sm btn-verify" ${verifyBtnAttr}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
             ตรวจเอกสาร
+          </button>
+          <button class="btn-sm" ${printDisabled} onclick="${canPrint ? `jumpToPrint('${r.id}','mobtua')` : ''}" title="${printTitle}"
+            style="padding:.45rem .65rem;font-size:.85rem;border-radius:8px;${printBtnStyle}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </button>
           <button class="btn-sm btn-delete" onclick="confirmDelete('${r.id}','mobtua','${(r.studentName||'').replace(/'/g,"\'")}')" title="ลบ">🗑️</button>
         </div>
@@ -2810,7 +2960,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
   <div class="doc-code">${code}</div>
   <div class="doc-header">
     <div class="doc-logo-section"><img src="${logo}" class="doc-logo" alt="โลโก้"></div>
-    <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}<div class="doc-photo-box">ติดรูปถ่าย<br>1.5 นิ้ว</div></div>
+    <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}<div class="doc-photo-box">ติดรูปถ่าย<br>3×4 ซม.</div></div>
   </div>
   <div class="doc-title-section">
     <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา ${data.academicYear || '.........................'}</div>
@@ -3164,6 +3314,18 @@ const MOBTUA_CHECKLIST_KEYS = [
     'สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
 ];
 
+// คืน checklist keys ของ mobtua โดยข้าม alt-guardian items
+// ถ้าไม่มีข้อมูลผู้ปกครอง (กรณีไม่ได้อยู่กับบิดา/มารดา)
+function getEffectiveMobtuaKeys(rec) {
+    const d = rec?.data || {};
+    const hasAltGuardian = !!(d.mt_altGuardianName || '').trim();
+    if (hasAltGuardian) return MOBTUA_CHECKLIST_KEYS;
+    return MOBTUA_CHECKLIST_KEYS.filter(k =>
+        !k.includes('กรณีไม่อยู่กับบิดา/มารดา')
+    );
+}
+window.getEffectiveMobtuaKeys = getEffectiveMobtuaKeys;
+
 // draft state while modal is open (item key → true/false)
 let _verifyDraft = {};
 let _verifyCurrentId = '';
@@ -3399,10 +3561,55 @@ function openInspectionStepper(id, col) {
         gradeBadge.style.display = '';
     }
 
+    // แสดง modal แนะนำก่อนเข้า stepper 1
+    const instrModal = document.getElementById('step1InstructionModal');
+    if (instrModal) {
+        instrModal.style.display = 'flex';
+        // ชื่อนักเรียนใน modal (ถ้ามี element)
+        const nameEl = document.getElementById('step1ModalStudentName');
+        if (nameEl) nameEl.textContent = name;
+        return; // รอให้กด "รับทราบ" ก่อนค่อย open stepper
+    }
+
+    // fallback: เปิด stepper โดยตรงถ้าไม่มี modal
     goToStep(1);
     document.getElementById('inspectionStepper').style.display = 'flex';
 }
 window.openInspectionStepper = openInspectionStepper;
+
+// ── Step 1 Instruction Modal ──────────────────────────────────
+function closeStep1InstructionModal(proceed) {
+    const modal = document.getElementById('step1InstructionModal');
+    if (modal) modal.style.display = 'none';
+    if (proceed) {
+        goToStep(1);
+        document.getElementById('inspectionStepper').style.display = 'flex';
+    }
+    // ถ้า !proceed → ยกเลิก ไม่เปิด stepper
+}
+window.closeStep1InstructionModal = closeStep1InstructionModal;
+
+// ── Jump directly to step 3 (print) from table row ─────────────
+function jumpToPrint(id, col) {
+    _stepperRecId  = id;
+    _stepperCol    = col;
+    _verifyCurrentId         = id;
+    _verifyCurrentCollection = col;
+
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    const name = rec ? (rec.studentName || 'ไม่ระบุ') : '?';
+    document.getElementById('stepperStudentName').textContent = name;
+    const gradeBadge = document.getElementById('stepperGradeBadge');
+    if (gradeBadge && rec) {
+        const gl = rec.gradeLevel || rec.data?.gradeLevel || '';
+        gradeBadge.textContent = gl === 'm4' ? 'ม.4' : 'ม.1';
+        gradeBadge.style.display = '';
+    }
+    goToStep(3);
+    document.getElementById('inspectionStepper').style.display = 'flex';
+}
+window.jumpToPrint = jumpToPrint;
 
 function closeInspectionStepper() {
     document.getElementById('inspectionStepper').style.display = 'none';
@@ -3438,15 +3645,92 @@ async function stepperNav(dir) {
         return;
     }
 
-    // Going forward from step 2 → auto-fill missing docs note, then save
+    // Going forward from step 2 → check if checklist is complete
     if (dir > 0 && _stepperCurrentStep === 2) {
+        const col = _stepperCol;
+        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const rec = arr.find(r => r.id === _stepperRecId);
+        const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
+        const missing = items.filter(k => !_verifyDraft[k]);
+
+        if (missing.length > 0) {
+            // เด้ง modal ให้ระบุหมายเหตุสำหรับรายการที่ขาด
+            showIncompleteDocsModal(missing);
+            return;
+        }
+        // ครบทุกรายการ → save แล้วไป step 3
         autoAppendMissingDocsNote();
         await saveStepperVerify();
+        goToStep(3);
+        return;
     }
     if (nextStep < 1 || nextStep > 3) return;
     goToStep(nextStep);
 }
 window.stepperNav = stepperNav;
+
+// ── Incomplete Docs Reason Modal ───────────────────────────────
+function showIncompleteDocsModal(missingItems) {
+    const listEl = document.getElementById('incompleteDocsList');
+    if (!listEl) return;
+    listEl.innerHTML = missingItems.map((item, i) => `
+        <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:.85rem 1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.55rem;">
+                <span style="width:22px;height:22px;background:#f59e0b;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:800;flex-shrink:0;">${i+1}</span>
+                <span style="font-size:.9rem;font-weight:700;color:#78350f;">${item}</span>
+            </div>
+            <textarea id="incompleteReason_${i}" rows="2"
+                style="width:100%;box-sizing:border-box;border:1.5px solid #fcd34d;border-radius:8px;padding:.5rem .75rem;font-size:.85rem;font-family:'Sarabun',sans-serif;color:#1e293b;resize:none;background:#fff;outline:none;"
+                placeholder="เช่น ติดตามเอกสารยังไม่ได้.. , นัดหมายรับเอกสารในวัน... เป็นต้น"
+                data-item="${item.replace(/"/g,'&quot;')}"></textarea>
+        </div>
+    `).join('');
+    // store missing list for confirmIncompleteDocs
+    window._pendingMissingItems = missingItems;
+    const modal = document.getElementById('incompleteDocsModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeIncompleteDocsModal() {
+    const modal = document.getElementById('incompleteDocsModal');
+    if (modal) modal.style.display = 'none';
+    window._pendingMissingItems = null;
+}
+
+async function confirmIncompleteDocs() {
+    const missingItems = window._pendingMissingItems || [];
+    // รวบรวม reason แต่ละรายการ
+    const reasons = missingItems.map((item, i) => {
+        const ta = document.getElementById(`incompleteReason_${i}`);
+        return { item, reason: ta ? ta.value.trim() : '' };
+    });
+
+    // สร้าง appendText — รายการที่ขาดพร้อมหมายเหตุในวงเล็บ
+    const lines = reasons.map((r, i) => {
+        const suffix = r.reason ? ` (${r.reason})` : '';
+        return `${i + 1}. ${r.item}${suffix}`;
+    });
+    const appendText = `เอกสารที่ยังขาด ${missingItems.length} รายการ:\n${lines.join('\n')}`;
+
+    // อัปเดต noteEl
+    const noteEl = document.getElementById('stepperVerifyNote');
+    if (noteEl) {
+        const col = _stepperCol;
+        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const rec = arr.find(r => r.id === _stepperRecId);
+        const savedNote = (rec?.docVerifiedNote || '').trim();
+        const existing  = noteEl.value.trim();
+        const manualPart = existing.replace(savedNote, '').trim();
+        noteEl.value = manualPart ? (manualPart + '\n' + appendText) : appendText;
+    }
+
+    closeIncompleteDocsModal();
+    await saveStepperVerify();
+    goToStep(3);
+}
+window.showIncompleteDocsModal  = showIncompleteDocsModal;
+window.closeIncompleteDocsModal = closeIncompleteDocsModal;
+window.confirmIncompleteDocs    = confirmIncompleteDocs;
 
 function goToStep(n) {
     _stepperCurrentStep = n;
@@ -3527,7 +3811,7 @@ function buildStepperStep1() {
          <span class="sdc-val${hl ? ' highlight' : ''}">${val || dash}</span></div>`;
     const rowId = (label, val) =>
         `<div class="sdc-row"><span class="sdc-label">${label}</span>
-         <span class="sdc-val" style="font-family:monospace;font-size:.82rem;letter-spacing:.05em;color:#c2185b;font-weight:700;">${val || dash}</span></div>`;
+         <span class="sdc-val" style="font-family:monospace;font-size:.82rem;letter-spacing:.05em;color:#1e40af;font-weight:700;">${val || dash}</span></div>`;
     const sec = t => `<div class="sdc-section-title">${t}</div>`;
     const addrStr = (parts) => parts.filter(Boolean).join(' ') || dash;
 
@@ -3616,11 +3900,11 @@ function buildStepperStep2() {
     _verifyCurrentId         = id;
     _verifyCurrentCollection = col;
 
-    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
+    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
     const sv    = rec.staffVerified || {};
     const docChecks = rec.docChecks || {};
 
-    // init draft
+    // init draft (carry over existing staffVerified)
     _verifyDraft = {};
     items.forEach(k => { _verifyDraft[k] = sv[k] === true; });
 
@@ -3658,29 +3942,92 @@ function buildStepperStep2() {
         linkedNote.style.display = 'none';
     }
 
-    // Checklist
-    document.getElementById('stepperVerifyChecklist').innerHTML = items.map((item, i) => {
-        const studentDone = docChecks[item] === true;
-        const staffDone   = _verifyDraft[item] === true;
-        const isShared    = SHARED_DOC_KEYS.includes(item);
-        const linkedDone  = isShared && linkedSV[item] === true;
-        const sharedTag   = isShared ? `<span style="font-size:.65rem;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:2px 7px;border-radius:99px;white-space:nowrap;">🔗 ใช้ในการมอบตัว</span>` : '';
-        const linkedTag   = (linkedDone && !staffDone) ? `<span style="font-size:.65rem;color:#059669;background:#f0fdf4;border:1px solid #86efac;padding:2px 6px;border-radius:99px;">✓อีกฉบับ</span>` : '';
-        const studentTag  = studentDone
-            ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
-            : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
-        // Red border if student didn't tick
-        const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
-        return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
-            style="${extraStyle}"
-            onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
-            <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
-            <span style="flex:1;font-size:.9rem;">${item}</span>
-            <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${sharedTag}${linkedTag}${studentTag}</span>
-        </label>`;
-    }).join('');
+    // ── สำหรับ mobtua: แยก checklist เป็น 2 ส่วน ──
+    if (!isAdm) {
+        // รายการที่ยืนยันแล้วจากใบสมัคร (linkedSV) → แสดงแบบ read-only
+        const alreadyDoneItems = items.filter(k => linkedSV[k] === true);
+        // รายการที่ยังค้าง → แสดง checkbox
+        const pendingItems = items.filter(k => !linkedSV[k]);
 
-    // Note + fill-missing button
+        // init draft เฉพาะ pending items (already-done ไม่ต้องติ๊กใหม่)
+        _verifyDraft = {};
+        pendingItems.forEach(k => { _verifyDraft[k] = sv[k] === true; });
+        // mark already-done as true in draft ด้วยเพื่อ save
+        alreadyDoneItems.forEach(k => { _verifyDraft[k] = true; });
+
+        let checklistHTML = '';
+
+        // ส่วน: รายการที่ยืนยันแล้ว (read-only)
+        if (alreadyDoneItems.length > 0) {
+            checklistHTML += `
+            <div style="margin-bottom:.85rem;">
+                <div style="font-size:.8rem;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:5px 12px;margin-bottom:.5rem;display:inline-flex;align-items:center;gap:5px;">
+                    ✅ ยืนยันแล้วจากใบสมัคร (${alreadyDoneItems.length} รายการ)
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                    ${alreadyDoneItems.map(item => `
+                    <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;opacity:.85;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                        <span style="font-size:.88rem;color:#166534;font-weight:500;">${item}</span>
+                        <span style="font-size:.65rem;color:#15803d;background:#dcfce7;border:1px solid #86efac;padding:1px 7px;border-radius:99px;margin-left:auto;white-space:nowrap;">จากใบสมัคร</span>
+                    </div>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        // ส่วน: รายการที่ยังต้องตรวจ (checkbox)
+        if (pendingItems.length > 0) {
+            checklistHTML += `
+            <div>
+                <div style="font-size:.8rem;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:5px 12px;margin-bottom:.5rem;display:inline-flex;align-items:center;gap:5px;">
+                    📋 รายการที่ต้องตรวจสอบ (${pendingItems.length} รายการ)
+                </div>
+                ${pendingItems.map((item, i) => {
+                    const staffDone = _verifyDraft[item] === true;
+                    const studentDone = docChecks[item] === true;
+                    const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
+                    const studentTag = studentDone
+                        ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
+                        : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
+                    return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
+                        style="${extraStyle}"
+                        onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                        <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                        <span style="flex:1;font-size:.9rem;">${item}</span>
+                        <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${studentTag}</span>
+                    </label>`;
+                }).join('')}
+            </div>`;
+        } else {
+            checklistHTML += `<div style="text-align:center;padding:1rem;color:#16a34a;font-size:.9rem;font-weight:600;">✅ เอกสารทุกรายการยืนยันแล้วจากใบสมัคร</div>`;
+        }
+
+        document.getElementById('stepperVerifyChecklist').innerHTML = checklistHTML;
+
+    } else {
+        // ── admissions: checklist แบบเดิมทุก item ──
+        document.getElementById('stepperVerifyChecklist').innerHTML = items.map((item, i) => {
+            const studentDone = docChecks[item] === true;
+            const staffDone   = _verifyDraft[item] === true;
+            const isShared    = SHARED_DOC_KEYS.includes(item);
+            const linkedDone  = isShared && linkedSV[item] === true;
+            const sharedTag   = isShared ? `<span style="font-size:.65rem;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:2px 7px;border-radius:99px;white-space:nowrap;">🔗 ใช้ในการมอบตัว</span>` : '';
+            const linkedTag   = (linkedDone && !staffDone) ? `<span style="font-size:.65rem;color:#059669;background:#f0fdf4;border:1px solid #86efac;padding:2px 6px;border-radius:99px;">✓อีกฉบับ</span>` : '';
+            const studentTag  = studentDone
+                ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
+                : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
+            const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
+            return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
+                style="${extraStyle}"
+                onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                <span style="flex:1;font-size:.9rem;">${item}</span>
+                <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${sharedTag}${linkedTag}${studentTag}</span>
+            </label>`;
+        }).join('');
+    }
+
+    // Note
     const noteEl = document.getElementById('stepperVerifyNote');
     if (noteEl) noteEl.value = prevNote;
 }
@@ -3710,7 +4057,7 @@ function autoAppendMissingDocsNote() {
     const arr = col === 'admissions' ? allAdmissions : allMobtua;
     const rec = arr.find(r => r.id === _stepperRecId);
     if (!rec) return;
-    const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
+    const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
     const missing = items.filter(k => !_verifyDraft[k]);
     const noteEl = document.getElementById('stepperVerifyNote');
     if (!noteEl) return;
@@ -3724,10 +4071,19 @@ function autoAppendMissingDocsNote() {
     }
 
     const existing = noteEl.value.trim();
-    if (existing) {
-        // append after existing note, separated by newline
-        noteEl.value = existing + '\n' + appendText;
+    const savedNote = (rec.docVerifiedNote || '').trim();
+
+    // ตรวจว่า appendText นี้มีอยู่ใน note แล้วหรือเปล่า (ป้องกันซ้ำ)
+    if (existing.includes(appendText)) return;
+
+    // ถ้า note ปัจจุบันตรงกับที่บันทึกไว้ (ยังไม่แก้) → replace ด้วย appendText ใหม่
+    // ถ้าครูเพิ่มข้อความเองมาด้วย → append ต่อท้าย
+    const manualPart = existing.replace(savedNote, '').trim();
+    if (manualPart) {
+        // มีข้อความที่ครูพิมพ์เพิ่มเอง → append ต่อท้ายเฉพาะ manual part
+        noteEl.value = manualPart + '\n' + appendText;
     } else {
+        // ไม่มีส่วน manual → set เป็น appendText อย่างเดียว
         noteEl.value = appendText;
     }
 }
@@ -3788,7 +4144,7 @@ function buildStepperStep3() {
 
     // Check verify completeness — use shared constants
     const sv = rec?.staffVerified || {};
-    const docItems = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : MOBTUA_CHECKLIST_KEYS;
+    const docItems = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
 
     const allDone = docItems.every(k => sv[k] === true);
     const missingDocs = docItems.filter(k => sv[k] !== true);

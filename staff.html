@@ -2794,6 +2794,17 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
   const talents = data.talent || [];
   const grade = data.gradeLevel==='m4' ? 'มัธยมศึกษาปีที่ 4' : 'มัธยมศึกษาปีที่ 1';
   const code  = data.gradeLevel==='m4' ? 'วก.กทว.203' : 'วก.กทว.202';
+
+  // สร้าง birthDate ISO string จาก birthDay/birthMonth/birthYear เพื่อส่ง formatThaiDate
+  let birthDateStr = data.birthDate || '';
+  if (!birthDateStr && data.birthDay && data.birthMonth && data.birthYear) {
+    const thMonths = {'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,
+                      'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12};
+    const mNum = thMonths[data.birthMonth] || parseInt(data.birthMonth) || 1;
+    const christian = parseInt(data.birthYear) - 543;
+    birthDateStr = `${christian}-${String(mNum).padStart(2,'0')}-${String(data.birthDay).padStart(2,'0')}`;
+  }
+
   return `<div class="print-document">
   <div class="doc-code">${code}</div>
   <div class="doc-header">
@@ -2801,14 +2812,14 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
     <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}</div>
   </div>
   <div class="doc-title-section">
-    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา <span class="field-value" style="min-width:80px;">${data.academicYear||''}</span></div>
+    <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา ${data.academicYear || '.........................'}</div>
     <div style="text-align:center;font-size:14px;margin:4px 0;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
   </div>
   <div class="doc-content">
     <div class="field-line" style="margin-top:8px;">
       <span class="field-label">1. ชื่อ-สกุล ผู้สมัคร</span><span class="field-value" style="min-width:180px;">${data.prefix||''}${data.fullName||''}</span>
       <span class="field-label">ชื่อเล่น</span><span class="field-value" style="min-width:70px;">${data.nickname||''}</span>
-      <span class="field-label">เกิดวันที่</span><span class="field-value" style="min-width:120px;">${(data.birthDay&&data.birthMonth) ? `${data.birthDay} ${data.birthMonth} ${data.birthYear||''}` : (data.birthDate ? formatThaiDate(data.birthDate) : '')}</span>
+      <span class="field-label">เกิดวันที่</span><span class="field-value" style="min-width:140px;">${formatThaiDate(birthDateStr)}</span>
     </div>
     <div class="field-line">
       <span class="field-label">อายุ</span><span class="field-value" style="min-width:50px;">${data.age||''}</span><span class="field-label">ปี</span>
@@ -2859,9 +2870,9 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
       <span class="field-label">จังหวัด</span><span class="field-value" style="min-width:90px;">${data.schoolProvince||''}</span>
     </div>
     <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
-    <div class="checkbox-line">${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <span class="field-value" style="min-width:200px;">${talents.includes('sports')?(data.sportsType||''):''}</span></div>
-    <div class="checkbox-line">${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <span class="field-value" style="min-width:200px;">${talents.includes('music')?(data.musicType||''):''}</span></div>
-    <div class="checkbox-line">${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <span class="field-value" style="min-width:200px;">${talents.includes('other')?(data.otherTalent||''):''}</span></div>
+    <div class="checkbox-line">${checkbox(talents.includes('sports'))} เป็นนักกีฬา(ระบุประเภท) <strong>${talents.includes('sports') ? (data.sportsType||'') : '................................................................................'}</strong></div>
+    <div class="checkbox-line">${checkbox(talents.includes('music'))} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${talents.includes('music') ? (data.musicType||'') : '.............................................................'}</strong></div>
+    <div class="checkbox-line">${checkbox(talents.includes('other'))} อื่นๆ(ระบุ) <strong>${talents.includes('other') ? (data.otherTalent||'') : '........................................................................................................'}</strong></div>
   </div>
   <div class="signature-section" style="text-align:right;margin-top:12px;">
     <p>ลงชื่อ..........................................................................ผู้สมัคร</p>

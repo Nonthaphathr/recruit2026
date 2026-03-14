@@ -2798,7 +2798,7 @@
                     </h3>
 
                     <div class="form-group">
-                        <label>จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span></label>
+                        <label id="previousSchoolLabel">จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span></label>
                         <input type="text" class="form-control" name="previousSchool" required placeholder="เช่น โรงเรียนบ้านโนนสวรรค์">
                     </div>
 
@@ -4351,13 +4351,16 @@
             const gradeLevel = document.getElementById('gradeLevel').value;
             const formTitle = document.getElementById('formTitle');
             const formCode = document.getElementById('formCode');
+            const prevSchoolLabel = document.getElementById('previousSchoolLabel');
             
             if (gradeLevel === 'm1') {
                 formTitle.textContent = 'ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1';
                 formCode.textContent = 'วก.กทว.202';
+                if (prevSchoolLabel) prevSchoolLabel.innerHTML = 'จบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน <span class="required">*</span>';
             } else if (gradeLevel === 'm4') {
                 formTitle.textContent = 'ใบสมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 4';
                 formCode.textContent = 'วก.กทว.203';
+                if (prevSchoolLabel) prevSchoolLabel.innerHTML = 'จบชั้นมัธยมศึกษาปีที่ 3 จากโรงเรียน <span class="required">*</span>';
             }
         }
 
@@ -4590,7 +4593,7 @@
                         </div>
 
                         <div class="field-line" style="margin-top: 6px;">
-                            <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>
+                            <span class="field-label">3. ปัจจุบันกำลังจบ${data.gradeLevel==='m4' ? 'ชั้นมัธยมศึกษาปีที่ 3' : 'ชั้นประถมศึกษาปีที่ 6'} จากโรงเรียน</span>
                             <span class="field-value">${data.previousSchool || ''}</span>
                         </div>
 
@@ -7713,7 +7716,7 @@ ${lines}
       <span class="field-label">E-mail</span>${fv('160px')}
     </div>
     <div class="field-line" style="margin-top:6px;">
-      <span class="field-label">3. ปัจจุบันกำลังจบชั้นประถมศึกษาปีที่ 6 จากโรงเรียน</span>${fv('180px')}
+      <span class="field-label">3. ปัจจุบันกำลังจบ${isM4 ? 'ชั้นมัธยมศึกษาปีที่ 3' : 'ชั้นประถมศึกษาปีที่ 6'} จากโรงเรียน</span>${fv('180px')}
     </div>
     <div class="field-line">
       <span class="field-label">ตำบล</span>${fv('90px')}

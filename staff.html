@@ -921,6 +921,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .print-document .doc-logo-section{text-align:center;flex:1;}
 .print-document .doc-logo{width:110px;height:110px;margin:0 auto;}
 .print-document .doc-school-info{position:absolute;right:0;top:0;text-align:right;font-size:13px;line-height:1.5;}
+.print-document .doc-photo-box{width:1.5in;height:1.5in;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666;line-height:1.5;margin-top:6px;margin-left:auto;}
 .print-document .doc-title-section{text-align:center;margin-top:8px;}
 .print-document .doc-title{text-align:center;font-size:16px;font-weight:700;margin:5px 0;}
 .print-document .doc-content{margin-bottom:5px;}
@@ -2809,7 +2810,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
   <div class="doc-code">${code}</div>
   <div class="doc-header">
     <div class="doc-logo-section"><img src="${logo}" class="doc-logo" alt="โลโก้"></div>
-    <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}</div>
+    <div class="doc-school-info">วันที่ ${formatThaiDate(data.applicationDate)}<div class="doc-photo-box">ติดรูปถ่าย<br>1.5 นิ้ว</div></div>
   </div>
   <div class="doc-title-section">
     <div class="doc-title">ใบสมัครเข้าเรียนชั้น${grade} ปีการศึกษา ${data.academicYear || '.........................'}</div>

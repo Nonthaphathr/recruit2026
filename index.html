@@ -1170,6 +1170,21 @@
             line-height: 1.5;
         }
 
+        .print-document .doc-photo-box {
+            width: 3cm;
+            height: 4cm;
+            border: 1.5px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.5;
+            margin-top: 6px;
+            margin-left: auto;
+        }
+
         .print-document .doc-title {
             text-align: center;
             font-size: 16px;
@@ -4511,6 +4526,7 @@
                         </div>
                         <div class="doc-school-info">
                             วันที่ ${formatThaiDate(data.applicationDate)}
+                            <div class="doc-photo-box">ติดรูปถ่าย<br>3×4 ซม.</div>
                         </div>
                     </div>
 
@@ -5007,9 +5023,9 @@
             s3.classList.add('active');
             document.getElementById('pendingListTitle').textContent =
                 `📋 รายการรอมอบตัว ${grade === 'm4' ? 'ม.4' : 'ม.1'} — เลือกชื่อนักเรียน`;
-            // ซ่อนปุ่มกรอกใบมอบตัวใหม่ สำหรับ ม.4
+            // ซ่อนปุ่มกรอกใบมอบตัวใหม่ สำหรับทุกระดับชั้น
             const blankBtn = document.getElementById('blankMobtuaBtn');
-            if (blankBtn) blankBtn.style.display = grade === 'm4' ? 'none' : '';
+            if (blankBtn) blankBtn.style.display = 'none';
             // reset search
             const searchEl = document.getElementById('pendingSearchInput');
             if (searchEl) searchEl.value = '';
@@ -7676,7 +7692,9 @@ ${lines}
   <div class="doc-code">${code}</div>
   <div class="doc-header">
     <div class="doc-logo-section"><img src="${logo}" class="doc-logo" alt="โลโก้"></div>
-    <div class="doc-school-info">วันที่ ${fv('120px')}</div>
+    <div class="doc-school-info">วันที่ ${fv('120px')}
+      <div class="doc-photo-box">ติดรูปถ่าย<br>3×4 ซม.</div>
+    </div>
   </div>
   <div class="doc-title-section">
     <div class="doc-title">ใบสมัครเข้าเรียนชั้น${gradeText} ปีการศึกษา ${dots(17)}</div>

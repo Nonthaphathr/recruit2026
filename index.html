@@ -1386,6 +1386,18 @@
             body[data-print="blank"] .blank-doc-page:last-child {
                 page-break-after: avoid;
             }
+            /* ใช้ CSS ของ mobtua-doc ให้ทำงานใน blank print */
+            body[data-print="blank"] #blankPrintArea .mobtua-doc {
+                width: 100% !important;
+                min-height: auto !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                font-size: 13px !important;
+            }
+            body[data-print="blank"] #blankPrintArea .mobtua-doc .mobtua-page-2 {
+                border-top: none !important;
+            }
 
             /* ===== บันทึกข้อความรายงานประจำวัน ===== */
             body[data-print="memo"] #memoPrintArea {
@@ -7770,7 +7782,9 @@ ${lines}
             const parentOpts = ['อยู่ร่วมกัน','แยกกันอยู่','อย่าร้าง','บิดาเสียชีวิต','มารดาเสียชีวิต'];
             const parentCbs = parentOpts.map(o=>`${cb()} ${o}`).join(' &nbsp; ');
             return `
-<div class="blank-doc-page mobtua-page-1" style="font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.55;color:#000;background:white;padding:8mm 10mm;">
+<div class="mobtua-doc" style="width:100%;min-height:auto;padding:0;box-shadow:none;">
+
+<div class="blank-doc-page mobtua-page-1" style="padding:8mm 10mm;">
   <div class="mt-code">วก.กทว.205</div>
   <div class="mt-doc-header-row">
     <img src="${logo}" class="mt-logo" alt="โลโก้">
@@ -7819,7 +7833,7 @@ ${lines}
   <p class="mt-para mt-nowrap">จังหวัด ${v('65px')} รายได้/เดือน ${v('48px')} บาท &nbsp; โทรศัพท์มือถือ ${v('85px')}</p>
 </div>
 
-<div class="blank-doc-page mobtua-page-2" style="font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.55;color:#000;background:white;padding:8mm 10mm;page-break-before:always;">
+<div class="blank-doc-page mobtua-page-2" style="padding:8mm 10mm;page-break-before:always;">
   <div class="mt-code" style="margin-top:4px;">วก.กทว.205</div>
   <p class="mt-para mt-nowrap" style="margin-top:4px;">สถานภาพของบิดา มารดา &nbsp; ${parentCbs} &nbsp; อื่นๆ ระบุ ${v('70px')}</p>
   <p class="mt-section-title">ข้อมูลผู้ปกครอง (กรณีที่นักเรียนไม่ได้อยู่กับบิดา/มารดา)</p>
@@ -7864,7 +7878,9 @@ ${lines}
       <p>วันที่.................เดือน..............................พ.ศ...............</p>
     </div>
   </div>
-</div>`;
+</div>
+
+</div>`; /* end .mobtua-doc */
         }
 
         function printBlankAdmission(grade) {

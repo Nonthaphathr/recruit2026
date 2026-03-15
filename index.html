@@ -7949,41 +7949,40 @@ ${lines}
             if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
 
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwoY7rtkGYiSvClhJIGBV1PYIMh6kZmLpNt6XoKB1Dg39nVzCDc1gC5q1ts5HiTWKXW/exec';
 
         // ─── LINE Notify helper ───────────────────────────────────────────
-        // POST + mode:'no-cors' = CORS simple request, browser ส่งผ่านได้, GAS ทำงาน
-        // ไม่สามารถอ่าน response ได้ (opaque) แต่ GAS ยังรับและส่ง LINE ได้ปกติ
+        // GET + URL params + mode:'no-cors'
+        // GAS redirect POST→GET เสมอ ดังนั้นส่ง GET ตรงๆ ดีกว่า
+        // GAS script ต้องมี doGet(e) ที่อ่านจาก e.parameter
+        function buildLineUrl(lines) {
+            const url = new URL(GAS_URL);
+            ['l1','l2','l3','l4','l5','l6','l7','l8'].forEach((k,i) => {
+                url.searchParams.set(k, lines[i] || '');
+            });
+            return url.toString();
+        }
+
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
             if (!enabled) { console.log('[LINE Notify] ปิดอยู่'); return; }
             const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
             const lines = msgText.split('\n');
-            const body = JSON.stringify({
-                l1: lines[0] || '', l2: lines[1] || '',
-                l3: lines[2] || '', l4: lines[3] || '',
-                l5: lines[4] || '', l6: lines[5] || '',
-                l7: lines[6] || '', l8: lines[7] || ''
-            });
+            const url = buildLineUrl(lines);
 
             const doFetch = (ms) => {
                 const ctrl = new AbortController();
                 const timer = setTimeout(() => ctrl.abort(), ms);
-                return fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',           // ← key: ไม่ต้องการ CORS header จาก GAS
-                    headers: { 'Content-Type': 'text/plain' },
-                    body,
-                    signal: ctrl.signal
-                }).finally(() => clearTimeout(timer));
+                // GET + no-cors: ไม่มี preflight, GAS รับ params ผ่าน e.parameter
+                return fetch(url, { method: 'GET', mode: 'no-cors', signal: ctrl.signal })
+                    .finally(() => clearTimeout(timer));
             };
 
             try {
-                console.log('[LINE Notify] กำลังส่ง...', lines[0]);
+                console.log('[LINE Notify] กำลังส่ง GET...', lines[0]);
                 await doFetch(10000);
-                console.log('[LINE Notify] ส่งแล้ว (no-cors = ไม่สามารถอ่าน status ได้)');
+                console.log('[LINE Notify] ส่งแล้ว');
             } catch(e) {
-                // retry ครั้งเดียวหลัง 5 วินาที (fire-and-forget)
                 console.warn('[LINE Notify] ครั้งแรกล้มเหลว retry ใน 5s:', e.message);
                 setTimeout(async () => {
                     try { await doFetch(12000); console.log('[LINE Notify] retry ส่งแล้ว'); }
@@ -7994,23 +7993,16 @@ ${lines}
 
         async function testLineNotify() {
             showToast('⏳ กำลังส่งทดสอบ LINE...');
-            const body = JSON.stringify({
-                l1: '🧪 ทดสอบระบบแจ้งเตือน',
-                l2: '🏫 โรงเรียนกระดุมทองวิทยา',
-                l3: '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                l4: '✅ เชื่อมต่อสำเร็จ!',
-                l5: '🔗 https://nonthaphathr.github.io/recruit2026/staff.html',
-                l6: '', l7: '', l8: ''
-            });
+            const url = buildLineUrl([
+                '🧪 ทดสอบระบบแจ้งเตือน',
+                '🏫 โรงเรียนกระดุมทองวิทยา',
+                '📋 ระบบรับสมัครนักเรียนออนไลน์',
+                '✅ เชื่อมต่อสำเร็จ!',
+                '🔗 https://nonthaphathr.github.io/recruit2026/staff.html'
+            ]);
             try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body
-                });
-                // no-cors = ไม่สามารถอ่าน response ได้ แต่ request ส่งถึง GAS แล้ว
-                showToast('📨 ส่งคำสั่งไปยัง GAS แล้ว — รอดูกลุ่ม LINE ภายใน 10 วินาที');
+                await fetch(url, { method: 'GET', mode: 'no-cors' });
+                showToast('📨 ส่งคำสั่งไปยัง GAS แล้ว — รอดูกลุ่ม LINE ภายใน 15 วินาที');
             } catch(e) {
                 showToast('❌ ส่งไม่สำเร็จ: ' + e.message, 'error');
             }

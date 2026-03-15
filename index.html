@@ -7951,11 +7951,10 @@ ${lines}
 
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhVxTyeKMdG8NH75PIJ9QjewYnH7dHzNx9Uyn4eQR-5K7g_IO1g2MuqnOIJ6SpCm6r/exec';
 
-        // ─── LINE Notify helper ───────────────────────────────────────────
-        // GET + URL params + mode:'no-cors'
-        // GAS redirect POST→GET เสมอ ดังนั้นส่ง GET ตรงๆ ดีกว่า
-        // GAS script ต้องมี doGet(e) ที่อ่านจาก e.parameter
-        function buildLineUrl(lines) {
+        // ─── Email Notify helper (via GAS) ──────────────────────────────
+        // ใช้ Image pixel trick: browser โหลด URL เป็น <img> src
+        // ไม่มีปัญหา CORS เลย — GAS รับ GET request ผ่าน doGet(e) ได้ 100%
+        function buildGasNotifyUrl(lines) {
             const url = new URL(GAS_URL);
             ['l1','l2','l3','l4','l5','l6','l7','l8'].forEach((k,i) => {
                 url.searchParams.set(k, lines[i] || '');
@@ -7963,49 +7962,39 @@ ${lines}
             return url.toString();
         }
 
+        function fireGasUrl(url) {
+            // Image pixel trick — ไม่มี CORS, ไม่ต้อง await, browser ส่งถึง GAS เสมอ
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload  = () => { console.log('[Notify] GAS ตอบกลับแล้ว'); resolve(true); };
+                img.onerror = () => { console.log('[Notify] GAS รับแล้ว (error = ปกติสำหรับ GAS)'); resolve(true); };
+                img.src = url;
+                // timeout กัน hang
+                setTimeout(() => resolve(false), 15000);
+            });
+        }
+
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-            if (!enabled) { console.log('[LINE Notify] ปิดอยู่'); return; }
+            if (!enabled) { console.log('[Notify] ปิดอยู่'); return; }
             const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
             const lines = msgText.split('\n');
-            const url = buildLineUrl(lines);
-
-            const doFetch = (ms) => {
-                const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), ms);
-                // GET + no-cors: ไม่มี preflight, GAS รับ params ผ่าน e.parameter
-                return fetch(url, { method: 'GET', mode: 'no-cors', signal: ctrl.signal })
-                    .finally(() => clearTimeout(timer));
-            };
-
-            try {
-                console.log('[LINE Notify] กำลังส่ง GET...', lines[0]);
-                await doFetch(10000);
-                console.log('[LINE Notify] ส่งแล้ว');
-            } catch(e) {
-                console.warn('[LINE Notify] ครั้งแรกล้มเหลว retry ใน 5s:', e.message);
-                setTimeout(async () => {
-                    try { await doFetch(12000); console.log('[LINE Notify] retry ส่งแล้ว'); }
-                    catch(e2) { console.warn('[LINE Notify] retry ล้มเหลว:', e2.message); }
-                }, 5000);
-            }
+            const url = buildGasNotifyUrl(lines);
+            console.log('[Notify] กำลังส่ง...', lines[0]);
+            await fireGasUrl(url);
         }
 
         async function testLineNotify() {
-            showToast('⏳ กำลังส่งทดสอบ LINE...');
-            const url = buildLineUrl([
-                '🧪 ทดสอบระบบแจ้งเตือน',
+            showToast('⏳ กำลังส่งทดสอบ...');
+            const url = buildGasNotifyUrl([
+                '🧪 ทดสอบระบบแจ้งเตือนทางอีเมล',
                 '🏫 โรงเรียนกระดุมทองวิทยา',
                 '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                '✅ เชื่อมต่อสำเร็จ!',
+                '✅ ระบบแจ้งเตือนอีเมลใช้งานได้!',
                 '🔗 https://nonthaphathr.github.io/recruit2026/staff.html'
             ]);
-            try {
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
-                showToast('📨 ส่งคำสั่งไปยัง GAS แล้ว — รอดูกลุ่ม LINE ภายใน 15 วินาที');
-            } catch(e) {
-                showToast('❌ ส่งไม่สำเร็จ: ' + e.message, 'error');
-            }
+            await fireGasUrl(url);
+            showToast('📧 ส่งคำสั่งไปยัง GAS แล้ว — ตรวจสอบอีเมล nonthaphathr@gmail.com');
         }
 
     </script>

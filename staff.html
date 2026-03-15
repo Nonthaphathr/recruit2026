@@ -2035,6 +2035,8 @@ let unsubAdmission = null;
 let unsubMobtua    = null;
 let isFirstLoadAdmission = true;
 let isFirstLoadMobtua    = true;
+// ป้องกัน notification ซ้ำ — เก็บ id ที่แจ้งเตือนไปแล้ว
+const _notifiedIds = new Set();
 
 /* ─────────────────────────────────────────────────
    AUTH
@@ -2085,20 +2087,23 @@ function subscribeAdmissions() {
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'admissions', ...d.data() }));
 
     if (!isFirstLoadAdmission) {
-      // ตรวจหา record ใหม่
+      // ตรวจหา record ใหม่ — กรองด้วย _notifiedIds เพื่อป้องกันซ้ำ
       const oldIds = new Set(allAdmissions.map(r => r.id));
-      const added  = newRecords.filter(r => !oldIds.has(r.id));
+      const added  = newRecords.filter(r => !oldIds.has(r.id) && !_notifiedIds.has(r.id));
       added.forEach(r => {
+        _notifiedIds.add(r.id);
         addNotification('admission', r.studentName || 'ไม่ระบุ', r.createdAt);
         showToast(`📄 ใบสมัครใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบสมัครเรียนเข้ามาใหม่');
         highlightRowLater(r.id, 'admission');
       });
     }
-    if (isFirstLoadAdmission) setConnStatus(true);
+    const firstLoad = isFirstLoadAdmission;
     isFirstLoadAdmission = false;
     allAdmissions = newRecords;
     try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
     try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
+    // setConnStatus หลัง render เสร็จ — ข้อมูลขึ้นก่อนซ่อน loader
+    if (firstLoad) setConnStatus(true);
   }, err => {
     console.error('admission snapshot error:', err);
     setConnStatus(false);
@@ -2123,14 +2128,18 @@ function subscribeMobtua() {
         const wasKnown  = r.id in oldStatusMap;
         const oldStatus = oldStatusMap[r.id] || '';
         const isDone    = r.status === 'done';
+        // กุญแจป้องกันซ้ำ: ใช้ id+status เพื่อให้ notify ได้อีกครั้งเมื่อ status เปลี่ยน
+        const notifKey = `${r.id}_${isDone ? 'done' : 'pending'}`;
 
-        if (!wasKnown && isDone) {
+        if (!wasKnown && isDone && !_notifiedIds.has(notifKey)) {
           // brand-new record that is already done (parent submitted directly)
+          _notifiedIds.add(notifKey);
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
-        } else if (wasKnown && oldStatus !== 'done' && isDone) {
+        } else if (wasKnown && oldStatus !== 'done' && isDone && !_notifiedIds.has(notifKey)) {
           // existing pending record → parent just completed it
+          _notifiedIds.add(notifKey);
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวเสร็จสมบูรณ์: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
@@ -2150,6 +2159,9 @@ function subscribeMobtua() {
 function loadAll() {
   isFirstLoadAdmission = true;
   isFirstLoadMobtua    = true;
+  // ล้าง notified set เฉพาะตอน manual refresh
+  // เพื่อให้ข้อมูลปัจจุบันไม่ถูก notify ซ้ำ แต่ข้อมูลใหม่หลังจากนี้จะ notify ได้ปกติ
+  _notifiedIds.clear();
   if (unsubAdmission) unsubAdmission();
   if (unsubMobtua)    unsubMobtua();
   subscribeAdmissions();

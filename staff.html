@@ -2001,7 +2001,7 @@ import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/fi
 import {
   getFirestore, collection, getDocs, getDoc, doc,
   deleteDoc, updateDoc, query, orderBy, where, onSnapshot,
-  serverTimestamp, Timestamp
+  serverTimestamp, Timestamp, enableIndexedDbPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /* ── Firebase config ── */
@@ -2015,6 +2015,17 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+
+/* ═══ FIX: เปิด offline persistence ═══
+   เก็บ cache ไว้ใน IndexedDB → ครั้งถัดไปโหลดจาก cache ทันที
+   ไม่ต้องรอ server ตอบ → แก้ปัญหาข้อมูลโหลดช้า 1 นาที */
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === 'failed-precondition') {
+    console.warn('Persistence failed: multiple tabs open');
+  } else if (err.code === 'unimplemented') {
+    console.warn('Persistence not supported in this browser');
+  }
+});
 
 /* ── Expose helpers ── */
 window._db = db;
@@ -2035,8 +2046,10 @@ let unsubAdmission = null;
 let unsubMobtua    = null;
 let isFirstLoadAdmission = true;
 let isFirstLoadMobtua    = true;
-// ป้องกัน notification ซ้ำ — เก็บ id ที่แจ้งเตือนไปแล้ว
+// ป้องกัน notification ซ้ำ
 const _notifiedIds = new Set();
+// Grace period: ไม่แจ้งเตือนภายใน 5 วินาทีหลัง subscribe ใหม่
+let _subscribeTime = 0;
 
 /* ─────────────────────────────────────────────────
    AUTH
@@ -2078,6 +2091,7 @@ function initApp() {
    REAL-TIME LISTENERS
 ───────────────────────────────────────────────── */
 function subscribeAdmissions() {
+  _subscribeTime = Date.now();
   const q = window._fs.query(
     window._fs.collection(window._db, 'admissions'),
     window._fs.orderBy('createdAt', 'desc')
@@ -2086,8 +2100,20 @@ function subscribeAdmissions() {
     const newRecords = [];
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'admissions', ...d.data() }));
 
-    if (!isFirstLoadAdmission) {
-      // ตรวจหา record ใหม่ — กรองด้วย _notifiedIds เพื่อป้องกันซ้ำ
+    // ═══ FIX: ไม่นับ snapshot ว่างเป็น "first load" ═══
+    // Firestore อาจยิง callback ครั้งแรกด้วยข้อมูลว่าง (cache ว่าง)
+    // แล้วครั้งที่ 2 ด้วยข้อมูลจริง → ถ้าตั้ง isFirstLoad=false ตอนว่าง
+    // ครั้งที่ 2 จะเห็นทุก record เป็น "ใหม่" → แจ้งเตือนซ้ำทั้งหมด
+    if (newRecords.length === 0 && isFirstLoadAdmission) {
+      // snapshot ว่าง → render แต่ไม่เปลี่ยน flag
+      allAdmissions = newRecords;
+      try { renderAdmissions(); } catch(e) {}
+      try { updateStats(); } catch(e) {}
+      return;
+    }
+
+    if (!isFirstLoadAdmission && (Date.now() - _subscribeTime > 5000)) {
+      // ตรวจหา record ใหม่ — เฉพาะหลัง grace period 5 วินาที
       const oldIds = new Set(allAdmissions.map(r => r.id));
       const added  = newRecords.filter(r => !oldIds.has(r.id) && !_notifiedIds.has(r.id));
       added.forEach(r => {
@@ -2096,13 +2122,16 @@ function subscribeAdmissions() {
         showToast(`📄 ใบสมัครใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบสมัครเรียนเข้ามาใหม่');
         highlightRowLater(r.id, 'admission');
       });
+    } else if (isFirstLoadAdmission) {
+      // first load — บันทึก id ทั้งหมดเพื่อป้องกัน notify ซ้ำ
+      newRecords.forEach(r => _notifiedIds.add(r.id));
     }
+
     const firstLoad = isFirstLoadAdmission;
     isFirstLoadAdmission = false;
     allAdmissions = newRecords;
     try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
     try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
-    // setConnStatus หลัง render เสร็จ — ข้อมูลขึ้นก่อนซ่อน loader
     if (firstLoad) setConnStatus(true);
   }, err => {
     console.error('admission snapshot error:', err);
@@ -2119,7 +2148,15 @@ function subscribeMobtua() {
     const newRecords = [];
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'mobtua', ...d.data() }));
 
-    if (!isFirstLoadMobtua) {
+    // ═══ FIX: ไม่นับ snapshot ว่างเป็น "first load" ═══
+    if (newRecords.length === 0 && isFirstLoadMobtua) {
+      allMobtua = newRecords;
+      try { renderMobtua(); } catch(e) {}
+      try { updateStats(); } catch(e) {}
+      return;
+    }
+
+    if (!isFirstLoadMobtua && (Date.now() - _subscribeTime > 5000)) {
       // build old status map: id → status
       const oldStatusMap = {};
       allMobtua.forEach(r => { oldStatusMap[r.id] = r.status || ''; });
@@ -2128,24 +2165,27 @@ function subscribeMobtua() {
         const wasKnown  = r.id in oldStatusMap;
         const oldStatus = oldStatusMap[r.id] || '';
         const isDone    = r.status === 'done';
-        // กุญแจป้องกันซ้ำ: ใช้ id+status เพื่อให้ notify ได้อีกครั้งเมื่อ status เปลี่ยน
-        const notifKey = `${r.id}_${isDone ? 'done' : 'pending'}`;
+        const notifKey = `mt_${r.id}_${isDone ? 'done' : 'pending'}`;
 
         if (!wasKnown && isDone && !_notifiedIds.has(notifKey)) {
-          // brand-new record that is already done (parent submitted directly)
           _notifiedIds.add(notifKey);
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
         } else if (wasKnown && oldStatus !== 'done' && isDone && !_notifiedIds.has(notifKey)) {
-          // existing pending record → parent just completed it
           _notifiedIds.add(notifKey);
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวเสร็จสมบูรณ์: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
         }
       });
+    } else if (isFirstLoadMobtua) {
+      // first load — บันทึก id ทั้งหมดเพื่อป้องกัน notify ซ้ำ
+      newRecords.forEach(r => {
+        _notifiedIds.add(`mt_${r.id}_${r.status === 'done' ? 'done' : 'pending'}`);
+      });
     }
+
     isFirstLoadMobtua = false;
     allMobtua = newRecords;
     try { renderMobtua(); } catch(e) { console.error('renderMobtua error:', e); }
@@ -2159,9 +2199,9 @@ function subscribeMobtua() {
 function loadAll() {
   isFirstLoadAdmission = true;
   isFirstLoadMobtua    = true;
-  // ล้าง notified set เฉพาะตอน manual refresh
-  // เพื่อให้ข้อมูลปัจจุบันไม่ถูก notify ซ้ำ แต่ข้อมูลใหม่หลังจากนี้จะ notify ได้ปกติ
-  _notifiedIds.clear();
+  // ═══ FIX: ไม่ clear _notifiedIds ═══
+  // เพราะการ clear ทำให้ข้อมูลเดิมถูก notify ซ้ำเมื่อ Firestore ส่งมาใหม่
+  // แทนที่จะ clear → ปล่อยให้ isFirstLoad=true จัดการเพิ่ม id ใหม่เข้าไปแทน
   if (unsubAdmission) unsubAdmission();
   if (unsubMobtua)    unsubMobtua();
   subscribeAdmissions();
@@ -4973,7 +5013,10 @@ function addNotification(type, name, ts) {
 
 function showNewDataModal() {
     if (!_pendingNewData.length) return;
-    const items = [..._pendingNewData];
+    // ═══ FIX: จำกัดแสดงสูงสุด 5 รายการ ป้องกันเต็มจอ ═══
+    const allItems = [..._pendingNewData];
+    const items = allItems.slice(0, 5);
+    const overflow = allItems.length - items.length;
     // track latest for action buttons
     if (items[0]) {
         const latest = items[0].type === 'admission' ? allAdmissions[0] : allMobtua[0];
@@ -4994,6 +5037,9 @@ function showNewDataModal() {
             </div>
         </div>`;
     }).join('');
+    if (overflow > 0) {
+        body.innerHTML += `<div style="text-align:center;font-size:.82rem;color:#64748b;padding:.5rem;">และอีก ${overflow} รายการ…</div>`;
+    }
     const backdrop = document.getElementById('newDataAlertBackdrop');
     backdrop.style.display = 'flex';
     // Sound notification (silent beep via AudioContext)
@@ -5144,6 +5190,10 @@ function highlightRowLater(id, type) {
 ───────────────────────────────────────────────── */
 function showToast(title, type = 'info', msg = '') {
   const area = document.getElementById('toastArea');
+  // ═══ FIX: จำกัด toast สูงสุด 3 อัน ป้องกันเต็มจอ ═══
+  while (area.children.length >= 3) {
+    area.firstChild.remove();
+  }
   const icons = { success:'✅', error:'❌', info:'ℹ️', 'new-data':'🔔' };
   const el = document.createElement('div');
   el.className = `toast-item ${type}`;
@@ -5156,7 +5206,7 @@ function showToast(title, type = 'info', msg = '') {
     <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
   `;
   area.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='.3s'; setTimeout(()=>el.remove(), 300); }, 5000);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='.3s'; setTimeout(()=>el.remove(), 300); }, 4000);
 }
 window.showToast = showToast;
 
@@ -5253,10 +5303,12 @@ document.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Dismiss loader — fast timeout fallback (Firebase will also hide it when connected)
+  // ═══ FIX: ซ่อน loader เร็วขึ้น ═══
+  // ด้วย persistence → cache จะทำให้ onSnapshot callback เร็วมาก
+  // fallback timeout 3 วินาที (เดิม 1.2 วิ) กรณี offline/ช้าจริงๆ
   setTimeout(() => {
     document.getElementById('pageLoader').classList.add('done');
-  }, 1200); // increased slightly to allow Firebase to respond first
+  }, 3000);
 
   // Auto-login if session exists
   if (sessionStorage.getItem('staffAuth') === '1') {

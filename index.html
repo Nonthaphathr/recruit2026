@@ -7953,26 +7953,41 @@ ${lines}
 
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-            console.log('[LINE Notify] enabled:', enabled);
-            if (!enabled) { console.log('[LINE Notify] ปิดอยู่ กรุณาเปิด Toggle ใน Settings'); return; }
-            try {
-                const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
-                const lines = msgText.split('\n');
-                const body = {
-                    l1: lines[0] || '', l2: lines[1] || '',
-                    l3: lines[2] || '', l4: lines[3] || '',
-                    l5: lines[4] || '', l6: lines[5] || '',
-                    l7: lines[6] || '', l8: lines[7] || ''
-                };
-                console.log('[LINE Notify] กำลังส่ง...', body.l1);
-                const res = await fetch(GAS_URL, {
+            if (!enabled) { console.log('[LINE Notify] ปิดอยู่'); return; }
+            const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
+            const lines = msgText.split('\n');
+            const body = {
+                l1: lines[0] || '', l2: lines[1] || '',
+                l3: lines[2] || '', l4: lines[3] || '',
+                l5: lines[4] || '', l6: lines[5] || '',
+                l7: lines[6] || '', l8: lines[7] || ''
+            };
+            // helper: fetch พร้อม timeout
+            const fetchWithTimeout = (ms) => {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), ms);
+                return fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(body)
-                });
+                    body: JSON.stringify(body),
+                    signal: ctrl.signal
+                }).finally(() => clearTimeout(timer));
+            };
+            try {
+                console.log('[LINE Notify] กำลังส่ง...', body.l1);
+                const res = await fetchWithTimeout(10000); // timeout 10 วินาที
                 console.log('[LINE Notify] ส่งแล้ว status:', res.status);
             } catch(e) {
-                console.warn('[LINE Notify] Error:', e.message);
+                // retry ครั้งเดียวหลัง 5 วินาที (fire-and-forget)
+                console.warn('[LINE Notify] ครั้งแรกไม่สำเร็จ retry ใน 5s...', e.message);
+                setTimeout(async () => {
+                    try {
+                        await fetchWithTimeout(12000);
+                        console.log('[LINE Notify] retry สำเร็จ');
+                    } catch(e2) {
+                        console.warn('[LINE Notify] retry ล้มเหลว:', e2.message);
+                    }
+                }, 5000);
             }
         }
 

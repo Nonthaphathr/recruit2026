@@ -4002,24 +4002,25 @@
                     </button>
                 </div>
 
-                <!-- ════ LINE Notify ════ -->
+                <!-- ════ Email Notify ════ -->
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
-                    <h4 style="margin-bottom: 0.5rem; color: #00b900;">💬 แจ้งเตือน LINE กลุ่มครู</h4>
+                    <h4 style="margin-bottom: 0.5rem; color: #1d4ed8;">📧 แจ้งเตือนทางอีเมล</h4>
                     <p style="font-size:var(--text-sm); color:var(--text-light); margin-bottom:1rem; line-height:1.6;">
-                        เมื่อมีผู้สมัคร/มอบตัวใหม่ ระบบจะส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE ของครูโดยอัตโนมัติ
+                        เมื่อมีผู้สมัคร/มอบตัวใหม่ ระบบจะส่งอีเมลแจ้งเตือนอัตโนมัติ<br>
+                        <strong>📬 ส่งไปที่:</strong> nonthaphathr@gmail.com
                     </p>
                     <div class="form-group">
                         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-                            <input type="checkbox" id="lineNotifyToggle" onchange="saveLineSettings()" style="width:20px; height:20px;">
-                            <span>เปิดใช้งานแจ้งเตือน LINE</span>
+                            <input type="checkbox" id="lineNotifyToggle" onchange="saveEmailSettings()" style="width:20px; height:20px;">
+                            <span>เปิดใช้งานแจ้งเตือนอีเมล</span>
                         </label>
                     </div>
                     <div style="display:flex; gap:8px; margin-top:0.75rem;">
-                        <button class="btn btn-primary" onclick="saveLineSettings()" style="flex:1; background:linear-gradient(135deg,#00b900,#00d400);">
-                            💾 บันทึกการตั้งค่า LINE
+                        <button class="btn btn-primary" onclick="saveEmailSettings()" style="flex:1; background:linear-gradient(135deg,#1d4ed8,#3b82f6);">
+                            💾 บันทึกการตั้งค่าอีเมล
                         </button>
-                        <button class="btn" onclick="testLineNotify()" style="flex-shrink:0; background:#f0fdf4; border:1px solid #86efac; color:#166534;">
-                            🧪 ทดสอบ
+                        <button class="btn" onclick="testEmailNotify()" style="flex-shrink:0; background:#eff6ff; border:1px solid #93c5fd; color:#1e40af;">
+                            🧪 ทดสอบส่งอีเมล
                         </button>
                     </div>
                     <div id="lineSettingStatus" style="margin-top:8px; font-size:0.8rem; color:var(--text-light);"></div>
@@ -4753,9 +4754,10 @@
                 console.log('Document written with ID:', docRef.id);
                 // สร้าง pending mobtua record อัตโนมัติ
                 await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
-                // แจ้งเตือน LINE กลุ่มครู
-                await sendLineNotify(
-                    '📋 มีใบสมัครเข้าเรียนใหม่!\n' +
+                // แจ้งเตือนอีเมล
+                await sendEmailNotify(
+                    `📋 ใบสมัครใหม่ — ${record.studentName} (${gradeText})`,
+                    `📋 มีใบสมัครเข้าเรียนใหม่!\n` +
                     `👤 ${record.studentName}\n` +
                     `📚 ระดับชั้น: ${gradeText}\n` +
                     `🏫 โรงเรียนเดิม: ${data.previousSchool || '-'}\n` +
@@ -5510,7 +5512,7 @@
             if (password === '1111') {
                 loadAdminSettings();
                 loadAppointmentSettings();
-                loadLineSettings();
+                loadEmailSettings();
                 document.getElementById('adminModal').classList.add('active');
             } else if (password !== null) {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -6621,14 +6623,15 @@
                 const html = generateMobtuaDocumentHTML(d, {}, false);
                 document.getElementById('mobtuaPreviewArea').innerHTML = html;
                 document.getElementById('mobtuaPrintArea').innerHTML = html;
-                // แจ้งเตือน LINE กลุ่มครู
+                // แจ้งเตือนอีเมล
                 const gradeLabel = (d.mt_classRoom || '').startsWith('ม.4') ? 'ม.4' : 'ม.1';
-                await sendLineNotify(
-                    '✅ มีใบมอบตัวนักเรียนใหม่!\n' +
+                await sendEmailNotify(
+                    `✅ ใบมอบตัวใหม่ — ${d.mt_studentFullName || '-'} (${gradeLabel})`,
+                    `✅ มีใบมอบตัวนักเรียนใหม่!\n` +
                     `👤 ${d.mt_studentFullName || '-'}\n` +
                     `📚 ระดับชั้น: ${gradeLabel} (${d.mt_classRoom || '-'})\n` +
                     `👨‍👩‍👦 ผู้ปกครอง: ${d.mt_guardianName || '-'}\n` +
-                    `📞 ${d.mt_guardianPhone || d.mt_phone || '-'}\n` +
+                    `📞 ${d.mt_guardianMobile || '-'}\n` +
                     `🕐 ${new Date().toLocaleString('th-TH')}\n` +
                     `🔗 https://nonthaphathr.github.io/recruit2026/staff.html`
                 );
@@ -7930,71 +7933,101 @@ ${lines}
         }
 
         // ════════════════════════════════════════════════════
-        //  LINE Notify via Make.com Webhook
+        //  EMAIL NOTIFY via Google Apps Script
+        //  ใช้ 2 วิธีพร้อมกัน เพื่อให้แน่ใจว่าส่งถึง:
+        //  1) fetch POST mode:'no-cors' (fire-and-forget)
+        //  2) Image pixel GET (fallback ไม่มี CORS)
         // ════════════════════════════════════════════════════
 
-        function saveLineSettings() {
+        // ⚠️ ต้อง Deploy GAS Web App ใหม่ แล้วเอา URL มาใส่ตรงนี้
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbx7QNly6x01Q_VxpnYupF-dPsEJuyyx0EAsqaPNUYtUJ0DlzFs9XOzW8WbXN15YhncTjA/exec';
+
+        function saveEmailSettings() {
             const enabled = document.getElementById('lineNotifyToggle')?.checked || false;
             localStorage.setItem('lineNotifyEnabled', enabled);
             const status = document.getElementById('lineSettingStatus');
             if (status) status.textContent = enabled ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
-            showToast('บันทึกการตั้งค่า LINE สำเร็จ');
+            showToast('บันทึกการตั้งค่าอีเมลสำเร็จ');
             syncSettingsToFirestore();
         }
 
-        function loadLineSettings() {
+        function loadEmailSettings() {
             const toggle = document.getElementById('lineNotifyToggle');
             const status = document.getElementById('lineSettingStatus');
             if (toggle) toggle.checked = localStorage.getItem('lineNotifyEnabled') === 'true';
             if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
 
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhVxTyeKMdG8NH75PIJ9QjewYnH7dHzNx9Uyn4eQR-5K7g_IO1g2MuqnOIJ6SpCm6r/exec';
-
-        // ─── Email Notify helper (via GAS) ──────────────────────────────
-        // ใช้ Image pixel trick: browser โหลด URL เป็น <img> src
-        // ไม่มีปัญหา CORS เลย — GAS รับ GET request ผ่าน doGet(e) ได้ 100%
-        function buildGasNotifyUrl(lines) {
-            const url = new URL(GAS_URL);
-            ['l1','l2','l3','l4','l5','l6','l7','l8'].forEach((k,i) => {
-                url.searchParams.set(k, lines[i] || '');
-            });
-            return url.toString();
-        }
-
-        function fireGasUrl(url) {
-            // Image pixel trick — ไม่มี CORS, ไม่ต้อง await, browser ส่งถึง GAS เสมอ
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload  = () => { console.log('[Notify] GAS ตอบกลับแล้ว'); resolve(true); };
-                img.onerror = () => { console.log('[Notify] GAS รับแล้ว (error = ปกติสำหรับ GAS)'); resolve(true); };
-                img.src = url;
-                // timeout กัน hang
-                setTimeout(() => resolve(false), 15000);
-            });
-        }
-
-        async function sendLineNotify(payload) {
+        /**
+         * ส่งแจ้งเตือนอีเมลผ่าน GAS
+         * @param {string} subject - หัวข้ออีเมล
+         * @param {string} bodyText - เนื้อหาอีเมล (plain text, ขึ้นบรรทัดใหม่ด้วย \n)
+         */
+        async function sendEmailNotify(subject, bodyText) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
-            if (!enabled) { console.log('[Notify] ปิดอยู่'); return; }
-            const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
-            const lines = msgText.split('\n');
-            const url = buildGasNotifyUrl(lines);
-            console.log('[Notify] กำลังส่ง...', lines[0]);
-            await fireGasUrl(url);
+            if (!enabled) {
+                console.log('[EmailNotify] ปิดอยู่');
+                return;
+            }
+            console.log('[EmailNotify] กำลังส่ง:', subject);
+
+            const payload = JSON.stringify({ subject: subject, body: bodyText });
+
+            // ── วิธีที่ 1: fetch POST mode:'no-cors' ──
+            // Browser ส่ง request จริง แต่อ่าน response ไม่ได้ (ไม่เป็นไร)
+            try {
+                fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                    body: payload
+                }).then(() => {
+                    console.log('[EmailNotify] POST ส่งแล้ว (opaque response)');
+                }).catch(e => {
+                    console.warn('[EmailNotify] POST fallback:', e.message);
+                });
+            } catch(e) {
+                console.warn('[EmailNotify] POST error:', e.message);
+            }
+
+            // ── วิธีที่ 2: Image pixel GET (backup) ──
+            // ไม่มี CORS issue เพราะ browser โหลดเป็น image
+            try {
+                const params = new URLSearchParams();
+                params.set('subject', subject);
+                params.set('body', bodyText);
+                params.set('_t', Date.now()); // cache buster
+                const imgUrl = GAS_URL + '?' + params.toString();
+                const img = new Image();
+                img.onload  = () => console.log('[EmailNotify] GET สำเร็จ');
+                img.onerror = () => console.log('[EmailNotify] GET ส่งแล้ว (expected non-image response)');
+                img.src = imgUrl;
+            } catch(e) {
+                console.warn('[EmailNotify] GET error:', e.message);
+            }
         }
 
-        async function testLineNotify() {
-            showToast('⏳ กำลังส่งทดสอบ...');
-            const url = buildGasNotifyUrl([
-                '🧪 ทดสอบระบบแจ้งเตือนทางอีเมล',
-                '🏫 โรงเรียนกระดุมทองวิทยา',
-                '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                '✅ ระบบแจ้งเตือนอีเมลใช้งานได้!',
+        async function testEmailNotify() {
+            showToast('⏳ กำลังส่งทดสอบอีเมล...');
+            // force enable temporarily for test
+            const wasEnabled = localStorage.getItem('lineNotifyEnabled');
+            localStorage.setItem('lineNotifyEnabled', 'true');
+
+            await sendEmailNotify(
+                '🧪 ทดสอบระบบแจ้งเตือน — โรงเรียนกระดุมทองวิทยา',
+                '🧪 ทดสอบระบบแจ้งเตือนทางอีเมล\n' +
+                '🏫 โรงเรียนกระดุมทองวิทยา\n' +
+                '📋 ระบบรับสมัครนักเรียนออนไลน์\n' +
+                '✅ ระบบแจ้งเตือนอีเมลใช้งานได้!\n' +
+                '🕐 ' + new Date().toLocaleString('th-TH') + '\n' +
                 '🔗 https://nonthaphathr.github.io/recruit2026/staff.html'
-            ]);
-            await fireGasUrl(url);
-            showToast('📧 ส่งคำสั่งไปยัง GAS แล้ว — ตรวจสอบอีเมล nonthaphathr@gmail.com');
+            );
+
+            // restore original setting
+            if (wasEnabled !== null) localStorage.setItem('lineNotifyEnabled', wasEnabled);
+            else localStorage.removeItem('lineNotifyEnabled');
+
+            showToast('📧 ส่งคำสั่งแล้ว — ตรวจสอบอีเมล nonthaphathr@gmail.com (อาจใช้เวลา 10-30 วินาที)');
         }
 
     </script>

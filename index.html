@@ -7951,38 +7951,46 @@ ${lines}
 
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
 
+        // ─── LINE Notify helper ───────────────────────────────────────────
+        // ใช้ GET + URLSearchParams แทน POST เพื่อหลีกเลี่ยงปัญหา CORS กับ GAS
+        function buildGasUrl(params) {
+            const url = new URL(GAS_URL);
+            Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+            return url.toString();
+        }
+
         async function sendLineNotify(payload) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
             if (!enabled) { console.log('[LINE Notify] ปิดอยู่'); return; }
             const msgText = (typeof payload === 'string') ? payload : (payload.message || '');
             const lines = msgText.split('\n');
-            const body = {
+            const params = {
                 l1: lines[0] || '', l2: lines[1] || '',
                 l3: lines[2] || '', l4: lines[3] || '',
                 l5: lines[4] || '', l6: lines[5] || '',
                 l7: lines[6] || '', l8: lines[7] || ''
             };
-            // helper: fetch พร้อม timeout
-            const fetchWithTimeout = (ms) => {
+            const gasUrl = buildGasUrl(params);
+
+            // helper: GET พร้อม timeout — ไม่มีปัญหา CORS กับ GAS
+            const fetchGet = (ms) => {
                 const ctrl = new AbortController();
                 const timer = setTimeout(() => ctrl.abort(), ms);
-                return fetch(GAS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(body),
-                    signal: ctrl.signal
-                }).finally(() => clearTimeout(timer));
+                return fetch(gasUrl, { method: 'GET', signal: ctrl.signal })
+                    .finally(() => clearTimeout(timer));
             };
+
             try {
-                console.log('[LINE Notify] กำลังส่ง...', body.l1);
-                const res = await fetchWithTimeout(10000); // timeout 10 วินาที
-                console.log('[LINE Notify] ส่งแล้ว status:', res.status);
+                console.log('[LINE Notify] กำลังส่ง...', params.l1);
+                const res = await fetchGet(10000);
+                const text = await res.text().catch(() => '');
+                console.log('[LINE Notify] response:', res.status, text.slice(0, 80));
             } catch(e) {
-                // retry ครั้งเดียวหลัง 5 วินาที (fire-and-forget)
-                console.warn('[LINE Notify] ครั้งแรกไม่สำเร็จ retry ใน 5s...', e.message);
+                // retry ครั้งเดียวหลัง 5 วินาที
+                console.warn('[LINE Notify] ครั้งแรกล้มเหลว retry ใน 5s:', e.message);
                 setTimeout(async () => {
                     try {
-                        await fetchWithTimeout(12000);
+                        await fetchGet(12000);
                         console.log('[LINE Notify] retry สำเร็จ');
                     } catch(e2) {
                         console.warn('[LINE Notify] retry ล้มเหลว:', e2.message);
@@ -7992,21 +8000,24 @@ ${lines}
         }
 
         async function testLineNotify() {
-            showToast('⏳ กำลังทดสอบ...');
+            showToast('⏳ กำลังส่งทดสอบ LINE...');
+            const params = {
+                l1: '🧪 ทดสอบระบบแจ้งเตือน',
+                l2: '🏫 โรงเรียนกระดุมทองวิทยา',
+                l3: '📋 ระบบรับสมัครนักเรียนออนไลน์',
+                l4: '✅ เชื่อมต่อสำเร็จ!',
+                l5: '🔗 https://nonthaphathr.github.io/recruit2026/staff.html',
+                l6: '', l7: '', l8: ''
+            };
             try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        l1: '🧪 ทดสอบระบบแจ้งเตือน',
-                        l2: '🏫 โรงเรียนกระดุมทองวิทยา',
-                        l3: '📋 ระบบรับสมัครนักเรียนออนไลน์',
-                        l4: '✅ เชื่อมต่อสำเร็จ!',
-                        l5: '🔗 https://nonthaphathr.github.io/recruit2026/staff.html',
-                        l6: '', l7: '', l8: ''
-                    })
-                });
-                showToast('✅ ส่งทดสอบสำเร็จ! ตรวจสอบกลุ่ม LINE ได้เลย');
+                const res = await fetch(buildGasUrl(params), { method: 'GET' });
+                const text = await res.text().catch(() => '');
+                console.log('[LINE Test] response:', res.status, text.slice(0, 120));
+                if (res.ok) {
+                    showToast('✅ ส่ง LINE สำเร็จ! ตรวจสอบกลุ่มได้เลย');
+                } else {
+                    showToast('⚠️ GAS ตอบกลับ ' + res.status + ' — ตรวจสอบ GAS Script', 'error');
+                }
             } catch(e) {
                 showToast('❌ ส่งไม่สำเร็จ: ' + e.message, 'error');
             }

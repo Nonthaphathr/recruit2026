@@ -705,6 +705,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .verify-check-item:hover{border-color:#a5b4fc;background:rgba(165,180,252,.08);}
 .verify-check-item.done{border-color:#16a34a;background:rgba(22,163,74,.08);}
 .verify-check-item input[type=checkbox]{width:18px;height:18px;accent-color:#16a34a;cursor:pointer;flex-shrink:0;}
+.doc-subtype-panel{margin:2px 0 0 30px;padding:6px 10px;background:rgba(99,102,241,.06);border:1px solid #c7d2fe;border-radius:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;animation:fadeSubType .2s ease;}
+@keyframes fadeSubType{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.doc-subtype-panel .sub-label{font-size:.72rem;color:#6366f1;font-weight:700;margin-right:2px;}
+.doc-subtype-btn{font-size:.78rem;padding:4px 12px;border-radius:99px;border:1.5px solid #c7d2fe;background:#fff;color:#4f46e5;cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:600;transition:all .15s;}
+.doc-subtype-btn:hover{background:#eef2ff;border-color:#818cf8;}
+.doc-subtype-btn.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.doc-subtype-tag{display:inline-flex;align-items:center;gap:3px;font-size:.65rem;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;padding:1px 7px;border-radius:99px;font-weight:600;white-space:nowrap;}
 .verify-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .9rem;margin-bottom:.65rem;font-size:.84rem;}
 .verify-note-area{width:100%;min-height:70px;border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-family:'Sarabun',sans-serif;font-size:.85rem;background:var(--card);color:var(--text);resize:vertical;}
 
@@ -2001,7 +2008,7 @@ import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/fi
 import {
   getFirestore, collection, getDocs, getDoc, doc,
   deleteDoc, updateDoc, query, orderBy, where, onSnapshot,
-  serverTimestamp, Timestamp, enableIndexedDbPersistence
+  serverTimestamp, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /* ── Firebase config ── */
@@ -2015,17 +2022,6 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-
-/* ═══ FIX: เปิด offline persistence ═══
-   เก็บ cache ไว้ใน IndexedDB → ครั้งถัดไปโหลดจาก cache ทันที
-   ไม่ต้องรอ server ตอบ → แก้ปัญหาข้อมูลโหลดช้า 1 นาที */
-enableIndexedDbPersistence(db).catch(err => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Persistence failed: multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    console.warn('Persistence not supported in this browser');
-  }
-});
 
 /* ── Expose helpers ── */
 window._db = db;
@@ -2046,10 +2042,6 @@ let unsubAdmission = null;
 let unsubMobtua    = null;
 let isFirstLoadAdmission = true;
 let isFirstLoadMobtua    = true;
-// ป้องกัน notification ซ้ำ
-const _notifiedIds = new Set();
-// Grace period: ไม่แจ้งเตือนภายใน 5 วินาทีหลัง subscribe ใหม่
-let _subscribeTime = 0;
 
 /* ─────────────────────────────────────────────────
    AUTH
@@ -2091,7 +2083,6 @@ function initApp() {
    REAL-TIME LISTENERS
 ───────────────────────────────────────────────── */
 function subscribeAdmissions() {
-  _subscribeTime = Date.now();
   const q = window._fs.query(
     window._fs.collection(window._db, 'admissions'),
     window._fs.orderBy('createdAt', 'desc')
@@ -2100,39 +2091,21 @@ function subscribeAdmissions() {
     const newRecords = [];
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'admissions', ...d.data() }));
 
-    // ═══ FIX: ไม่นับ snapshot ว่างเป็น "first load" ═══
-    // Firestore อาจยิง callback ครั้งแรกด้วยข้อมูลว่าง (cache ว่าง)
-    // แล้วครั้งที่ 2 ด้วยข้อมูลจริง → ถ้าตั้ง isFirstLoad=false ตอนว่าง
-    // ครั้งที่ 2 จะเห็นทุก record เป็น "ใหม่" → แจ้งเตือนซ้ำทั้งหมด
-    if (newRecords.length === 0 && isFirstLoadAdmission) {
-      // snapshot ว่าง → render แต่ไม่เปลี่ยน flag
-      allAdmissions = newRecords;
-      try { renderAdmissions(); } catch(e) {}
-      try { updateStats(); } catch(e) {}
-      return;
-    }
-
-    if (!isFirstLoadAdmission && (Date.now() - _subscribeTime > 5000)) {
-      // ตรวจหา record ใหม่ — เฉพาะหลัง grace period 5 วินาที
+    if (!isFirstLoadAdmission) {
+      // ตรวจหา record ใหม่
       const oldIds = new Set(allAdmissions.map(r => r.id));
-      const added  = newRecords.filter(r => !oldIds.has(r.id) && !_notifiedIds.has(r.id));
+      const added  = newRecords.filter(r => !oldIds.has(r.id));
       added.forEach(r => {
-        _notifiedIds.add(r.id);
         addNotification('admission', r.studentName || 'ไม่ระบุ', r.createdAt);
         showToast(`📄 ใบสมัครใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'มีใบสมัครเรียนเข้ามาใหม่');
         highlightRowLater(r.id, 'admission');
       });
-    } else if (isFirstLoadAdmission) {
-      // first load — บันทึก id ทั้งหมดเพื่อป้องกัน notify ซ้ำ
-      newRecords.forEach(r => _notifiedIds.add(r.id));
     }
-
-    const firstLoad = isFirstLoadAdmission;
+    if (isFirstLoadAdmission) setConnStatus(true);
     isFirstLoadAdmission = false;
     allAdmissions = newRecords;
     try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
     try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
-    if (firstLoad) setConnStatus(true);
   }, err => {
     console.error('admission snapshot error:', err);
     setConnStatus(false);
@@ -2148,15 +2121,7 @@ function subscribeMobtua() {
     const newRecords = [];
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'mobtua', ...d.data() }));
 
-    // ═══ FIX: ไม่นับ snapshot ว่างเป็น "first load" ═══
-    if (newRecords.length === 0 && isFirstLoadMobtua) {
-      allMobtua = newRecords;
-      try { renderMobtua(); } catch(e) {}
-      try { updateStats(); } catch(e) {}
-      return;
-    }
-
-    if (!isFirstLoadMobtua && (Date.now() - _subscribeTime > 5000)) {
+    if (!isFirstLoadMobtua) {
       // build old status map: id → status
       const oldStatusMap = {};
       allMobtua.forEach(r => { oldStatusMap[r.id] = r.status || ''; });
@@ -2165,27 +2130,20 @@ function subscribeMobtua() {
         const wasKnown  = r.id in oldStatusMap;
         const oldStatus = oldStatusMap[r.id] || '';
         const isDone    = r.status === 'done';
-        const notifKey = `mt_${r.id}_${isDone ? 'done' : 'pending'}`;
 
-        if (!wasKnown && isDone && !_notifiedIds.has(notifKey)) {
-          _notifiedIds.add(notifKey);
+        if (!wasKnown && isDone) {
+          // brand-new record that is already done (parent submitted directly)
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวใหม่: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
-        } else if (wasKnown && oldStatus !== 'done' && isDone && !_notifiedIds.has(notifKey)) {
-          _notifiedIds.add(notifKey);
+        } else if (wasKnown && oldStatus !== 'done' && isDone) {
+          // existing pending record → parent just completed it
           addNotification('mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
           showToast(`📋 ใบมอบตัวเสร็จสมบูรณ์: ${r.studentName || 'ไม่ระบุ'}`, 'new-data', 'ผู้ปกครองกรอกใบมอบตัวแล้ว');
           highlightRowLater(r.id, 'mobtua');
         }
       });
-    } else if (isFirstLoadMobtua) {
-      // first load — บันทึก id ทั้งหมดเพื่อป้องกัน notify ซ้ำ
-      newRecords.forEach(r => {
-        _notifiedIds.add(`mt_${r.id}_${r.status === 'done' ? 'done' : 'pending'}`);
-      });
     }
-
     isFirstLoadMobtua = false;
     allMobtua = newRecords;
     try { renderMobtua(); } catch(e) { console.error('renderMobtua error:', e); }
@@ -2199,9 +2157,6 @@ function subscribeMobtua() {
 function loadAll() {
   isFirstLoadAdmission = true;
   isFirstLoadMobtua    = true;
-  // ═══ FIX: ไม่ clear _notifiedIds ═══
-  // เพราะการ clear ทำให้ข้อมูลเดิมถูก notify ซ้ำเมื่อ Firestore ส่งมาใหม่
-  // แทนที่จะ clear → ปล่อยให้ isFirstLoad=true จัดการเพิ่ม id ใหม่เข้าไปแทน
   if (unsubAdmission) unsubAdmission();
   if (unsubMobtua)    unsubMobtua();
   subscribeAdmissions();
@@ -2406,7 +2361,12 @@ function viewAdmission(id) {
 
   const sv = rec.staffVerified || {};
   const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
-  const docRows = KEYS.map(k => `<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${sv[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${k}</td></tr>`).join('');
+  const docRows = KEYS.map(k => {
+    const subCfg = DOC_SUB_TYPES[k];
+    const subVal = subCfg ? (sv[subCfg.subKey] || '') : '';
+    const subBadge = subVal ? ` <span style="font-size:.7rem;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;padding:1px 6px;border-radius:99px;font-weight:600;">📎 ${subVal}</span>` : '';
+    return `<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${sv[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${k}${subBadge}</td></tr>`;
+  }).join('');
 
   // แปลงวันเกิดจาก birthDay/birthMonth/birthYear
   const birthStr = d.birthDay && d.birthMonth ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}` : (d.birthDate || '');
@@ -3088,7 +3048,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
     <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง${docChecks['_subType_ระเบียนแสดงผลการเรียน'] ? ` <strong style="font-size:12px;">[${docChecks['_subType_ระเบียนแสดงผลการเรียน']}]</strong>` : ''}</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
@@ -3380,6 +3340,18 @@ function getEffectiveMobtuaKeys(rec) {
 }
 window.getEffectiveMobtuaKeys = getEffectiveMobtuaKeys;
 
+// ── Sub-type config: รายการ checklist ที่มีตัวเลือกย่อย ──
+const DOC_SUB_TYPES = {
+    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง': {
+        subKey: '_subType_ระเบียนแสดงผลการเรียน',
+        options: [
+            { value: 'ปพ.1', label: 'ปพ.1 ระเบียนแสดงผลการเรียน' },
+            { value: 'ปพ.7', label: 'ปพ.7 ใบรับรองผลการเรียน' },
+            { value: 'ใบรับรองความเป็นนักเรียน', label: 'ใบรับรองความเป็นนักเรียน' },
+        ]
+    }
+};
+
 // draft state while modal is open (item key → true/false)
 let _verifyDraft = {};
 let _verifyCurrentId = '';
@@ -3415,6 +3387,8 @@ function openVerifyDocs(id, collection) {
     // init draft from saved staff-verified state
     _verifyDraft = {};
     items.forEach(k => { _verifyDraft[k] = sv[k] === true; });
+    // load sub-type values
+    Object.keys(sv).forEach(k => { if (k.startsWith('_subType_')) _verifyDraft[k] = sv[k]; });
 
     const title = isAdm ? 'ตรวจสอบหลักฐานใบสมัคร' : 'ตรวจสอบหลักฐานใบมอบตัว';
     document.getElementById('verifyDocsTitle').textContent = `📋 ${title} — ${rec.studentName || ''}`;
@@ -3463,11 +3437,28 @@ function openVerifyDocs(id, collection) {
         const sharedTag    = isShared ? `<span style="font-size:.63rem;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:1px 5px;border-radius:99px;">🔗ร่วม</span>` : '';
         const linkedTag    = (linkedDone && !staffDone) ? `<span style="font-size:.63rem;color:#059669;background:#f0fdf4;border:1px solid #86efac;padding:1px 5px;border-radius:99px;">✓อีกฉบับ</span>` : '';
         const studentTag   = studentDone ? `<span style="font-size:.63rem;color:#16a34a;white-space:nowrap;">📱ผู้สมัคร</span>` : '';
-        return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="vci_${i}" onclick="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
-            <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
-            <span style="flex:1;">${item}</span>
-            <span style="display:flex;gap:3px;align-items:center;flex-shrink:0;">${sharedTag}${linkedTag}${studentTag}</span>
-        </label>`;
+        // Sub-type
+        const subCfg = DOC_SUB_TYPES[item];
+        const subVal = subCfg ? (_verifyDraft[subCfg.subKey] || '') : '';
+        const subTag = (subCfg && subVal && staffDone) ? `<span class="doc-subtype-tag">📎 ${subVal}</span>` : '';
+        let subPanel = '';
+        if (subCfg && staffDone) {
+            subPanel = `<div class="doc-subtype-panel" id="vsubpanel_${i}">
+                <span class="sub-label">ระบุประเภท:</span>
+                ${subCfg.options.map(opt =>
+                    `<button class="doc-subtype-btn ${subVal === opt.value ? 'active' : ''}"
+                        onclick="event.stopPropagation();setDocSubTypeVM('${subCfg.subKey}','${opt.value}',${i})">${opt.label}</button>`
+                ).join('')}
+            </div>`;
+        }
+        return `<div>
+            <label class="verify-check-item ${staffDone ? 'done' : ''}" id="vci_${i}" onclick="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
+                <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
+                <span style="flex:1;">${item}</span>
+                <span style="display:flex;gap:3px;align-items:center;flex-shrink:0;">${subTag}${sharedTag}${linkedTag}${studentTag}</span>
+            </label>
+            ${subPanel}
+        </div>`;
     }).join('');
     if (hasLinked) {
         const lbl = isAdm ? 'ใบมอบตัว' : 'ใบสมัคร';
@@ -3961,6 +3952,8 @@ function buildStepperStep2() {
     // init draft (carry over existing staffVerified)
     _verifyDraft = {};
     items.forEach(k => { _verifyDraft[k] = sv[k] === true; });
+    // load sub-type values (e.g. _subType_ระเบียนแสดงผลการเรียน)
+    Object.keys(sv).forEach(k => { if (k.startsWith('_subType_')) _verifyDraft[k] = sv[k]; });
 
     // linked record staffVerified
     let linkedSV = {};
@@ -4059,7 +4052,7 @@ function buildStepperStep2() {
         document.getElementById('stepperVerifyChecklist').innerHTML = checklistHTML;
 
     } else {
-        // ── admissions: checklist แบบเดิมทุก item ──
+        // ── admissions: checklist แบบเดิมทุก item + sub-type panels ──
         document.getElementById('stepperVerifyChecklist').innerHTML = items.map((item, i) => {
             const studentDone = docChecks[item] === true;
             const staffDone   = _verifyDraft[item] === true;
@@ -4071,13 +4064,31 @@ function buildStepperStep2() {
                 ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
                 : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
             const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
-            return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
-                style="${extraStyle}"
-                onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
-                <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
-                <span style="flex:1;font-size:.9rem;">${item}</span>
-                <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${sharedTag}${linkedTag}${studentTag}</span>
-            </label>`;
+            // Sub-type tag (show current selection)
+            const subCfg = DOC_SUB_TYPES[item];
+            const subVal = subCfg ? (_verifyDraft[subCfg.subKey] || '') : '';
+            const subTag = (subCfg && subVal && staffDone) ? `<span class="doc-subtype-tag">📎 ${subVal}</span>` : '';
+            // Sub-type selector panel
+            let subPanel = '';
+            if (subCfg && staffDone) {
+                subPanel = `<div class="doc-subtype-panel" id="subpanel_${i}">
+                    <span class="sub-label">ระบุประเภท:</span>
+                    ${subCfg.options.map(opt =>
+                        `<button class="doc-subtype-btn ${subVal === opt.value ? 'active' : ''}"
+                            onclick="event.stopPropagation();setDocSubType('${subCfg.subKey}','${opt.value}',${i})">${opt.label}</button>`
+                    ).join('')}
+                </div>`;
+            }
+            return `<div>
+                <label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
+                    style="${extraStyle}"
+                    onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                    <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                    <span style="flex:1;font-size:.9rem;">${item}</span>
+                    <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${subTag}${sharedTag}${linkedTag}${studentTag}</span>
+                </label>
+                ${subPanel}
+            </div>`;
         }).join('');
     }
 
@@ -4103,8 +4114,63 @@ function stepperToggleVerify(itemKey, idx) {
         }
     }
     if (cb) cb.checked = _verifyDraft[itemKey];
+
+    // ── Sub-type panel: show/hide + clear value when unchecked ──
+    const subCfg = DOC_SUB_TYPES[itemKey];
+    if (subCfg) {
+        const panelEl = document.getElementById(`subpanel_${idx}`);
+        if (_verifyDraft[itemKey]) {
+            // show panel if not exists — rebuild step 2 to refresh
+            if (!panelEl) buildStepperStep2();
+        } else {
+            // hide panel and clear sub-type value
+            if (panelEl) panelEl.remove();
+            delete _verifyDraft[subCfg.subKey];
+            // remove sub-type tag from label
+            const tagEl = el?.querySelector('.doc-subtype-tag');
+            if (tagEl) tagEl.remove();
+        }
+    }
 }
 window.stepperToggleVerify = stepperToggleVerify;
+
+/* ── Set sub-type value for a checklist item ── */
+function setDocSubType(subKey, value, idx) {
+    _verifyDraft[subKey] = value;
+    // update button active states
+    const panelEl = document.getElementById(`subpanel_${idx}`);
+    if (panelEl) {
+        panelEl.querySelectorAll('.doc-subtype-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.includes(value) || btn.onclick.toString().includes(`'${value}'`));
+        });
+        // simple re-render of buttons
+        const subCfg = Object.values(DOC_SUB_TYPES).find(c => c.subKey === subKey);
+        if (subCfg) {
+            const btnsHtml = subCfg.options.map(opt =>
+                `<button class="doc-subtype-btn ${value === opt.value ? 'active' : ''}"
+                    onclick="event.stopPropagation();setDocSubType('${subKey}','${opt.value}',${idx})">${opt.label}</button>`
+            ).join('');
+            panelEl.innerHTML = `<span class="sub-label">ระบุประเภท:</span>${btnsHtml}`;
+        }
+    }
+    // update tag in parent label
+    const labelEl = document.getElementById(`svci_${idx}`);
+    if (labelEl) {
+        let tagEl = labelEl.querySelector('.doc-subtype-tag');
+        if (value) {
+            if (!tagEl) {
+                tagEl = document.createElement('span');
+                tagEl.className = 'doc-subtype-tag';
+                const tagsArea = labelEl.querySelector('span:last-child');
+                if (tagsArea) tagsArea.insertBefore(tagEl, tagsArea.firstChild);
+            }
+            tagEl.textContent = '📎 ' + value;
+        } else if (tagEl) {
+            tagEl.remove();
+        }
+    }
+}
+window.setDocSubType = setDocSubType;
 
 function autoAppendMissingDocsNote() {
     const col = _stepperCol;
@@ -4923,8 +4989,56 @@ function toggleVerifyItem(itemKey, idx) {
     const cb  = el?.querySelector('input[type=checkbox]');
     if (el) el.className = 'verify-check-item ' + (_verifyDraft[itemKey] ? 'done' : '');
     if (cb) cb.checked   = _verifyDraft[itemKey];
+    // ── Sub-type panel: show/hide ──
+    const subCfg = DOC_SUB_TYPES[itemKey];
+    if (subCfg) {
+        const panelEl = document.getElementById(`vsubpanel_${idx}`);
+        if (_verifyDraft[itemKey]) {
+            if (!panelEl) {
+                // rebuild checklist via openVerifyDocs to get panel
+                openVerifyDocs(_verifyCurrentId, _verifyCurrentCollection);
+            }
+        } else {
+            if (panelEl) panelEl.remove();
+            delete _verifyDraft[subCfg.subKey];
+            const tagEl = el?.querySelector('.doc-subtype-tag');
+            if (tagEl) tagEl.remove();
+        }
+    }
 }
 window.toggleVerifyItem = toggleVerifyItem;
+
+/* ── Set sub-type value (non-stepper verify modal) ── */
+function setDocSubTypeVM(subKey, value, idx) {
+    _verifyDraft[subKey] = value;
+    const panelEl = document.getElementById(`vsubpanel_${idx}`);
+    if (panelEl) {
+        const subCfg = Object.values(DOC_SUB_TYPES).find(c => c.subKey === subKey);
+        if (subCfg) {
+            const btnsHtml = subCfg.options.map(opt =>
+                `<button class="doc-subtype-btn ${value === opt.value ? 'active' : ''}"
+                    onclick="event.stopPropagation();setDocSubTypeVM('${subKey}','${opt.value}',${idx})">${opt.label}</button>`
+            ).join('');
+            panelEl.innerHTML = `<span class="sub-label">ระบุประเภท:</span>${btnsHtml}`;
+        }
+    }
+    const labelEl = document.getElementById(`vci_${idx}`);
+    if (labelEl) {
+        let tagEl = labelEl.querySelector('.doc-subtype-tag');
+        if (value) {
+            if (!tagEl) {
+                tagEl = document.createElement('span');
+                tagEl.className = 'doc-subtype-tag';
+                const tagsArea = labelEl.querySelector('span:last-child');
+                if (tagsArea) tagsArea.insertBefore(tagEl, tagsArea.firstChild);
+            }
+            tagEl.textContent = '📎 ' + value;
+        } else if (tagEl) {
+            tagEl.remove();
+        }
+    }
+}
+window.setDocSubTypeVM = setDocSubTypeVM;
 
 function openVerifyDocsFromView(collection) {
     if (!currentViewRecord) return;
@@ -5013,10 +5127,7 @@ function addNotification(type, name, ts) {
 
 function showNewDataModal() {
     if (!_pendingNewData.length) return;
-    // ═══ FIX: จำกัดแสดงสูงสุด 5 รายการ ป้องกันเต็มจอ ═══
-    const allItems = [..._pendingNewData];
-    const items = allItems.slice(0, 5);
-    const overflow = allItems.length - items.length;
+    const items = [..._pendingNewData];
     // track latest for action buttons
     if (items[0]) {
         const latest = items[0].type === 'admission' ? allAdmissions[0] : allMobtua[0];
@@ -5037,9 +5148,6 @@ function showNewDataModal() {
             </div>
         </div>`;
     }).join('');
-    if (overflow > 0) {
-        body.innerHTML += `<div style="text-align:center;font-size:.82rem;color:#64748b;padding:.5rem;">และอีก ${overflow} รายการ…</div>`;
-    }
     const backdrop = document.getElementById('newDataAlertBackdrop');
     backdrop.style.display = 'flex';
     // Sound notification (silent beep via AudioContext)
@@ -5190,10 +5298,6 @@ function highlightRowLater(id, type) {
 ───────────────────────────────────────────────── */
 function showToast(title, type = 'info', msg = '') {
   const area = document.getElementById('toastArea');
-  // ═══ FIX: จำกัด toast สูงสุด 3 อัน ป้องกันเต็มจอ ═══
-  while (area.children.length >= 3) {
-    area.firstChild.remove();
-  }
   const icons = { success:'✅', error:'❌', info:'ℹ️', 'new-data':'🔔' };
   const el = document.createElement('div');
   el.className = `toast-item ${type}`;
@@ -5206,7 +5310,7 @@ function showToast(title, type = 'info', msg = '') {
     <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
   `;
   area.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='.3s'; setTimeout(()=>el.remove(), 300); }, 4000);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='.3s'; setTimeout(()=>el.remove(), 300); }, 5000);
 }
 window.showToast = showToast;
 
@@ -5303,12 +5407,10 @@ document.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  // ═══ FIX: ซ่อน loader เร็วขึ้น ═══
-  // ด้วย persistence → cache จะทำให้ onSnapshot callback เร็วมาก
-  // fallback timeout 3 วินาที (เดิม 1.2 วิ) กรณี offline/ช้าจริงๆ
+  // Dismiss loader — fast timeout fallback (Firebase will also hide it when connected)
   setTimeout(() => {
     document.getElementById('pageLoader').classList.add('done');
-  }, 3000);
+  }, 1200); // increased slightly to allow Firebase to respond first
 
   // Auto-login if session exists
   if (sessionStorage.getItem('staffAuth') === '1') {

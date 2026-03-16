@@ -4199,9 +4199,7 @@ function stepperToggleVerify(itemKey, idx) {
     const cb = el?.querySelector('input[type="checkbox"]');
     if (el) {
         const isDone = _verifyDraft[itemKey];
-        // toggle done class — keep warn-student if present
         el.classList.toggle('done', isDone);
-        // remove warn-student when done (green overrides)
         if (isDone) el.classList.remove('warn-student');
     }
     if (cb) cb.checked = _verifyDraft[itemKey];
@@ -4209,12 +4207,21 @@ function stepperToggleVerify(itemKey, idx) {
     // ── Sub-type panel: show/hide + clear value when unchecked ──
     const subCfg = DOC_SUB_TYPES[itemKey];
     if (subCfg) {
-        const panelEl = document.getElementById(`subpanel_${idx}`);
+        let panelEl = document.getElementById(`subpanel_${idx}`);
         if (_verifyDraft[itemKey]) {
-            // show panel if not exists — rebuild step 2 to refresh
-            if (!panelEl) buildStepperStep2();
+            // inject panel dynamically without rebuilding step 2
+            if (!panelEl && el?.parentElement) {
+                const subVal = _verifyDraft[subCfg.subKey] || '';
+                const panelHTML = `<div class="doc-subtype-panel" id="subpanel_${idx}">
+                    <span class="sub-label">ระบุประเภท:</span>
+                    ${subCfg.options.map(opt =>
+                        `<button class="doc-subtype-btn ${subVal === opt.value ? 'active' : ''}"
+                            onclick="event.stopPropagation();setDocSubType('${subCfg.subKey}','${opt.value}',${idx})">${opt.label}</button>`
+                    ).join('')}
+                </div>`;
+                el.insertAdjacentHTML('afterend', panelHTML);
+            }
         } else {
-            // hide panel and clear sub-type value
             if (panelEl) panelEl.remove();
             delete _verifyDraft[subCfg.subKey];
             const tagEl = el?.querySelector('.doc-subtype-tag');
@@ -5077,16 +5084,26 @@ function toggleVerifyItem(itemKey, idx) {
     _verifyDraft[itemKey] = !_verifyDraft[itemKey];
     const el  = document.getElementById('vci_' + idx);
     const cb  = el?.querySelector('input[type=checkbox]');
-    if (el) el.className = 'verify-check-item ' + (_verifyDraft[itemKey] ? 'done' : '');
-    if (cb) cb.checked   = _verifyDraft[itemKey];
-    // ── Sub-type panel: show/hide ──
+    if (el) {
+        el.classList.toggle('done', _verifyDraft[itemKey]);
+        if (_verifyDraft[itemKey]) el.classList.remove('warn-student');
+    }
+    if (cb) cb.checked = _verifyDraft[itemKey];
+    // ── Sub-type panel: show/hide dynamically ──
     const subCfg = DOC_SUB_TYPES[itemKey];
     if (subCfg) {
-        const panelEl = document.getElementById(`vsubpanel_${idx}`);
+        let panelEl = document.getElementById(`vsubpanel_${idx}`);
         if (_verifyDraft[itemKey]) {
-            if (!panelEl) {
-                // rebuild checklist via openVerifyDocs to get panel
-                openVerifyDocs(_verifyCurrentId, _verifyCurrentCollection);
+            if (!panelEl && el?.parentElement) {
+                const subVal = _verifyDraft[subCfg.subKey] || '';
+                const panelHTML = `<div class="doc-subtype-panel" id="vsubpanel_${idx}">
+                    <span class="sub-label">ระบุประเภท:</span>
+                    ${subCfg.options.map(opt =>
+                        `<button class="doc-subtype-btn ${subVal === opt.value ? 'active' : ''}"
+                            onclick="event.stopPropagation();setDocSubTypeVM('${subCfg.subKey}','${opt.value}',${idx})">${opt.label}</button>`
+                    ).join('')}
+                </div>`;
+                el.insertAdjacentHTML('afterend', panelHTML);
             }
         } else {
             if (panelEl) panelEl.remove();

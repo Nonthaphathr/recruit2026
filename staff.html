@@ -703,7 +703,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 }
 .verify-check-item{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:.85rem;cursor:pointer;transition:all .15s;user-select:none;}
 .verify-check-item:hover{border-color:#a5b4fc;background:rgba(165,180,252,.08);}
+.verify-check-item:active{transform:scale(.98);}
 .verify-check-item.done{border-color:#16a34a;background:rgba(22,163,74,.08);}
+.verify-check-item.warn-student{border-color:#fca5a5;background:#fff7f7;}
+.verify-check-item.warn-student:hover{border-color:#f97316;background:#fff7ed;box-shadow:0 0 0 3px rgba(249,115,22,.12);}
+.verify-check-item.warn-student::after{content:'👆 กดเพื่อยืนยัน';position:absolute;right:8px;top:-8px;font-size:.6rem;background:#f97316;color:#fff;padding:1px 8px;border-radius:99px;opacity:0;transition:opacity .2s;pointer-events:none;}
+.verify-check-item.warn-student{position:relative;}
+.verify-check-item.warn-student:hover::after{opacity:1;}
 .verify-check-item input[type=checkbox]{width:18px;height:18px;accent-color:#16a34a;cursor:pointer;flex-shrink:0;}
 .doc-subtype-panel{margin:2px 0 0 30px;padding:6px 10px;background:rgba(99,102,241,.06);border:1px solid #c7d2fe;border-radius:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;animation:fadeSubType .2s ease;}
 @keyframes fadeSubType{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
@@ -3452,11 +3458,11 @@ function openVerifyDocs(id, collection) {
             </div>`;
         }
         return `<div>
-            <label class="verify-check-item ${staffDone ? 'done' : ''}" id="vci_${i}" onclick="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
+            <div class="verify-check-item ${staffDone ? 'done' : ''}" id="vci_${i}" onclick="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
                 <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleVerifyItem('${item.replace(/'/g,"\'")}', ${i})">
                 <span style="flex:1;">${item}</span>
                 <span style="display:flex;gap:3px;align-items:center;flex-shrink:0;">${subTag}${sharedTag}${linkedTag}${studentTag}</span>
-            </label>
+            </div>
             ${subPanel}
         </div>`;
     }).join('');
@@ -4032,17 +4038,16 @@ function buildStepperStep2() {
                 ${pendingItems.map((item, i) => {
                     const staffDone = _verifyDraft[item] === true;
                     const studentDone = docChecks[item] === true;
-                    const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
+                    const warnCls = (!studentDone && !staffDone) ? ' warn-student' : '';
                     const studentTag = studentDone
                         ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
                         : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
-                    return `<label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
-                        style="${extraStyle}"
+                    return `<div class="verify-check-item ${staffDone ? 'done' : ''}${warnCls}" id="svci_${i}"
                         onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
                         <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
                         <span style="flex:1;font-size:.9rem;">${item}</span>
                         <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${studentTag}</span>
-                    </label>`;
+                    </div>`;
                 }).join('')}
             </div>`;
         } else {
@@ -4063,7 +4068,7 @@ function buildStepperStep2() {
             const studentTag  = studentDone
                 ? `<span style="font-size:.65rem;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 ผู้สมัครแจ้งว่าแนบมา</span>`
                 : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
-            const extraStyle = !studentDone ? 'border-color:#fca5a5;background:#fff7f7;' : '';
+            const warnCls = (!studentDone && !staffDone) ? ' warn-student' : '';
             // Sub-type tag (show current selection)
             const subCfg = DOC_SUB_TYPES[item];
             const subVal = subCfg ? (_verifyDraft[subCfg.subKey] || '') : '';
@@ -4080,13 +4085,12 @@ function buildStepperStep2() {
                 </div>`;
             }
             return `<div>
-                <label class="verify-check-item ${staffDone ? 'done' : ''}" id="svci_${i}"
-                    style="${extraStyle}"
+                <div class="verify-check-item ${staffDone ? 'done' : ''}${warnCls}" id="svci_${i}"
                     onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
                     <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
                     <span style="flex:1;font-size:.9rem;">${item}</span>
                     <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${subTag}${sharedTag}${linkedTag}${studentTag}</span>
-                </label>
+                </div>
                 ${subPanel}
             </div>`;
         }).join('');
@@ -4103,15 +4107,10 @@ function stepperToggleVerify(itemKey, idx) {
     const cb = el?.querySelector('input[type="checkbox"]');
     if (el) {
         const isDone = _verifyDraft[itemKey];
-        el.className = 'verify-check-item ' + (isDone ? 'done' : '');
-        // preserve red border if student didn't tick (check original inline style)
-        if (!isDone && el.style.backgroundColor === 'rgb(255, 247, 247)') {
-            el.style.borderColor = '#fca5a5';
-            el.style.backgroundColor = '#fff7f7';
-        } else if (isDone) {
-            el.style.borderColor = '';
-            el.style.backgroundColor = '';
-        }
+        // toggle done class — keep warn-student if present
+        el.classList.toggle('done', isDone);
+        // remove warn-student when done (green overrides)
+        if (isDone) el.classList.remove('warn-student');
     }
     if (cb) cb.checked = _verifyDraft[itemKey];
 
@@ -4126,7 +4125,6 @@ function stepperToggleVerify(itemKey, idx) {
             // hide panel and clear sub-type value
             if (panelEl) panelEl.remove();
             delete _verifyDraft[subCfg.subKey];
-            // remove sub-type tag from label
             const tagEl = el?.querySelector('.doc-subtype-tag');
             if (tagEl) tagEl.remove();
         }

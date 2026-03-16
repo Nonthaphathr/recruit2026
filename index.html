@@ -7934,13 +7934,11 @@ ${lines}
 
         // ════════════════════════════════════════════════════
         //  EMAIL NOTIFY via Google Apps Script
-        //  ใช้ 2 วิธีพร้อมกัน เพื่อให้แน่ใจว่าส่งถึง:
-        //  1) fetch POST mode:'no-cors' (fire-and-forget)
-        //  2) Image pixel GET (fallback ไม่มี CORS)
+        //  ใช้ GET ผ่าน Image pixel (ไม่มี CORS issue)
         // ════════════════════════════════════════════════════
 
         // ⚠️ ต้อง Deploy GAS Web App ใหม่ แล้วเอา URL มาใส่ตรงนี้
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5m8uuL3PpBdH_F6IRo6eBzsZooPaRRGOzopO-rmlx8nnWgnqltR2kWAzz-33ajABB/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbx7QNly6x01Q_VxpnYupF-dPsEJuyyx0EAsqaPNUYtUJ0DlzFs9XOzW8WbXN15YhncTjA/exec';
 
         function saveEmailSettings() {
             const enabled = document.getElementById('lineNotifyToggle')?.checked || false;
@@ -7958,11 +7956,6 @@ ${lines}
             if (status) status.textContent = localStorage.getItem('lineNotifyEnabled') === 'true' ? '✅ เปิดใช้งานแล้ว' : '⏸️ ปิดใช้งานอยู่';
         }
 
-        /**
-         * ส่งแจ้งเตือนอีเมลผ่าน GAS
-         * @param {string} subject - หัวข้ออีเมล
-         * @param {string} bodyText - เนื้อหาอีเมล (plain text, ขึ้นบรรทัดใหม่ด้วย \n)
-         */
         async function sendEmailNotify(subject, bodyText) {
             const enabled = localStorage.getItem('lineNotifyEnabled') === 'true';
             if (!enabled) {
@@ -7970,13 +7963,12 @@ ${lines}
                 return;
             }
             console.log('[EmailNotify] กำลังส่ง:', subject);
-
             // ── ส่งผ่าน Image pixel GET (ไม่มี CORS issue) ──
             try {
                 const params = new URLSearchParams();
                 params.set('subject', subject);
                 params.set('body', bodyText);
-                params.set('_t', Date.now()); // cache buster
+                params.set('_t', Date.now());
                 const imgUrl = GAS_URL + '?' + params.toString();
                 const img = new Image();
                 img.onload  = () => console.log('[EmailNotify] ส่งสำเร็จ');
@@ -7989,10 +7981,8 @@ ${lines}
 
         async function testEmailNotify() {
             showToast('⏳ กำลังส่งทดสอบอีเมล...');
-            // force enable temporarily for test
             const wasEnabled = localStorage.getItem('lineNotifyEnabled');
             localStorage.setItem('lineNotifyEnabled', 'true');
-
             await sendEmailNotify(
                 '🧪 ทดสอบระบบแจ้งเตือน — โรงเรียนกระดุมทองวิทยา',
                 '🧪 ทดสอบระบบแจ้งเตือนทางอีเมล\n' +
@@ -8002,7 +7992,11 @@ ${lines}
                 '🕐 ' + new Date().toLocaleString('th-TH') + '\n' +
                 '🔗 https://nonthaphathr.github.io/recruit2026/staff.html'
             );
-
-            // restore original setting
             if (wasEnabled !== null) localStorage.setItem('lineNotifyEnabled', wasEnabled);
             else localStorage.removeItem('lineNotifyEnabled');
+            showToast('📧 ส่งคำสั่งแล้ว — ตรวจสอบอีเมล nonthaphathr@gmail.com (อาจใช้เวลา 10-30 วินาที)');
+        }
+
+    </script>
+</body>
+</html>

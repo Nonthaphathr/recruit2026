@@ -718,6 +718,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 .doc-subtype-btn:hover{background:#eef2ff;border-color:#818cf8;}
 .doc-subtype-btn.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
 .doc-subtype-tag{display:inline-flex;align-items:center;gap:3px;font-size:.65rem;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;padding:1px 7px;border-radius:99px;font-weight:600;white-space:nowrap;}
+/* ── PP1 Tracker ── */
+.pp1-toggle{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:.82rem;font-weight:700;cursor:pointer;border:2px solid;transition:all .2s;user-select:none;white-space:nowrap;}
+.pp1-toggle.pending{background:#fef2f2;border-color:#fca5a5;color:#dc2626;}
+.pp1-toggle.pending:hover{background:#fee2e2;border-color:#f87171;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
+.pp1-toggle.done{background:#f0fdf4;border-color:#86efac;color:#16a34a;}
+.pp1-toggle.done:hover{background:#dcfce7;border-color:#4ade80;}
+.pp1-toggle:active{transform:scale(.95);}
+.pp1-subtype-chip{display:inline-flex;align-items:center;gap:3px;font-size:.72rem;padding:2px 10px;border-radius:99px;font-weight:600;white-space:nowrap;}
+.pp1-subtype-chip.pp1{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;}
+.pp1-subtype-chip.pp7{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.pp1-subtype-chip.cert{background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;}
+.pp1-subtype-chip.none{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;}
 .verify-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .9rem;margin-bottom:.65rem;font-size:.84rem;}
 .verify-note-area{width:100%;min-height:70px;border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-family:'Sarabun',sans-serif;font-size:.85rem;background:var(--card);color:var(--text);resize:vertical;}
 
@@ -1082,6 +1094,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       📋 ใบมอบตัว
       <span class="tab-count" id="tabCountMobtua">0</span>
     </button>
+    <button class="tab-btn" onclick="switchTab('pp1track', this)">
+      📑 ติดตาม ปพ.1
+      <span class="tab-count" id="tabCountPp1" style="background:#dc2626;color:#fff;">0</span>
+    </button>
   </div>
 
   <!-- PANEL: ใบสมัคร -->
@@ -1161,6 +1177,81 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       <div class="table-footer">
         <span id="mobtuaCount">— รายการ</span>
         <span id="mobtuaLastUpdate"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: ติดตาม ปพ.1 -->
+  <div class="tab-panel" id="panel-pp1track">
+
+    <!-- Summary Cards -->
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:1rem;">
+      <div class="stat-card" style="border-left:4px solid #dc2626;">
+        <div class="stat-label">ยังไม่ส่ง ปพ.1</div>
+        <div class="stat-num" id="pp1Pending" style="color:#dc2626;">0</div>
+        <div class="stat-sub">รายการคงค้าง</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid #16a34a;">
+        <div class="stat-label">ส่งแล้ว</div>
+        <div class="stat-num" id="pp1Done" style="color:#16a34a;">0</div>
+        <div class="stat-sub">ยืนยันครบแล้ว</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid var(--rose);">
+        <div class="stat-label">ม.1 คงค้าง</div>
+        <div class="stat-num" id="pp1M1" style="color:var(--rose);">0</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid var(--violet);">
+        <div class="stat-label">ม.4 คงค้าง</div>
+        <div class="stat-num" id="pp1M4" style="color:var(--violet);">0</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="searchPp1" placeholder="ค้นหาชื่อนักเรียน, โรงเรียนเดิม…" oninput="renderPp1Tracker()">
+      </div>
+      <select class="filter-select" id="filterPp1Grade" onchange="renderPp1Tracker()">
+        <option value="">ทุกระดับชั้น</option>
+        <option value="m1">ม.1</option>
+        <option value="m4">ม.4</option>
+      </select>
+      <select class="filter-select" id="filterPp1Status" onchange="renderPp1Tracker()">
+        <option value="pending">🔴 ยังไม่ส่ง</option>
+        <option value="all">ทั้งหมด</option>
+        <option value="done">🟢 ส่งแล้ว</option>
+      </select>
+      <button class="btn-icon" style="background:#dc2626;color:#fff;border:none;gap:5px;" onclick="printPp1List()" title="พิมพ์รายชื่อ">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span class="btn-label">พิมพ์รายชื่อ</span>
+      </button>
+      <button class="btn-icon" style="background:#16a34a;color:#fff;border:none;gap:5px;" onclick="exportPp1Excel()" title="Export Excel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="btn-label">Excel</span>
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table class="data-table" id="pp1Table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>ชื่อ-นามสกุล</th>
+            <th>ระดับ</th>
+            <th>โรงเรียนเดิม</th>
+            <th>ประเภทที่ระบุ</th>
+            <th style="width:120px;text-align:center;">สถานะ ปพ.1</th>
+          </tr>
+        </thead>
+        <tbody id="pp1Body">
+          <tr><td colspan="6"><div class="empty-state"><div class="icon">⏳</div><p>กำลังโหลดข้อมูล…</p></div></td></tr>
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <span id="pp1Count">— รายการ</span>
+        <span id="pp1LastUpdate"></span>
       </div>
     </div>
   </div>
@@ -2112,6 +2203,7 @@ function subscribeAdmissions() {
     allAdmissions = newRecords;
     try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
     try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
+    try { renderPp1Tracker(); } catch(e) { console.error('renderPp1 error:', e); }
   }, err => {
     console.error('admission snapshot error:', err);
     setConnStatus(false);
@@ -5373,8 +5465,260 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(`panel-${name}`).classList.add('active');
+  if (name === 'pp1track') renderPp1Tracker();
 }
 window.switchTab = switchTab;
+
+/* ═══════════════════════════════════════════════════════
+   PP1 TRACKER — ติดตามการส่ง ปพ.1 / ปพ.7 / ใบรับรอง
+═══════════════════════════════════════════════════════ */
+const PP1_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+const PP1_SUBTYPE_KEY = '_subType_ระเบียนแสดงผลการเรียน';
+
+function renderPp1Tracker() {
+    const keyword  = (document.getElementById('searchPp1')?.value || '').trim().toLowerCase();
+    const gradeF   = document.getElementById('filterPp1Grade')?.value || '';
+    const statusF  = document.getElementById('filterPp1Status')?.value || 'pending';
+
+    // Build data from allAdmissions
+    let rows = allAdmissions.map(r => {
+        const sv = r.staffVerified || {};
+        const isDone = sv[PP1_KEY] === true;
+        const subType = sv[PP1_SUBTYPE_KEY] || '';
+        const d = r.data || {};
+        return {
+            id: r.id,
+            studentName: r.studentName || '',
+            gradeLevel: r.gradeLevel || 'm1',
+            previousSchool: d.previousSchool || '',
+            phone: d.phone || '',
+            district: d.district || '',
+            province: d.province || '',
+            createdAt: r.createdAt,
+            isDone,
+            subType
+        };
+    });
+
+    // Filter
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'pending') rows = rows.filter(r => !r.isDone);
+    else if (statusF === 'done') rows = rows.filter(r => r.isDone);
+    if (keyword) {
+        rows = rows.filter(r =>
+            r.studentName.toLowerCase().includes(keyword) ||
+            r.previousSchool.toLowerCase().includes(keyword) ||
+            r.phone.includes(keyword)
+        );
+    }
+
+    // Update summary cards
+    const allPending = allAdmissions.filter(r => !(r.staffVerified || {})[PP1_KEY]);
+    const allDone    = allAdmissions.filter(r => (r.staffVerified || {})[PP1_KEY] === true);
+    const m1Pending  = allPending.filter(r => r.gradeLevel === 'm1').length;
+    const m4Pending  = allPending.filter(r => r.gradeLevel === 'm4').length;
+    document.getElementById('pp1Pending').textContent = allPending.length;
+    document.getElementById('pp1Done').textContent    = allDone.length;
+    document.getElementById('pp1M1').textContent      = m1Pending;
+    document.getElementById('pp1M4').textContent      = m4Pending;
+
+    // Update tab badge
+    const tabBadge = document.getElementById('tabCountPp1');
+    if (tabBadge) {
+        tabBadge.textContent = allPending.length;
+        tabBadge.style.background = allPending.length > 0 ? '#dc2626' : '#16a34a';
+    }
+
+    // Render table
+    const tbody = document.getElementById('pp1Body');
+    document.getElementById('pp1Count').textContent = `${rows.length} รายการ`;
+    document.getElementById('pp1LastUpdate').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+
+    if (!rows.length) {
+        const msg = statusF === 'pending'
+            ? '🎉 ไม่มีนักเรียนคงค้าง — ส่ง ปพ.1 ครบทุกคนแล้ว!'
+            : statusF === 'done'
+                ? 'ไม่มีรายการที่ส่ง ปพ.1 แล้ว'
+                : 'ไม่พบข้อมูล';
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">${statusF==='pending'?'🎉':'🔍'}</div><p>${msg}</p></div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map((r, i) => {
+        const gradeLabel = r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+        const gradeCls   = r.gradeLevel === 'm4' ? 'badge-m4' : 'badge-m1';
+
+        // Sub-type chip
+        let subChip = '';
+        if (r.isDone && r.subType) {
+            const chipCls = r.subType === 'ปพ.1' ? 'pp1'
+                          : r.subType === 'ปพ.7' ? 'pp7'
+                          : r.subType.includes('ใบรับรอง') ? 'cert' : 'none';
+            subChip = `<span class="pp1-subtype-chip ${chipCls}">${r.subType}</span>`;
+        } else if (r.isDone) {
+            subChip = `<span class="pp1-subtype-chip none">ไม่ระบุประเภท</span>`;
+        } else {
+            subChip = `<span class="pp1-subtype-chip none" style="color:#dc2626;border-color:#fca5a5;background:#fef2f2;">❌ ยังไม่ได้รับ</span>`;
+        }
+
+        // Toggle button
+        const toggleCls = r.isDone ? 'done' : 'pending';
+        const toggleLabel = r.isDone ? '✅ ส่งแล้ว' : '⬜ ยังไม่ส่ง';
+        const toggleBtn = `<button class="pp1-toggle ${toggleCls}" onclick="togglePp1Status('${r.id}')" title="${r.isDone ? 'คลิกเพื่อยกเลิก' : 'คลิกเพื่อยืนยันว่าส่งแล้ว'}">${toggleLabel}</button>`;
+
+        return `<tr id="pp1row-${r.id}">
+            <td class="td-muted">${i+1}</td>
+            <td class="td-name">${r.studentName || '—'}</td>
+            <td><span class="badge ${gradeCls}">${gradeLabel}</span></td>
+            <td class="td-muted">${r.previousSchool || '—'}</td>
+            <td>${subChip}</td>
+            <td style="text-align:center;">${toggleBtn}</td>
+        </tr>`;
+    }).join('');
+}
+window.renderPp1Tracker = renderPp1Tracker;
+
+/* ── Toggle pp1 status directly from tracker ── */
+async function togglePp1Status(admId) {
+    const rec = allAdmissions.find(r => r.id === admId);
+    if (!rec) return;
+    const sv = { ...(rec.staffVerified || {}) };
+    const wasDone = sv[PP1_KEY] === true;
+    sv[PP1_KEY] = !wasDone;
+    // ถ้า uncheck → clear sub-type ด้วย
+    if (wasDone) delete sv[PP1_SUBTYPE_KEY];
+
+    try {
+        await window._fs.updateDoc(
+            window._fs.doc(window._db, 'admissions', admId),
+            { staffVerified: sv, updatedAt: window._fs.serverTimestamp() }
+        );
+        // update local cache
+        rec.staffVerified = sv;
+        renderPp1Tracker();
+        renderAdmissions(); // update main tab badge too
+        // sync to mobtua
+        syncVerifiedDocsToMobtua(admId, sv, rec.docVerifiedNote || '');
+        showToast(
+            wasDone ? `ยกเลิก ปพ.1: ${rec.studentName}` : `ยืนยัน ปพ.1: ${rec.studentName}`,
+            wasDone ? 'info' : 'success'
+        );
+    } catch(e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+    }
+}
+window.togglePp1Status = togglePp1Status;
+
+/* ── Print pp1 pending list ── */
+function printPp1List() {
+    const gradeF  = document.getElementById('filterPp1Grade')?.value || '';
+    const statusF = document.getElementById('filterPp1Status')?.value || 'pending';
+
+    let rows = allAdmissions.map(r => {
+        const sv = r.staffVerified || {};
+        return { ...r, isDone: sv[PP1_KEY] === true, subType: sv[PP1_SUBTYPE_KEY] || '', d: r.data || {} };
+    });
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'pending') rows = rows.filter(r => !r.isDone);
+    else if (statusF === 'done') rows = rows.filter(r => r.isDone);
+
+    const gradeLabel = gradeF === 'm1' ? 'ม.1' : gradeF === 'm4' ? 'ม.4' : 'ทุกระดับชั้น';
+    const statusLabel = statusF === 'pending' ? 'ยังไม่ส่ง' : statusF === 'done' ? 'ส่งแล้ว' : 'ทั้งหมด';
+    const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+
+    const tableRows = rows.map((r, i) => {
+        const d = r.d;
+        const grade = r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1';
+        const status = r.isDone ? `✅ ส่งแล้ว${r.subType ? ' (' + r.subType + ')' : ''}` : '❌ ยังไม่ส่ง';
+        return `<tr>
+            <td style="text-align:center;padding:5px 8px;border:1px solid #ccc;font-size:12px;">${i+1}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;">${r.studentName||'—'}</td>
+            <td style="text-align:center;padding:5px 8px;border:1px solid #ccc;font-size:12px;">${grade}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;">${d.previousSchool||'—'}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;">${d.phone||'—'}</td>
+            <td style="text-align:center;padding:5px 8px;border:1px solid #ccc;font-size:12px;">${status}</td>
+        </tr>`;
+    }).join('');
+
+    const html = `<div style="font-family:'Sarabun',sans-serif;padding:15mm 12mm;color:#000;max-width:210mm;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:700;">โรงเรียนกระดุมทองวิทยา</div>
+            <div style="font-size:11px;color:#666;">อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+            <div style="font-size:16px;font-weight:800;margin-top:8px;">รายชื่อนักเรียนติดตาม ปพ.1 / ใบรับรองผลการเรียน</div>
+            <div style="font-size:12px;color:#444;margin-top:4px;">ระดับชั้น: ${gradeLabel} · สถานะ: ${statusLabel} · พิมพ์ ณ วันที่ ${today}</div>
+        </div>
+        <div style="font-size:12px;margin-bottom:8px;">จำนวนทั้งหมด: <strong>${rows.length}</strong> ราย</div>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="background:#1e3a5f;color:#fff;">
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:30px;">#</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;">ชื่อ-นามสกุล</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:40px;">ชั้น</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;">โรงเรียนเดิม</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;">โทรศัพท์</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:100px;">สถานะ ปพ.1</th>
+                </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <div style="margin-top:20px;font-size:11px;color:#666;text-align:center;">
+            พิมพ์โดยระบบตรวจสอบการสมัครเรียน — ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา
+        </div>
+    </div>`;
+
+    document.getElementById('printTarget').innerHTML = html;
+    setTimeout(() => window.print(), 150);
+}
+window.printPp1List = printPp1List;
+
+/* ── Export pp1 data to Excel ── */
+function exportPp1Excel() {
+    const gradeF  = document.getElementById('filterPp1Grade')?.value || '';
+    const statusF = document.getElementById('filterPp1Status')?.value || 'pending';
+
+    let rows = allAdmissions.map(r => {
+        const sv = r.staffVerified || {};
+        return { ...r, isDone: sv[PP1_KEY] === true, subType: sv[PP1_SUBTYPE_KEY] || '', d: r.data || {} };
+    });
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'pending') rows = rows.filter(r => !r.isDone);
+    else if (statusF === 'done') rows = rows.filter(r => r.isDone);
+
+    if (!rows.length) { showToast('ไม่มีข้อมูลให้ส่งออก', 'info'); return; }
+
+    const excelRows = rows.map((r, i) => ({
+        'ลำดับ': i + 1,
+        'ชื่อ-นามสกุล': r.studentName || '',
+        'ระดับชั้น': r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1',
+        'โรงเรียนเดิม': r.d.previousSchool || '',
+        'อำเภอ': r.d.district || '',
+        'จังหวัด': r.d.province || '',
+        'โทรศัพท์': r.d.phone || '',
+        'สถานะ ปพ.1': r.isDone ? 'ส่งแล้ว' : 'ยังไม่ส่ง',
+        'ประเภทเอกสาร': r.subType || '-',
+        'วันที่สมัคร': r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH') : '',
+    }));
+
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('no XLSX');
+        const ws = XLSX.utils.json_to_sheet(excelRows);
+        ws['!cols'] = [5,22,6,20,10,10,12,10,14,12].map(w => ({wch:w}));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'ติดตาม ปพ.1');
+        XLSX.writeFile(wb, `ติดตาม_ปพ1_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast(`ดาวน์โหลด Excel ${excelRows.length} รายการ`, 'success');
+    } catch(e) {
+        const headers = Object.keys(excelRows[0]);
+        const csv = [headers.join(','), ...excelRows.map(r => headers.map(h => `"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `ติดตาม_ปพ1_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        showToast(`ดาวน์โหลด CSV ${excelRows.length} รายการ`, 'success');
+    }
+}
+window.exportPp1Excel = exportPp1Excel;
 
 /* ─────────────────────────────────────────────────
    CONN STATUS

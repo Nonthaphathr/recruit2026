@@ -7,6 +7,12 @@
     <link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Firebase preconnect — ลด cold start -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1742,6 +1748,84 @@
         .grade-card p    { color: var(--text-light); font-size: var(--text-base); }
 
 
+        /* ===== Skeleton Loading Animation ===== */
+        @keyframes shimmer {
+            0% { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        .skeleton-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+        .skeleton-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite;
+            flex-shrink: 0;
+        }
+        .skeleton-body { flex: 1; }
+        .skeleton-line {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite;
+            margin-bottom: 8px;
+        }
+        .skeleton-line:last-child { margin-bottom: 0; }
+        .skeleton-line.w-75 { width: 75%; }
+        .skeleton-line.w-50 { width: 50%; }
+        .skeleton-line.w-40 { width: 40%; }
+        .loading-banner {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #93c5fd;
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .loading-banner .loading-dots {
+            display: inline-block;
+            width: 20px;
+            text-align: left;
+            animation: loadDotsAnim 1.5s infinite steps(4, end);
+        }
+        .loading-banner .loading-dots::after {
+            content: '...';
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+            animation: loadDotsClip 1.5s infinite steps(4, end);
+        }
+        @keyframes loadDotsClip {
+            0% { width: 0; }
+            25% { width: 6px; }
+            50% { width: 12px; }
+            75% { width: 18px; }
+            100% { width: 0; }
+        }
+        .loading-banner-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #93c5fd;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -2556,6 +2640,14 @@
 
     <!-- Main Content -->
     <main class="main-container hidden" id="mainContainer">
+        <!-- ══ Sticky Back Bar ══ -->
+        <div id="admissionBackBar" style="grid-column:1/-1; position:sticky; top:82px; z-index:89; background:linear-gradient(135deg,#fff1f2 0%,#fce7f3 100%); border:2px solid #f9a8d4; border-radius:14px; padding:10px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 4px 16px rgba(194,24,91,.12); margin-bottom:4px;">
+            <button onclick="backToLanding()" style="background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; border:none; padding:10px 22px; border-radius:10px; font-family:inherit; font-size:.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s; box-shadow:0 2px 8px rgba(194,24,91,.25);">
+                🏠 ← กลับหน้าแรก
+            </button>
+            <span style="font-size:.82rem; color:var(--primary-dark); font-weight:600;">📝 กำลังกรอกใบสมัครเข้าเรียน</span>
+        </div>
+
         <!-- Form Section -->
         <div class="form-section">
             <div class="form-header">
@@ -2902,9 +2994,6 @@
                         <button type="button" class="btn btn-warning hidden" id="testDataBtn" onclick="fillTestData()" style="background: #f59e0b; color: white;">
                             🧪 ทดสอบกรอกข้อมูล
                         </button>
-                        <button type="button" class="btn btn-outline" onclick="backToLanding()">
-                            ← กลับหน้าหลัก
-                        </button>
                     </div>
                 </form>
             </div>
@@ -2953,8 +3042,8 @@
     <div class="mobtua-page" id="mobtuaPage">
         <!-- Sticky Header -->
         <div class="mobtua-page-header">
-            <button class="mobtua-back-btn" onclick="closeMobtuaModal()">
-                ← กลับหน้าหลัก
+            <button class="mobtua-back-btn" onclick="closeMobtuaModal()" style="padding:10px 20px; font-size:.92rem; background:rgba(255,255,255,.3); border:2px solid rgba(255,255,255,.7); box-shadow:0 2px 10px rgba(0,0,0,.15);">
+                🏠 ← กลับหน้าแรก
             </button>
             <h2>
                 📋 ใบมอบตัวนักเรียน วก.กทว.205
@@ -4216,7 +4305,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -4229,12 +4318,68 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+
+        // ══ เปิด IndexedDB Persistence ══
+        // ข้อมูลจะถูก cache ไว้ในเครื่อง ครั้งต่อไปโหลดทันที
+        let db;
+        try {
+            db = initializeFirestore(app, {
+                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+            });
+            console.log('Firestore initialized with persistent cache ✅');
+        } catch(e) {
+            // fallback ถ้า persistence ไม่รองรับ (เช่น private browsing)
+            const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            db = getFirestore(app);
+            console.log('Firestore initialized without persistence (fallback):', e.message);
+        }
 
         window.db = db;
         window.firestore = { collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
 
-        console.log('Firebase initialized successfully!');
+        // ══ PRELOAD ข้อมูลทันทีที่ Firebase พร้อม ══
+        // cache ไว้ใน window._preloadedData เพื่อให้หน้าต่างๆ ใช้ได้เลย
+        window._firebaseReady = false;
+        window._preloadedMobtua = null;     // promise
+        window._preloadedAdmissions = null; // promise
+
+        async function preloadMobtua() {
+            try {
+                const q = query(collection(db, 'mobtua'), orderBy('createdAt', 'asc'));
+                const snap = await getDocs(q);
+                const records = [];
+                snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+                console.log(`[Preload] mobtua: ${records.length} records`);
+                return records;
+            } catch(e) {
+                console.warn('[Preload] mobtua error:', e.message);
+                return null; // จะ fallback ไปดึงใหม่
+            }
+        }
+
+        async function preloadAdmissions() {
+            try {
+                const q = query(collection(db, 'admissions'), orderBy('createdAt', 'desc'), limit(50));
+                const snap = await getDocs(q);
+                const records = [];
+                snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+                console.log(`[Preload] admissions: ${records.length} records`);
+                return records;
+            } catch(e) {
+                console.warn('[Preload] admissions error:', e.message);
+                return null;
+            }
+        }
+
+        // เริ่ม preload ทันที — ไม่ต้องรอ user กดอะไร
+        window._preloadedMobtua = preloadMobtua();
+        window._preloadedAdmissions = preloadAdmissions();
+
+        // แจ้งว่า Firebase พร้อมแล้ว
+        window._firebaseReady = true;
+        window.dispatchEvent(new Event('firebaseReady'));
+
+        console.log('Firebase initialized + preloading started ✅');
     </script>
 
     <script>
@@ -4754,6 +4899,9 @@
                 console.log('Document written with ID:', docRef.id);
                 // สร้าง pending mobtua record อัตโนมัติ
                 await createPendingMobtua(data, docRef.id, { ..._formDocChecks });
+                // invalidate preload cache
+                window._preloadedMobtua = null;
+                window._preloadedAdmissions = null;
                 // แจ้งเตือนอีเมล
                 await sendEmailNotify(
                     `📋 ใบสมัครใหม่ — ${record.studentName} (${gradeText})`,
@@ -5033,19 +5181,52 @@
             if (searchEl) searchEl.value = '';
 
             const listEl = document.getElementById('pendingMobtuaList');
-            listEl.innerHTML = '<p style="text-align:center;color:#64748b;font-size:.85rem;padding:1.5rem 0;">⏳ กำลังโหลดรายการ...</p>';
+
+            // ══ แสดง Skeleton Loading ที่สวยและชัดเจน ══
+            listEl.innerHTML = `
+                <div class="loading-banner">
+                    <div style="margin-bottom:.6rem;">
+                        <span class="loading-banner-spinner"></span>
+                        <span style="font-size:1rem;font-weight:700;color:#1e40af;">กำลังโหลดรายชื่อนักเรียน</span>
+                    </div>
+                    <p style="font-size:.82rem;color:#3b82f6;margin:0;">กรุณารอสักครู่ ระบบกำลังดึงข้อมูลจากฐานข้อมูล<span class="loading-dots"></span></p>
+                </div>
+                ${Array(4).fill('').map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line w-75"></div>
+                        <div class="skeleton-line w-50"></div>
+                        <div class="skeleton-line w-40"></div>
+                    </div>
+                </div>`).join('')}
+            `;
 
             try {
-                const q = window.firestore.query(
-                    window.firestore.collection(window.db, 'mobtua'),
-                    window.firestore.orderBy('createdAt', 'asc')
-                );
-                const snap = await window.firestore.getDocs(q);
-                const records = [];
-                snap.forEach(d => {
-                    const rec = { id: d.id, ...d.data() };
+                // รอ Firebase พร้อมก่อน (กรณีเปิดหน้าใหม่)
+                await waitForFirebase();
+
+                // ══ ใช้ preloaded cache ถ้ามี (โหลดทันที!) ══
+                let allRecords = null;
+                if (window._preloadedMobtua) {
+                    allRecords = await window._preloadedMobtua;
+                }
+
+                // ถ้า preload ล้มเหลว หรือยังไม่เสร็จ — ดึงใหม่
+                if (!allRecords) {
+                    const q = window.firestore.query(
+                        window.firestore.collection(window.db, 'mobtua'),
+                        window.firestore.orderBy('createdAt', 'asc')
+                    );
+                    const snap = await window.firestore.getDocs(q);
+                    allRecords = [];
+                    snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
+                }
+
+                // กรองตามระดับชั้น
+                const records = allRecords.filter(rec => {
                     const recGrade = rec.gradeLevel || (rec.classRoom?.startsWith('ม.4') ? 'm4' : 'm1');
-                    if (recGrade === grade) records.push(rec);
+                    return recGrade === grade;
                 });
 
                 if (records.length === 0) {
@@ -5059,8 +5240,28 @@
                 }
                 _pendingRecordsAll = records;
                 renderPendingCards(records);
+
+                // ══ Refresh cache ใน background (ถ้าเมื่อกี้ใช้ cache) ══
+                window._preloadedMobtua = (async () => {
+                    try {
+                        const q = window.firestore.query(
+                            window.firestore.collection(window.db, 'mobtua'),
+                            window.firestore.orderBy('createdAt', 'asc')
+                        );
+                        const snap = await window.firestore.getDocs(q);
+                        const fresh = [];
+                        snap.forEach(d => fresh.push({ id: d.id, ...d.data() }));
+                        return fresh;
+                    } catch(e) { return allRecords; }
+                })();
+
             } catch(e) {
-                listEl.innerHTML = `<p style="color:#dc2626;text-align:center;padding:1rem;">⚠️ เกิดข้อผิดพลาด: ${e.message}</p>`;
+                listEl.innerHTML = `<div style="text-align:center;padding:1.5rem 1rem;">
+                    <div style="font-size:2.5rem;margin-bottom:.5rem;">⚠️</div>
+                    <p style="color:#dc2626;font-weight:600;margin-bottom:.5rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                    <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">${e.message}</p>
+                    <button onclick="showPendingMobtuaList('${grade}')" style="background:#2563eb;color:white;border:none;padding:.5rem 1.5rem;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;font-weight:600;">🔄 ลองใหม่</button>
+                </div>`;
             }
         }
 
@@ -5150,6 +5351,8 @@
         }
 
         async function loadHistory() {
+            // invalidate preload cache เมื่อ reload history
+            window._preloadedAdmissions = null;
             try {
                 showLoading(true);
 
@@ -6660,6 +6863,8 @@
         }
 
         async function loadMobtuaHistory() {
+            // invalidate preload cache เมื่อ reload history (หลัง save/delete)
+            window._preloadedMobtua = null;
             try {
                 const q = window.firestore.query(
                     window.firestore.collection(window.db, 'mobtua'),
@@ -7137,31 +7342,40 @@
         }
 
         // เรียกใช้เมื่อโหลดหน้า
-        window.addEventListener('DOMContentLoaded', () => {
+        // ══ Helper: รอให้ Firebase พร้อมก่อนทำงาน ══
+        function waitForFirebase() {
+            return new Promise(resolve => {
+                if (window._firebaseReady && window.firestore) {
+                    resolve();
+                } else {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                    // safety timeout — ถ้า 10 วินาทียังไม่พร้อม ลองทำต่อเลย
+                    setTimeout(resolve, 10000);
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            setupMobtuaEvents();
+
+            // โหลด localStorage settings ก่อน (ไม่ต้องรอ Firebase)
+            const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
+            toggleTestModeButton(testModeEnabled);
+            const historyLocked = localStorage.getItem('historyLocked') === 'true';
+            applyHistoryLockUI(historyLocked);
+            const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
+            applyMobtuaLock(mobtuaLocked);
+            setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
+            promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
+
+            // รอ Firebase พร้อมแล้วค่อยดึงข้อมูล
+            await waitForFirebase();
+
             loadHistory();
-            // โหลด Settings จาก Firestore ก่อน (ข้ามเครื่อง)
             loadSettingsFromFirestore().then(() => {
                 setTimeout(showAlertIfEnabled, 300);
             });
             setTimeout(showAlertIfEnabled, 500);
-            setupMobtuaEvents();
-
-            // โหลดโหมดทดสอบ
-            const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
-            toggleTestModeButton(testModeEnabled);
-
-            // โหลดสถานะล็อค
-            const historyLocked = localStorage.getItem('historyLocked') === 'true';
-            applyHistoryLockUI(historyLocked);
-
-            // โหลดสถานะล็อกเมนูใบมอบตัว
-            const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
-            applyMobtuaLock(mobtuaLocked);
-
-            // ตั้ง Autosave สำหรับฟอร์มใบสมัคร
-            setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
-            // โหลดข้อมูลที่เคยบันทึกของใบสมัคร
-            promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
         });
 
         /* =========================================================

@@ -3746,7 +3746,16 @@ async function syncVerifiedDocsToMobtua(admId, admStaffVerified, note) {
         SHARED_DOC_KEYS.forEach(key => {
             if (admStaffVerified[key] === true) newSV[key] = true;
         });
-        const hasChanges = SHARED_DOC_KEYS.some(k => newSV[k] !== oldSV[k]);
+        // ── พิเศษ: ถ้าใบสมัครติ๊ก "ระเบียนแสดงผลการเรียน" และเลือก subtype = 'ปพ.1'
+        //    ให้ถือว่าคือ "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวด้วย
+        const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+        const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
+        const pp1SubType  = admStaffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
+        if (admStaffVerified[PP1_ADM_KEY] === true && pp1SubType === 'ปพ.1') {
+            newSV[PP1_MT_KEY] = true;
+        }
+        const allCheckedKeys = [...SHARED_DOC_KEYS, PP1_MT_KEY];
+        const hasChanges = allCheckedKeys.some(k => newSV[k] !== oldSV[k]);
         if (!hasChanges) return;
         await window._fs.updateDoc(
             window._fs.doc(window._db, 'mobtua', mtRec.id),
@@ -4193,7 +4202,18 @@ function buildStepperStep2() {
         if (lmt?.staffVerified) linkedSV = lmt.staffVerified;
     } else {
         const ladm = allAdmissions.find(r => r.id === rec.admissionId || r.studentName === rec.studentName);
-        if (ladm?.staffVerified) linkedSV = ladm.staffVerified;
+        if (ladm?.staffVerified) {
+            linkedSV = { ...ladm.staffVerified };
+            // ── พิเศษ: ถ้าใบสมัครติ๊ก ปพ.1 แบบ subtype = 'ปพ.1'
+            //    ให้ถือว่า "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวครอบคลุมด้วย
+            const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+            const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
+            const admSubType  = ladm.staffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
+            if (ladm.staffVerified[PP1_ADM_KEY] === true && admSubType === 'ปพ.1') {
+                linkedSV[PP1_MT_KEY] = true;
+                linkedSV['_pp1SourceLabel'] = 'ปพ.1 จากใบสมัคร'; // label สำหรับแสดงใน UI
+            }
+        }
     }
 
     // Summary
@@ -4213,8 +4233,11 @@ function buildStepperStep2() {
     const hasLinked = Object.values(linkedSV).some(v => v === true);
     if (hasLinked && linkedNote) {
         const lbl = isAdm ? 'ใบมอบตัว' : 'ใบสมัคร';
-        const linkedCnt = SHARED_DOC_KEYS.filter(k => linkedSV[k] === true).length;
-        linkedNote.textContent = `🔗 ยืนยันเอกสารร่วม ${linkedCnt} รายการจาก${lbl}แล้ว — รายการ 🔗ร่วม จะ sync อัตโนมัติ`;
+        const sharedCnt = SHARED_DOC_KEYS.filter(k => linkedSV[k] === true).length;
+        const pp1Crossed = !isAdm && linkedSV['สำเนา ปพ.1 (ฉบับจบการศึกษา)'] === true && linkedSV['_pp1SourceLabel'];
+        const totalLinked = sharedCnt + (pp1Crossed ? 1 : 0);
+        const pp1Note = pp1Crossed ? ' (รวม ปพ.1 ที่ตรงกัน)' : '';
+        linkedNote.textContent = `🔗 ยืนยันเอกสารร่วม ${totalLinked} รายการจาก${lbl}แล้ว — รายการ 🔗ร่วม จะ sync อัตโนมัติ${pp1Note}`;
         linkedNote.style.display = '';
     } else if (linkedNote) {
         linkedNote.style.display = 'none';
@@ -4223,9 +4246,10 @@ function buildStepperStep2() {
     // ── สำหรับ mobtua: แยก checklist เป็น 2 ส่วน ──
     if (!isAdm) {
         // รายการที่ยืนยันแล้วจากใบสมัคร (linkedSV) → แสดงแบบ read-only
-        const alreadyDoneItems = items.filter(k => linkedSV[k] === true);
-        // รายการที่ยังค้าง → แสดง checkbox
-        const pendingItems = items.filter(k => !linkedSV[k]);
+        // กรอง internal key ออกก่อนใช้
+        const alreadyDoneItems = items.filter(k => linkedSV[k] === true && !k.startsWith('_'));
+        // รายการที่ยังค้าง → แสดง checkbox (กรอง internal key ออก)
+        const pendingItems = items.filter(k => !linkedSV[k] && !k.startsWith('_'));
 
         // init draft เฉพาะ pending items (already-done ไม่ต้องติ๊กใหม่)
         _verifyDraft = {};
@@ -4237,18 +4261,30 @@ function buildStepperStep2() {
 
         // ส่วน: รายการที่ยืนยันแล้ว (read-only)
         if (alreadyDoneItems.length > 0) {
+            const PP1_MT_KEY = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
+            const pp1SourceLabel = linkedSV['_pp1SourceLabel'] || '';
             checklistHTML += `
             <div style="margin-bottom:.85rem;">
                 <div style="font-size:.8rem;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:5px 12px;margin-bottom:.5rem;display:inline-flex;align-items:center;gap:5px;">
                     ✅ ยืนยันแล้วจากใบสมัคร (${alreadyDoneItems.length} รายการ)
                 </div>
                 <div style="display:flex;flex-direction:column;gap:5px;">
-                    ${alreadyDoneItems.map(item => `
-                    <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;opacity:.85;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                        <span style="font-size:.88rem;color:#166534;font-weight:500;">${item}</span>
-                        <span style="font-size:.65rem;color:#15803d;background:#dcfce7;border:1px solid #86efac;padding:1px 7px;border-radius:99px;margin-left:auto;white-space:nowrap;">จากใบสมัคร</span>
-                    </div>`).join('')}
+                    ${alreadyDoneItems.map(item => {
+                        const isPP1CrossMatch = item === PP1_MT_KEY && !!pp1SourceLabel;
+                        const sourceTag = isPP1CrossMatch
+                            ? `<span style="font-size:.65rem;color:#1d4ed8;background:#dbeafe;border:1px solid #93c5fd;padding:1px 8px;border-radius:99px;margin-left:auto;white-space:nowrap;">📘 ${pp1SourceLabel}</span>`
+                            : `<span style="font-size:.65rem;color:#15803d;background:#dcfce7;border:1px solid #86efac;padding:1px 7px;border-radius:99px;margin-left:auto;white-space:nowrap;">จากใบสมัคร</span>`;
+                        const extraNote = isPP1CrossMatch
+                            ? `<div style="font-size:.72rem;color:#1e40af;margin-top:2px;padding-left:22px;">ตรงกับ "ระเบียนแสดงผลการเรียน (ปพ.1)" ที่ยืนยันในใบสมัคร</div>`
+                            : '';
+                        return `<div style="display:flex;flex-direction:column;padding:.5rem .75rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;opacity:.9;">
+                            <div style="display:flex;align-items:center;gap:.6rem;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                                <span style="font-size:.88rem;color:#166534;font-weight:500;flex:1;">${item}</span>
+                                ${sourceTag}
+                            </div>${extraNote}
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>`;
         }

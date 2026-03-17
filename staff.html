@@ -1311,6 +1311,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <option value="incomplete">🔴 เอกสารไม่ครบ</option>
         <option value="complete">🟢 เอกสารครบแล้ว</option>
       </select>
+      <button class="btn-icon" style="background:#dc2626;color:#fff;border:none;gap:5px;" onclick="printDocTrackList()" title="พิมพ์รายชื่อทั้งหมด">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span class="btn-label">พิมพ์รายชื่อ</span>
+      </button>
     </div>
 
     <!-- Table -->
@@ -1324,6 +1328,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
             <th>ระดับ</th>
             <th>เอกสารที่ขาด</th>
             <th style="width:90px;text-align:center;">สถานะ</th>
+            <th style="width:60px;text-align:center;">พิมพ์</th>
           </tr>
         </thead>
         <tbody id="docTrackBody">
@@ -1341,16 +1346,23 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
 <!-- ═══ Ready-to-Check Modal (ใบมอบตัว สีน้ำเงิน) ═══ -->
 <div class="modal-backdrop" id="readyCheckModal">
-  <div class="modal-card" style="max-width:700px;">
-    <div class="modal-topbar" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);">
-      <h3 class="modal-title" style="color:#fff;">🔵 รายการใบมอบตัวที่พร้อมตรวจ</h3>
-      <button class="modal-close-btn" onclick="closeReadyCheckModal()">&times;</button>
+  <div class="modal-card" style="max-width:680px;width:calc(100% - 2rem);background:var(--card);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
+    <div style="background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 100%);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
+      <div style="width:42px;height:42px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1px;">ใบมอบตัว</div>
+        <div style="font-size:1.05rem;font-weight:800;color:#fff;">รายการที่พร้อมให้ตรวจสอบ</div>
+      </div>
+      <div id="readyCheckBadge" style="background:rgba(255,255,255,.25);color:#fff;font-size:.75rem;font-weight:800;padding:4px 12px;border-radius:99px;flex-shrink:0;"></div>
+      <button onclick="closeReadyCheckModal()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);width:34px;height:34px;border-radius:50%;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">&times;</button>
     </div>
-    <div style="padding:1.25rem;max-height:65vh;overflow-y:auto;" id="readyCheckBody">
+    <div style="padding:1.1rem;max-height:65vh;overflow-y:auto;" id="readyCheckBody">
       <p style="color:#64748b;text-align:center;">กำลังโหลด...</p>
     </div>
-    <div style="padding:.75rem 1.25rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
-      <button class="btn-gold" onclick="closeReadyCheckModal()" style="padding:.6rem 1.5rem;font-size:.9rem;">ปิด</button>
+    <div style="padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;background:var(--surface);">
+      <button class="btn-gold" onclick="closeReadyCheckModal()" style="padding:.6rem 1.6rem;font-size:.9rem;">ปิด</button>
     </div>
   </div>
 </div>
@@ -5890,40 +5902,55 @@ function openReadyCheckModal() {
     });
 
     if (readyList.length === 0) {
-        body.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
-            <div style="font-size:3rem;margin-bottom:.5rem;">🎉</div>
-            <p style="font-weight:700;font-size:1rem;margin-bottom:.3rem;">ไม่มีรายการที่รอตรวจ</p>
+        body.innerHTML = `<div style="text-align:center;padding:2.5rem 1rem;color:#64748b;">
+            <div style="font-size:3.5rem;margin-bottom:.65rem;">🎉</div>
+            <p style="font-weight:800;font-size:1.05rem;color:#0f172a;margin-bottom:.35rem;">ไม่มีรายการที่รอตรวจ</p>
             <p style="font-size:.85rem;">ใบมอบตัวทุกรายที่กรอกแล้วได้รับการตรวจเรียบร้อย</p>
         </div>`;
     } else {
         body.innerHTML = `
-            <p style="font-size:.85rem;color:#475569;margin-bottom:.75rem;">
-                📋 มี <strong style="color:#1d4ed8;">${readyList.length}</strong> รายการที่ผู้ปกครองกรอกข้อมูลแล้ว รอครูตรวจเอกสาร — คลิกเพื่อเปิดตรวจเลย
-            </p>
+            <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+                <span style="font-size:.82rem;color:#1e40af;font-weight:600;">ผู้ปกครองกรอกข้อมูลแล้ว รอครูตรวจเอกสาร — คลิกรายการเพื่อเปิดตรวจทันที</span>
+            </div>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 ${readyList.map((r, i) => {
                     const sv = r.staffVerified || {};
                     const ek = getEffectiveMobtuaKeys(r);
                     const checked = ek.filter(k => sv[k] === true).length;
-                    const gradeBadge = (r.classRoom || '').includes('4')
-                        ? '<span style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:6px;">ม.4</span>'
-                        : '<span style="background:#fce4ec;color:#c2185b;border:1px solid #f48fb1;font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:6px;">ม.1</span>';
+                    const isM4 = (r.classRoom || '').includes('4');
+                    const gradeBadge = isM4
+                        ? '<span style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.4</span>'
+                        : '<span style="background:#fce4ec;color:#c2185b;border:1px solid #f48fb1;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.1</span>';
+                    const progressColor = checked === 0 ? '#dc2626' : checked === ek.length ? '#16a34a' : '#d97706';
+                    const progressPct = ek.length > 0 ? Math.round(checked / ek.length * 100) : 0;
                     return `<button onclick="closeReadyCheckModal();openMobtuaWithCheck('${r.id}')"
-                        style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border:2px solid #bfdbfe;border-radius:12px;cursor:pointer;text-align:left;font-family:inherit;transition:all .15s;width:100%;"
-                        onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff'"
-                        onmouseout="this.style.borderColor='#bfdbfe';this.style.background='#fff'">
-                        <span style="font-size:1.4rem;flex-shrink:0;">🔵</span>
-                        <span style="flex:1;min-width:0;">
-                            <span style="display:block;font-weight:700;font-size:.95rem;color:#1e293b;">${i+1}. ${r.studentName || '(ไม่ระบุ)'} ${gradeBadge}</span>
-                            <span style="display:block;font-size:.78rem;color:#64748b;margin-top:2px;">ผู้ปกครอง: ${r.guardianName || '-'} · ${r.classRoom || '-'} · ตรวจแล้ว ${checked}/${ek.length}</span>
-                        </span>
-                        <span style="color:#3b82f6;font-size:.82rem;font-weight:700;flex-shrink:0;white-space:nowrap;">ตรวจเลย →</span>
+                        style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:2px solid #bfdbfe;border-radius:14px;cursor:pointer;text-align:left;font-family:'Sarabun',sans-serif;transition:all .18s;width:100%;"
+                        onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff';this.style.transform='translateY(-1px)'"
+                        onmouseout="this.style.borderColor='#bfdbfe';this.style.background='#fff';this.style.transform=''">
+                        <div style="width:40px;height:40px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;font-weight:800;color:#1d4ed8;">${i+1}</div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;">
+                                <span style="font-weight:800;font-size:.95rem;color:#1e293b;">${r.studentName || '(ไม่ระบุ)'}</span>
+                                ${gradeBadge}
+                            </div>
+                            <div style="font-size:.75rem;color:#64748b;margin-bottom:5px;">ผู้ปกครอง: ${r.guardianName || '-'} &nbsp;·&nbsp; ${r.classRoom || '-'}</div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <div style="flex:1;height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+                                    <div style="height:100%;width:${progressPct}%;background:${progressColor};border-radius:99px;transition:width .3s;"></div>
+                                </div>
+                                <span style="font-size:.73rem;font-weight:700;color:${progressColor};white-space:nowrap;">ตรวจแล้ว ${checked}/${ek.length}</span>
+                            </div>
+                        </div>
+                        <div style="background:#1d4ed8;color:#fff;font-size:.78rem;font-weight:700;padding:7px 14px;border-radius:8px;white-space:nowrap;flex-shrink:0;">ตรวจเลย →</div>
                     </button>`;
                 }).join('')}
             </div>
         `;
     }
     modal.style.display = 'flex';
+    const badgeEl = document.getElementById('readyCheckBadge');
+    if (badgeEl) badgeEl.textContent = readyList.length + ' รายการ';
 }
 window.openReadyCheckModal = openReadyCheckModal;
 
@@ -6029,7 +6056,7 @@ function renderDocTracker() {
 
     if (!rows.length) {
         const msg = statusF === 'incomplete' ? '🎉 ทุกรายการเอกสารครบถ้วนแล้ว!' : statusF === 'complete' ? 'ไม่มีรายการที่เอกสารครบ' : 'ไม่พบข้อมูล';
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">${statusF==='incomplete'?'🎉':'🔍'}</div><p>${msg}</p></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">${statusF==='incomplete'?'🎉':'🔍'}</div><p>${msg}</p></div></td></tr>`;
         return;
     }
 
@@ -6042,28 +6069,171 @@ function renderDocTracker() {
 
         let missingHtml = '';
         if (r.isComplete) {
-            missingHtml = '<span style="color:#16a34a;font-weight:700;font-size:.82rem;">✅ ครบทุกรายการ</span>';
+            missingHtml = `<span style="display:flex;align-items:center;gap:5px;color:#16a34a;font-weight:700;font-size:.85rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                ครบทุกรายการแล้ว
+            </span>`;
         } else if (r.missing.length > 0) {
-            const shown = r.missing.slice(0, 3).map(m => `<span style="display:inline-block;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;font-size:.7rem;padding:1px 7px;border-radius:99px;margin:1px 2px;white-space:nowrap;">${m.length > 20 ? m.substring(0,18) + '…' : m}</span>`).join('');
-            const more = r.missing.length > 3 ? `<span style="font-size:.7rem;color:#64748b;"> +${r.missing.length - 3} รายการ</span>` : '';
-            missingHtml = shown + more;
+            const lines = r.missing.map((m, mi) =>
+                `<div style="display:flex;align-items:flex-start;gap:7px;padding:3px 0;border-bottom:1px dashed rgba(220,38,38,.12);font-size:.83rem;color:#b91c1c;line-height:1.4;">
+                    <span style="width:18px;height:18px;border-radius:50%;background:#fef2f2;border:1.5px solid #fca5a5;color:#dc2626;font-size:.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${mi+1}</span>
+                    <span style="flex:1;">${m}</span>
+                </div>`
+            ).join('');
+            missingHtml = `<div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:8px;padding:6px 10px;min-width:220px;">${lines}</div>`;
         }
 
         const statusBadge = r.isComplete
-            ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;">✅ ครบ</span>'
-            : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">❌ ${r.checked}/${r.items.length}</span>`;
+            ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;">✅ ครบ</span>'
+            : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">❌ ${r.checked}/${r.items.length}</span>`;
+
+        const printBtn = `<button onclick="printDocTrackRow('${r.id}','${r.collection}')" title="พิมพ์รายการเอกสาร"
+            style="background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;border-radius:8px;padding:5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        </button>`;
 
         return `<tr>
             <td class="td-muted">${i+1}</td>
             <td class="td-name">${r.studentName || '—'}</td>
             <td>${typeBadge}</td>
             <td><span class="badge ${gradeCls}">${gradeLabel}</span></td>
-            <td style="max-width:280px;">${missingHtml}</td>
+            <td style="min-width:220px;">${missingHtml}</td>
             <td style="text-align:center;">${statusBadge}</td>
+            <td style="text-align:center;">${printBtn}</td>
         </tr>`;
     }).join('');
 }
 window.renderDocTracker = renderDocTracker;
+
+/* ── Print single doc-track row ── */
+function printDocTrackRow(id, col) {
+    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) return;
+    const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
+    const sv = rec.staffVerified || {};
+    const missing = items.filter(k => !sv[k]);
+    const done    = items.filter(k => sv[k] === true);
+    const typeLabel = col === 'admissions' ? 'ใบสมัครเรียน' : 'ใบมอบตัว';
+    const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+    const html = `<div style="font-family:'Sarabun',sans-serif;padding:15mm 12mm;color:#000;max-width:210mm;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1e3a5f;">
+            <div style="font-size:14px;font-weight:700;">โรงเรียนกระดุมทองวิทยา</div>
+            <div style="font-size:11px;color:#555;margin-bottom:6px;">อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+            <div style="font-size:18px;font-weight:800;">รายการเอกสาร — ${typeLabel}</div>
+            <div style="font-size:12px;color:#555;margin-top:4px;">พิมพ์ ณ วันที่ ${today}</div>
+        </div>
+        <div style="font-size:13px;margin-bottom:12px;">
+            ชื่อนักเรียน: <strong>${rec.studentName || '—'}</strong>
+            &nbsp;&nbsp;|&nbsp;&nbsp; ได้รับเอกสาร: <strong>${done.length}/${items.length} รายการ</strong>
+        </div>
+        ${missing.length > 0 ? `
+        <div style="margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:8px;padding:5px 10px;background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 6px 6px 0;">
+                เอกสารที่ยังขาด (${missing.length} รายการ)
+            </div>
+            <table style="width:100%;border-collapse:collapse;">
+                ${missing.map((m,i) => `<tr>
+                    <td style="padding:5px 8px;border:1px solid #fca5a5;background:#fff5f5;font-size:12px;text-align:center;width:30px;">${i+1}</td>
+                    <td style="padding:5px 8px;border:1px solid #fca5a5;font-size:12px;">${m}</td>
+                    <td style="padding:5px 8px;border:1px solid #fca5a5;background:#fffbeb;font-size:11px;width:150px;color:#92400e;">หมายเหตุ: ...............</td>
+                </tr>`).join('')}
+            </table>
+        </div>` : '<div style="color:#16a34a;font-weight:700;font-size:13px;margin-bottom:12px;">✅ เอกสารครบถ้วนทุกรายการ</div>'}
+        ${done.length > 0 ? `
+        <div>
+            <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:8px;padding:5px 10px;background:#f0fdf4;border-left:4px solid #16a34a;border-radius:0 6px 6px 0;">
+                เอกสารที่ได้รับแล้ว (${done.length} รายการ)
+            </div>
+            <table style="width:100%;border-collapse:collapse;">
+                ${done.map((m,i) => `<tr>
+                    <td style="padding:5px 8px;border:1px solid #86efac;background:#f0fdf4;font-size:12px;text-align:center;width:30px;">${i+1}</td>
+                    <td style="padding:5px 8px;border:1px solid #86efac;font-size:12px;">✅ ${m}</td>
+                </tr>`).join('')}
+            </table>
+        </div>` : ''}
+        <div style="margin-top:20px;border-top:1px solid #ccc;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#777;">
+            <span>ระบบตรวจสอบการสมัครเรียน — ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา</span>
+            <span>รับเอกสาร: ............../............../................</span>
+        </div>
+    </div>`;
+    document.getElementById('printTarget').innerHTML = html;
+    setTimeout(() => window.print(), 150);
+}
+window.printDocTrackRow = printDocTrackRow;
+
+/* ── Print all doc-track (toolbar button) ── */
+function printDocTrackList() {
+    const keyword = (document.getElementById('searchDocTrack')?.value || '').trim().toLowerCase();
+    const typeF   = document.getElementById('filterDocType')?.value || 'all';
+    const gradeF  = document.getElementById('filterDocGrade')?.value || '';
+    const statusF = document.getElementById('filterDocStatus')?.value || 'all';
+
+    let rows = [];
+    if (typeF === 'all' || typeF === 'admission') {
+        allAdmissions.forEach(r => {
+            const sv = r.staffVerified || {};
+            const items = ADMISSION_CHECKLIST_KEYS;
+            const checked = items.filter(k => sv[k] === true).length;
+            const missing = items.filter(k => !sv[k]);
+            rows.push({ id: r.id, collection: 'admissions', type: 'ใบสมัคร', studentName: r.studentName || '', gradeLevel: r.gradeLevel || 'm1', items, checked, missing, isComplete: checked === items.length });
+        });
+    }
+    if (typeF === 'all' || typeF === 'mobtua') {
+        allMobtua.filter(r => r.status === 'done').forEach(r => {
+            const sv = r.staffVerified || {};
+            const items = getEffectiveMobtuaKeys(r);
+            const checked = items.filter(k => sv[k] === true).length;
+            const missing = items.filter(k => !sv[k]);
+            rows.push({ id: r.id, collection: 'mobtua', type: 'ใบมอบตัว', studentName: r.studentName || '', gradeLevel: r.gradeLevel || (r.classRoom?.includes('4') ? 'm4' : 'm1'), items, checked, missing, isComplete: checked === items.length });
+        });
+    }
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'incomplete') rows = rows.filter(r => !r.isComplete);
+    else if (statusF === 'complete') rows = rows.filter(r => r.isComplete);
+    if (keyword) rows = rows.filter(r => r.studentName.toLowerCase().includes(keyword));
+
+    if (!rows.length) { showToast('ไม่มีข้อมูลให้พิมพ์', 'info'); return; }
+
+    const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+    const tableRows = rows.map((r, i) => {
+        const missingText = r.isComplete ? '✅ ครบทุกรายการ' : r.missing.join('\n');
+        return `<tr>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;text-align:center;vertical-align:top;">${i+1}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;font-weight:700;vertical-align:top;">${r.studentName}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;text-align:center;vertical-align:top;">${r.type}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;text-align:center;vertical-align:top;">${r.gradeLevel === 'm4' ? 'ม.4' : 'ม.1'}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;vertical-align:top;white-space:pre-line;${r.isComplete?'background:#f0fdf4;color:#166534;':'background:#fff5f5;color:#dc2626;'}">${missingText}</td>
+            <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;text-align:center;vertical-align:top;">${r.checked}/${r.items.length}</td>
+        </tr>`;
+    }).join('');
+
+    const html = `<div style="font-family:'Sarabun',sans-serif;padding:10mm 12mm;color:#000;max-width:210mm;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1e3a5f;">
+            <div style="font-size:14px;font-weight:700;">โรงเรียนกระดุมทองวิทยา</div>
+            <div style="font-size:18px;font-weight:800;margin-top:4px;">รายงานติดตามเอกสารประกอบการสมัครและมอบตัว</div>
+            <div style="font-size:11px;color:#555;margin-top:4px;">พิมพ์ ณ วันที่ ${today} · จำนวน ${rows.length} รายการ</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="background:#1e3a5f;color:#fff;">
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:30px;">#</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;">ชื่อ-นามสกุล</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:70px;">ประเภท</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:40px;">ชั้น</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;">เอกสารที่ยังขาด</th>
+                    <th style="padding:6px 8px;border:1px solid #0d2847;font-size:11px;text-align:center;width:55px;">ได้รับ</th>
+                </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <div style="margin-top:16px;font-size:10px;color:#888;text-align:center;">ระบบตรวจสอบการสมัครเรียน — ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา</div>
+    </div>`;
+
+    document.getElementById('printTarget').innerHTML = html;
+    setTimeout(() => window.print(), 150);
+}
+window.printDocTrackList = printDocTrackList;
 
 /* ─────────────────────────────────────────────────
    CONN STATUS

@@ -4305,7 +4305,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -4320,7 +4320,8 @@
         const app = initializeApp(firebaseConfig);
 
         // ══ เปิด IndexedDB Persistence ══
-        // ข้อมูลจะถูก cache ไว้ในเครื่อง ครั้งต่อไปโหลดทันที
+        // FIX: import getFirestore ที่ top level — ไม่ใช้ dynamic await import()
+        // เพราะ LINE browser / Incognito mode dynamic import ช้า/fail
         let db;
         try {
             db = initializeFirestore(app, {
@@ -4328,58 +4329,29 @@
             });
             console.log('Firestore initialized with persistent cache ✅');
         } catch(e) {
-            // fallback ถ้า persistence ไม่รองรับ (เช่น private browsing)
-            const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            db = getFirestore(app);
-            console.log('Firestore initialized without persistence (fallback):', e.message);
+            // fallback ถ้า persistence ไม่รองรับ (LINE browser, private browsing, etc.)
+            // ใช้ getFirestore ที่ import ไว้แล้ว — ไม่ต้อง await import() อีก
+            try {
+                db = getFirestore(app);
+                console.log('Firestore initialized without persistence (fallback):', e.message);
+            } catch(e2) {
+                // กรณี Firestore ถูก init ไปแล้วจาก try block แต่ throw ทีหลัง
+                // getFirestore() จะ return instance ที่มีอยู่
+                console.warn('Firestore fallback also failed, trying getFirestore():', e2.message);
+                try { db = getFirestore(app); } catch(e3) {
+                    console.error('All Firestore init methods failed:', e3.message);
+                }
+            }
         }
 
+        // ══ Set globals ทันที ══
         window.db = db;
         window.firestore = { collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
-
-        // ══ PRELOAD ข้อมูลทันทีที่ Firebase พร้อม ══
-        // cache ไว้ใน window._preloadedData เพื่อให้หน้าต่างๆ ใช้ได้เลย
-        window._firebaseReady = false;
-        window._preloadedMobtua = null;     // promise
-        window._preloadedAdmissions = null; // promise
-
-        async function preloadMobtua() {
-            try {
-                const q = query(collection(db, 'mobtua'), orderBy('createdAt', 'asc'));
-                const snap = await getDocs(q);
-                const records = [];
-                snap.forEach(d => records.push({ id: d.id, ...d.data() }));
-                console.log(`[Preload] mobtua: ${records.length} records`);
-                return records;
-            } catch(e) {
-                console.warn('[Preload] mobtua error:', e.message);
-                return null; // จะ fallback ไปดึงใหม่
-            }
-        }
-
-        async function preloadAdmissions() {
-            try {
-                const q = query(collection(db, 'admissions'), orderBy('createdAt', 'desc'), limit(50));
-                const snap = await getDocs(q);
-                const records = [];
-                snap.forEach(d => records.push({ id: d.id, ...d.data() }));
-                console.log(`[Preload] admissions: ${records.length} records`);
-                return records;
-            } catch(e) {
-                console.warn('[Preload] admissions error:', e.message);
-                return null;
-            }
-        }
-
-        // เริ่ม preload ทันที — ไม่ต้องรอ user กดอะไร
-        window._preloadedMobtua = preloadMobtua();
-        window._preloadedAdmissions = preloadAdmissions();
+        window._firebaseReady = true;
 
         // แจ้งว่า Firebase พร้อมแล้ว
-        window._firebaseReady = true;
         window.dispatchEvent(new Event('firebaseReady'));
-
-        console.log('Firebase initialized + preloading started ✅');
+        console.log('Firebase initialized ✅', db ? 'db OK' : 'db MISSING');
     </script>
 
     <script>
@@ -5207,6 +5179,11 @@
                 // รอ Firebase พร้อมก่อน (กรณีเปิดหน้าใหม่)
                 await waitForFirebase();
 
+                // FIX: guard — ถ้า Firebase ยังไม่พร้อม → throw เพื่อเข้า retry
+                if (!window.firestore || !window.db) {
+                    throw new Error('Firebase ยังไม่พร้อม กรุณารอสักครู่');
+                }
+
                 // ══ FIX: ALWAYS query Firestore ตรงๆ ทุกครั้ง ══
                 // ไม่ใช้ preloaded cache เพราะอาจ stale/empty จาก
                 // persistent cache หรือ race condition ตอนโหลดหน้า
@@ -5353,6 +5330,11 @@
         }
 
         async function loadHistory() {
+            // FIX: guard — ถ้า Firebase ยังไม่พร้อม ไม่ทำอะไร
+            if (!window.firestore || !window.db) {
+                console.warn('loadHistory: Firebase not ready, skipping');
+                return;
+            }
             // invalidate preload cache เมื่อ reload history
             window._preloadedAdmissions = null;
             try {
@@ -5874,6 +5856,10 @@
         }
 
         async function loadSettingsFromFirestore() {
+            if (!window.firestore || !window.db) {
+                console.warn('loadSettingsFromFirestore: Firebase not ready, skipping');
+                return;
+            }
             try {
                 const fs = window.firestore;
                 const snap = await fs.getDoc(fs.doc(window.db, 'settings', 'global'));
@@ -5891,7 +5877,8 @@
                 applyHistoryLockUI(historyLocked);
                 const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
                 applyMobtuaLock(mobtuaLocked);
-                showAlertIfEnabled();
+                // FIX: แสดง alert เฉพาะกรณียังไม่เคยแสดง
+                if (!window._alertShown) showAlertIfEnabled();
                 console.log('[Settings] loaded from Firestore');
             } catch(e) { console.warn('loadSettings error:', e.message); }
         }
@@ -6461,10 +6448,13 @@
         }
 
         function showAlertIfEnabled() {
+            // FIX: กันแสดงซ้ำ — แสดงครั้งเดียวต่อ page load
+            if (window._alertShown) return;
             const enabled = localStorage.getItem('alertEnabled') === 'true';
             const message = localStorage.getItem('alertMessage') || '';
             
             if (enabled && message.trim()) {
+                window._alertShown = true;
                 document.getElementById('alertContent').textContent = message;
                 document.getElementById('alertAnnouncementModal').classList.add('active');
             }
@@ -6865,6 +6855,11 @@
         }
 
         async function loadMobtuaHistory() {
+            // FIX: guard — ถ้า Firebase ยังไม่พร้อม ไม่ทำอะไร
+            if (!window.firestore || !window.db) {
+                console.warn('loadMobtuaHistory: Firebase not ready, skipping');
+                return;
+            }
             // invalidate preload cache เมื่อ reload history (หลัง save/delete)
             window._preloadedMobtua = null;
             try {
@@ -7376,20 +7371,30 @@
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
             toggleTestModeButton(testModeEnabled);
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
-            applyHistoryLockUI(historyLocked);
+            // FIX: ไม่เรียก applyHistoryLockUI ที่จะ trigger loadHistory()
+            // ก่อน Firebase พร้อม — set UI badge อย่างเดียว
+            const lockBadge = document.getElementById('historyLockedBadge');
+            if (lockBadge) historyLocked ? lockBadge.classList.remove('hidden') : lockBadge.classList.add('hidden');
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             applyMobtuaLock(mobtuaLocked);
             setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
             promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
 
+            // FIX: แสดง alert จาก localStorage ก่อน (ครั้งเดียว)
+            showAlertIfEnabled();
+
             // รอ Firebase พร้อมแล้วค่อยดึงข้อมูล
             await waitForFirebase();
 
+            // ตรวจสอบ Firebase พร้อมจริงหรือไม่
+            if (!window.firestore || !window.db) {
+                console.error('Firebase not ready after waitForFirebase — skipping loadHistory');
+                return;
+            }
+
             loadHistory();
-            loadSettingsFromFirestore().then(() => {
-                setTimeout(showAlertIfEnabled, 300);
-            });
-            setTimeout(showAlertIfEnabled, 500);
+            // FIX: โหลด settings จาก Firestore แต่ ไม่เรียก showAlertIfEnabled ซ้ำ
+            loadSettingsFromFirestore();
         });
 
         /* =========================================================

@@ -5166,7 +5166,8 @@
             renderPendingCards(filtered);
         }
 
-        async function showPendingMobtuaList(grade) {
+        async function showPendingMobtuaList(grade, _retryCount) {
+            _retryCount = _retryCount || 0;
             _pendingMobtuaGrade = grade;
             document.getElementById('landingStep2Mobtua').classList.remove('active');
             const s3 = document.getElementById('landingStep3Mobtua');
@@ -5187,7 +5188,7 @@
                 <div class="loading-banner">
                     <div style="margin-bottom:.6rem;">
                         <span class="loading-banner-spinner"></span>
-                        <span style="font-size:1rem;font-weight:700;color:#1e40af;">กำลังโหลดรายชื่อนักเรียน</span>
+                        <span style="font-size:1rem;font-weight:700;color:#1e40af;">กำลังโหลดรายชื่อนักเรียน${_retryCount > 0 ? ` (ครั้งที่ ${_retryCount + 1})` : ''}</span>
                     </div>
                     <p style="font-size:.82rem;color:#3b82f6;margin:0;">กรุณารอสักครู่ ระบบกำลังดึงข้อมูลจากฐานข้อมูล<span class="loading-dots"></span></p>
                 </div>
@@ -5206,22 +5207,20 @@
                 // รอ Firebase พร้อมก่อน (กรณีเปิดหน้าใหม่)
                 await waitForFirebase();
 
-                // ══ ใช้ preloaded cache ถ้ามี (โหลดทันที!) ══
-                let allRecords = null;
-                if (window._preloadedMobtua) {
-                    allRecords = await window._preloadedMobtua;
-                }
+                // ══ FIX: ALWAYS query Firestore ตรงๆ ทุกครั้ง ══
+                // ไม่ใช้ preloaded cache เพราะอาจ stale/empty จาก
+                // persistent cache หรือ race condition ตอนโหลดหน้า
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'mobtua'),
+                    window.firestore.orderBy('createdAt', 'asc')
+                );
+                const snap = await window.firestore.getDocs(q);
+                const allRecords = [];
+                snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
 
-                // ถ้า preload ล้มเหลว หรือยังไม่เสร็จ — ดึงใหม่
-                if (!allRecords) {
-                    const q = window.firestore.query(
-                        window.firestore.collection(window.db, 'mobtua'),
-                        window.firestore.orderBy('createdAt', 'asc')
-                    );
-                    const snap = await window.firestore.getDocs(q);
-                    allRecords = [];
-                    snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
-                }
+                // อัปเดต preload cache ให้หน้าอื่นๆ ใช้ได้
+                window._preloadedMobtua = Promise.resolve(allRecords);
+                console.log(`[PendingList] loaded ${allRecords.length} mobtua records (attempt ${_retryCount + 1})`);
 
                 // กรองตามระดับชั้น
                 const records = allRecords.filter(rec => {
@@ -5230,37 +5229,40 @@
                 });
 
                 if (records.length === 0) {
+                    // ══ FIX: ถ้าผลว่าง + ยังไม่เคย retry → auto-retry 1 ครั้งหลัง 2 วินาที ══
+                    // กรณี persistent cache คืนข้อมูลเก่าก่อน server response
+                    if (_retryCount < 1 && allRecords.length === 0) {
+                        console.log('[PendingList] empty result, auto-retrying in 2s...');
+                        setTimeout(() => showPendingMobtuaList(grade, _retryCount + 1), 2000);
+                        return;
+                    }
                     _pendingRecordsAll = [];
                     listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
                         <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
                         <p style="font-weight:600;margin-bottom:.5rem;">ยังไม่มีรายการรอมอบตัว</p>
                         <p style="font-size:.82rem;">เมื่อผู้สมัครบันทึกใบสมัครออนไลน์แล้ว<br>ระบบจะสร้างรายการที่นี่โดยอัตโนมัติ</p>
+                        <button onclick="showPendingMobtuaList('${grade}')" style="margin-top:1rem;background:#7b3f9e;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 โหลดใหม่</button>
                     </div>`;
                     return;
                 }
                 _pendingRecordsAll = records;
                 renderPendingCards(records);
 
-                // ══ Refresh cache ใน background (ถ้าเมื่อกี้ใช้ cache) ══
-                window._preloadedMobtua = (async () => {
-                    try {
-                        const q = window.firestore.query(
-                            window.firestore.collection(window.db, 'mobtua'),
-                            window.firestore.orderBy('createdAt', 'asc')
-                        );
-                        const snap = await window.firestore.getDocs(q);
-                        const fresh = [];
-                        snap.forEach(d => fresh.push({ id: d.id, ...d.data() }));
-                        return fresh;
-                    } catch(e) { return allRecords; }
-                })();
-
             } catch(e) {
+                console.error('[PendingList] error:', e.message, 'attempt:', _retryCount + 1);
+                // ══ FIX: auto-retry สูงสุด 2 ครั้ง กรณี network ช้าบนมือถือ ══
+                if (_retryCount < 2) {
+                    const delay = (_retryCount + 1) * 2000; // 2s, 4s
+                    console.log(`[PendingList] auto-retrying in ${delay}ms...`);
+                    setTimeout(() => showPendingMobtuaList(grade, _retryCount + 1), delay);
+                    return;
+                }
                 listEl.innerHTML = `<div style="text-align:center;padding:1.5rem 1rem;">
                     <div style="font-size:2.5rem;margin-bottom:.5rem;">⚠️</div>
                     <p style="color:#dc2626;font-weight:600;margin-bottom:.5rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
                     <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">${e.message}</p>
-                    <button onclick="showPendingMobtuaList('${grade}')" style="background:#2563eb;color:white;border:none;padding:.5rem 1.5rem;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;font-weight:600;">🔄 ลองใหม่</button>
+                    <button onclick="showPendingMobtuaList('${grade}')" style="background:#2563eb;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 ลองใหม่</button>
+                    <p style="font-size:.75rem;color:#94a3b8;margin-top:.75rem;">กรุณาตรวจสอบสัญญาณอินเทอร์เน็ตแล้วลองอีกครั้ง</p>
                 </div>`;
             }
         }
@@ -7345,13 +7347,25 @@
         // ══ Helper: รอให้ Firebase พร้อมก่อนทำงาน ══
         function waitForFirebase() {
             return new Promise(resolve => {
-                if (window._firebaseReady && window.firestore) {
+                // เช็คทั้ง firestore functions + db instance
+                if (window._firebaseReady && window.firestore && window.db) {
                     resolve();
-                } else {
-                    window.addEventListener('firebaseReady', resolve, { once: true });
-                    // safety timeout — ถ้า 10 วินาทียังไม่พร้อม ลองทำต่อเลย
-                    setTimeout(resolve, 10000);
+                    return;
                 }
+                // ฟัง event จาก module script
+                window.addEventListener('firebaseReady', () => {
+                    // รอเพิ่ม 100ms ให้ Firestore persistent cache init เสร็จ
+                    setTimeout(resolve, 100);
+                }, { once: true });
+                // polling fallback — กรณี event fire ก่อน listener register
+                const poll = setInterval(() => {
+                    if (window._firebaseReady && window.firestore && window.db) {
+                        clearInterval(poll);
+                        resolve();
+                    }
+                }, 200);
+                // safety timeout — ถ้า 12 วินาทียังไม่พร้อม ลองทำต่อเลย
+                setTimeout(() => { clearInterval(poll); resolve(); }, 12000);
             });
         }
 
@@ -8195,7 +8209,7 @@ ${lines}
 
         async function testEmailNotify() {
             showToast('⏳ กำลังส่งทดสอบอีเมล...');
-            const wasEnabled = localStorage.getItem('lineNotifyEnabled');
+            const wasEnabled = localSindextorage.getItem('lineNotifyEnabled');
             localStorage.setItem('lineNotifyEnabled', 'true');
             await sendEmailNotify(
                 '🧪 ทดสอบระบบแจ้งเตือน — โรงเรียนกระดุมทองวิทยา',

@@ -1120,6 +1120,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
         Excel ขาดเอกสาร
       </button>
+      <button class="btn-icon" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;gap:5px;" onclick="exportStudentListExcel()" title="ส่งออกรายชื่อนักเรียน แยก ม.1/ม.4">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        <span class="btn-label">Excel รายชื่อ</span>
+      </button>
       <button class="btn-icon btn-refresh" onclick="loadAll()">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
         <span class="btn-label">รีเฟรช</span>
@@ -2208,7 +2212,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 <script type="module">
 import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {
-  getFirestore, collection, getDocs, getDoc, doc,
+  initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, getDocs, getDoc, doc,
   deleteDoc, updateDoc, query, orderBy, where, onSnapshot,
   serverTimestamp, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -2223,7 +2228,24 @@ const firebaseConfig = {
   appId: "1:312157707609:web:164adccd4f6c95af990048"
 };
 const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+
+/* ── FIX: เปิด persistent cache เพื่อโหลดเร็วขึ้น (เหมือน index.html) ── */
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+  console.log('[Staff] Firestore with persistent cache ✅');
+} catch(e) {
+  try {
+    db = getFirestore(app);
+    console.log('[Staff] Firestore fallback (no cache):', e.message);
+  } catch(e2) {
+    try { db = getFirestore(app); } catch(e3) {
+      console.error('[Staff] All Firestore init failed:', e3.message);
+    }
+  }
+}
 
 /* ── Expose helpers ── */
 window._db = db;
@@ -2279,6 +2301,44 @@ window.doLogout = doLogout;
 function initApp() {
   subscribeAdmissions();
   subscribeMobtua();
+
+  // ══ FIX: Fallback — ถ้า onSnapshot ไม่ fire ภายใน 6 วินาที ใช้ getDocs ตรง ══
+  setTimeout(async () => {
+    if (isFirstLoadAdmission || allAdmissions.length === 0) {
+      console.warn('[Staff] onSnapshot admission timeout — using getDocs fallback');
+      try {
+        const q = window._fs.query(window._fs.collection(window._db, 'admissions'), window._fs.orderBy('createdAt', 'desc'));
+        const snap = await window._fs.getDocs(q);
+        const records = [];
+        snap.forEach(d => records.push({ id: d.id, _collection:'admissions', ...d.data() }));
+        if (records.length > 0 || allAdmissions.length === 0) {
+          allAdmissions = records;
+          isFirstLoadAdmission = false;
+          setConnStatus(true);
+          try { renderAdmissions(); } catch(e) {}
+          try { updateStats(); } catch(e) {}
+          try { renderPp1Tracker(); } catch(e) {}
+          console.log('[Staff] getDocs fallback loaded', records.length, 'admissions');
+        }
+      } catch(e) { console.error('[Staff] getDocs admission fallback error:', e.message); }
+    }
+    if (isFirstLoadMobtua || allMobtua.length === 0) {
+      console.warn('[Staff] onSnapshot mobtua timeout — using getDocs fallback');
+      try {
+        const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
+        const snap = await window._fs.getDocs(q);
+        const records = [];
+        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+        if (records.length > 0 || allMobtua.length === 0) {
+          allMobtua = records;
+          isFirstLoadMobtua = false;
+          try { renderMobtua(); } catch(e) {}
+          try { updateStats(); } catch(e) {}
+          console.log('[Staff] getDocs fallback loaded', records.length, 'mobtua');
+        }
+      } catch(e) { console.error('[Staff] getDocs mobtua fallback error:', e.message); }
+    }
+  }, 6000);
 }
 
 /* ─────────────────────────────────────────────────
@@ -2364,7 +2424,41 @@ function loadAll() {
   if (unsubMobtua)    unsubMobtua();
   subscribeAdmissions();
   subscribeMobtua();
-  showToast('รีเฟรชข้อมูลแล้ว', 'success');
+  showToast('กำลังรีเฟรชข้อมูล...', 'info');
+
+  // ══ FIX: Fallback ถ้า onSnapshot ช้า — getDocs ตรงหลัง 4 วินาที ══
+  setTimeout(async () => {
+    let refreshed = false;
+    if (isFirstLoadAdmission || allAdmissions.length === 0) {
+      try {
+        const q = window._fs.query(window._fs.collection(window._db, 'admissions'), window._fs.orderBy('createdAt', 'desc'));
+        const snap = await window._fs.getDocs(q);
+        const records = [];
+        snap.forEach(d => records.push({ id: d.id, _collection:'admissions', ...d.data() }));
+        allAdmissions = records;
+        isFirstLoadAdmission = false;
+        setConnStatus(true);
+        try { renderAdmissions(); } catch(e) {}
+        try { updateStats(); } catch(e) {}
+        try { renderPp1Tracker(); } catch(e) {}
+        refreshed = true;
+      } catch(e) { console.error('[loadAll] getDocs admission error:', e.message); }
+    }
+    if (isFirstLoadMobtua || allMobtua.length === 0) {
+      try {
+        const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
+        const snap = await window._fs.getDocs(q);
+        const records = [];
+        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+        allMobtua = records;
+        isFirstLoadMobtua = false;
+        try { renderMobtua(); } catch(e) {}
+        try { updateStats(); } catch(e) {}
+        refreshed = true;
+      } catch(e) { console.error('[loadAll] getDocs mobtua error:', e.message); }
+    }
+    if (refreshed) showToast('โหลดข้อมูลสำเร็จ (fallback)', 'success');
+  }, 4000);
 }
 window.loadAll = loadAll;
 
@@ -3531,6 +3625,140 @@ function exportIncompleteDocsExcel() {
     }
 }
 window.exportIncompleteDocsExcel = exportIncompleteDocsExcel;
+
+/* ═══════════════════════════════════════════════════════
+   EXPORT STUDENT LIST EXCEL — แยกชีท ม.1 / ม.4
+   เรียง: เพศชายก่อนหญิง → ภายในเพศเดียวกันเรียง ก-ฮ
+═══════════════════════════════════════════════════════ */
+function exportStudentListExcel() {
+    if (!allAdmissions.length) {
+        showToast('ไม่มีข้อมูลให้ส่งออก', 'info');
+        return;
+    }
+
+    // Helper: ระบุเพศจาก prefix
+    const getGender = (prefix) => {
+        const p = (prefix || '').trim();
+        if (p === 'เด็กชาย' || p === 'นาย') return 'ชาย';
+        if (p === 'เด็กหญิง' || p === 'นางสาว') return 'หญิง';
+        return 'ไม่ระบุ';
+    };
+
+    // Helper: เรียงเพศชายก่อนหญิง → ก-ฮ
+    const sortStudents = (list) => {
+        return list.sort((a, b) => {
+            // เพศ: ชาย=0, หญิง=1, ไม่ระบุ=2
+            const gOrder = { 'ชาย': 0, 'หญิง': 1, 'ไม่ระบุ': 2 };
+            const gA = gOrder[a._gender] ?? 2;
+            const gB = gOrder[b._gender] ?? 2;
+            if (gA !== gB) return gA - gB;
+            // ชื่อ ก-ฮ
+            return (a._sortName || '').localeCompare(b._sortName || '', 'th');
+        });
+    };
+
+    // Build rows per grade
+    const buildRows = (grade) => {
+        const filtered = allAdmissions.filter(r => r.gradeLevel === grade);
+        const mapped = filtered.map(r => {
+            const d = r.data || {};
+            const prefix = d.prefix || '';
+            const firstName = d.firstName || '';
+            const lastName = d.lastName || '';
+            const fullName = d.fullName || `${firstName} ${lastName}`.trim();
+            const gender = getGender(prefix);
+            const sv = r.staffVerified || {};
+            const admKeys = ADMISSION_CHECKLIST_KEYS;
+            const checkedCount = admKeys.filter(k => sv[k] === true).length;
+
+            // father/mother name
+            const fatherName = d.fatherName || [d.fatherPrefix, d.fatherFirstName, d.fatherLastName].filter(Boolean).join(' ').trim();
+            const motherName = d.motherName || [d.motherPrefix, d.motherFirstName, d.motherLastName].filter(Boolean).join(' ').trim();
+
+            return {
+                _gender: gender,
+                _sortName: `${firstName}${lastName}`.trim(),
+                'ลำดับ': 0, // จะใส่ทีหลัง
+                'คำนำหน้า': prefix,
+                'ชื่อ': firstName,
+                'นามสกุล': lastName,
+                'ชื่อเล่น': d.nickname || '',
+                'เพศ': gender,
+                'เลขบัตรประชาชน': d.nationalId || d.nationalIdClean || '',
+                'วันเกิด': d.birthDay && d.birthMonth ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}` : '',
+                'อายุ': d.age || '',
+                'ส่วนสูง': d.height || '',
+                'น้ำหนัก': d.weight || '',
+                'หมู่เลือด': d.bloodType || '',
+                'โรงเรียนเดิม': d.previousSchool || '',
+                'อำเภอ': d.schoolDistrict || d.district || '',
+                'จังหวัด': d.schoolProvince || d.province || '',
+                'ชื่อบิดา': fatherName,
+                'อาชีพบิดา': d.fatherOccupation || '',
+                'ชื่อมารดา': motherName,
+                'อาชีพมารดา': d.motherOccupation || '',
+                'ที่อยู่': [d.houseNumber, d.moo ? `ม.${d.moo}` : '', d.subdistrict ? `ต.${d.subdistrict}` : '', d.district ? `อ.${d.district}` : '', d.province ? `จ.${d.province}` : '', d.postalCode || ''].filter(Boolean).join(' '),
+                'โทรศัพท์': d.phone || '',
+                'อีเมล': d.email || '',
+                'เอกสารครบ': `${checkedCount}/${admKeys.length}`,
+                'วันที่สมัคร': r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH') : '',
+            };
+        });
+
+        // เรียง
+        sortStudents(mapped);
+        // ใส่ลำดับ
+        mapped.forEach((r, i) => { r['ลำดับ'] = i + 1; });
+        // ลบ internal fields
+        mapped.forEach(r => { delete r._gender; delete r._sortName; });
+
+        return mapped;
+    };
+
+    const m1Rows = buildRows('m1');
+    const m4Rows = buildRows('m4');
+
+    if (!m1Rows.length && !m4Rows.length) {
+        showToast('ไม่มีข้อมูลให้ส่งออก', 'info');
+        return;
+    }
+
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('no XLSX');
+
+        const wb = XLSX.utils.book_new();
+        const colWidths = [5, 10, 12, 14, 7, 5, 18, 16, 4, 6, 6, 5, 18, 10, 10, 20, 10, 20, 10, 35, 14, 20, 10, 12];
+
+        if (m1Rows.length > 0) {
+            const ws1 = XLSX.utils.json_to_sheet(m1Rows);
+            ws1['!cols'] = colWidths.map(w => ({ wch: w }));
+            XLSX.utils.book_append_sheet(wb, ws1, `ม.1 (${m1Rows.length} คน)`);
+        }
+        if (m4Rows.length > 0) {
+            const ws4 = XLSX.utils.json_to_sheet(m4Rows);
+            ws4['!cols'] = colWidths.map(w => ({ wch: w }));
+            XLSX.utils.book_append_sheet(wb, ws4, `ม.4 (${m4Rows.length} คน)`);
+        }
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `รายชื่อนักเรียนใบสมัคร_${dateStr}.xlsx`);
+        showToast(`ดาวน์โหลด Excel สำเร็จ — ม.1: ${m1Rows.length} คน, ม.4: ${m4Rows.length} คน`, 'success');
+
+    } catch(e) {
+        // CSV fallback — รวมทุก grade ในไฟล์เดียว
+        const allRows = [...m1Rows.map(r => ({ ระดับชั้น: 'ม.1', ...r })), ...m4Rows.map(r => ({ ระดับชั้น: 'ม.4', ...r }))];
+        if (!allRows.length) return;
+        const headers = Object.keys(allRows[0]);
+        const csv = [headers.join(','), ...allRows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(','))].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `รายชื่อนักเรียนใบสมัคร_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        showToast(`ดาวน์โหลด CSV ${allRows.length} รายการ`, 'success');
+    }
+}
+window.exportStudentListExcel = exportStudentListExcel;
 
 /* ─────────────────────────────────────────────────
    VERIFY DOCS SYSTEM

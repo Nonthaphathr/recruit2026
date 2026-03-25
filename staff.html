@@ -6165,57 +6165,100 @@ function openReadyCheckModal() {
         return ek.length === 0 || !ek.every(k => sv[k] === true);
     });
 
-    if (readyList.length === 0) {
-        body.innerHTML = `<div style="text-align:center;padding:2.5rem 1rem;color:#64748b;">
-            <div style="font-size:3.5rem;margin-bottom:.65rem;">🎉</div>
-            <p style="font-weight:800;font-size:1.05rem;color:#0f172a;margin-bottom:.35rem;">ไม่มีรายการที่รอตรวจ</p>
-            <p style="font-size:.85rem;">ใบมอบตัวทุกรายที่กรอกแล้วได้รับการตรวจเรียบร้อย</p>
-        </div>`;
-    } else {
-        body.innerHTML = `
-            <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-                <span style="font-size:.82rem;color:#1e40af;font-weight:600;">ผู้ปกครองกรอกข้อมูลแล้ว รอครูตรวจเอกสาร — คลิกรายการเพื่อเปิดตรวจทันที</span>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-                ${readyList.map((r, i) => {
-                    const sv = r.staffVerified || {};
-                    const ek = getEffectiveMobtuaKeys(r);
-                    const checked = ek.filter(k => sv[k] === true).length;
-                    const isM4 = (r.classRoom || '').includes('4');
-                    const gradeBadge = isM4
-                        ? '<span style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.4</span>'
-                        : '<span style="background:#fce4ec;color:#c2185b;border:1px solid #f48fb1;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.1</span>';
-                    const progressColor = checked === 0 ? '#dc2626' : checked === ek.length ? '#16a34a' : '#d97706';
-                    const progressPct = ek.length > 0 ? Math.round(checked / ek.length * 100) : 0;
-                    return `<button onclick="closeReadyCheckModal();openMobtuaWithCheck('${r.id}')"
-                        style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:2px solid #bfdbfe;border-radius:14px;cursor:pointer;text-align:left;font-family:'Sarabun',sans-serif;transition:all .18s;width:100%;"
-                        onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff';this.style.transform='translateY(-1px)'"
-                        onmouseout="this.style.borderColor='#bfdbfe';this.style.background='#fff';this.style.transform=''">
-                        <div style="width:40px;height:40px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;font-weight:800;color:#1d4ed8;">${i+1}</div>
-                        <div style="flex:1;min-width:0;">
-                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;">
-                                <span style="font-weight:800;font-size:.95rem;color:#1e293b;">${r.studentName || '(ไม่ระบุ)'}</span>
-                                ${gradeBadge}
-                            </div>
-                            <div style="font-size:.75rem;color:#64748b;margin-bottom:5px;">ผู้ปกครอง: ${r.guardianName || '-'} &nbsp;·&nbsp; ${r.classRoom || '-'}</div>
-                            <div style="display:flex;align-items:center;gap:6px;">
-                                <div style="flex:1;height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
-                                    <div style="height:100%;width:${progressPct}%;background:${progressColor};border-radius:99px;transition:width .3s;"></div>
-                                </div>
-                                <span style="font-size:.73rem;font-weight:700;color:${progressColor};white-space:nowrap;">ตรวจแล้ว ${checked}/${ek.length}</span>
-                            </div>
-                        </div>
-                        <div style="background:#1d4ed8;color:#fff;font-size:.78rem;font-weight:700;padding:7px 14px;border-radius:8px;white-space:nowrap;flex-shrink:0;">ตรวจเลย →</div>
-                    </button>`;
-                }).join('')}
-            </div>
-        `;
-    }
-    modal.style.display = 'flex';
     const badgeEl = document.getElementById('readyCheckBadge');
     if (badgeEl) badgeEl.textContent = readyList.length + ' รายการ';
+
+    // helper: render card list for a given filtered array
+    const renderCards = (list) => {
+        if (list.length === 0) {
+            return `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
+                <div style="font-size:3rem;margin-bottom:.5rem;">🎉</div>
+                <p style="font-weight:700;font-size:.95rem;color:#0f172a;margin-bottom:.3rem;">ไม่มีรายการที่รอตรวจ</p>
+                <p style="font-size:.83rem;">ใบมอบตัวในระดับชั้นนี้ตรวจเรียบร้อยแล้ว</p>
+            </div>`;
+        }
+        return `<div style="display:flex;flex-direction:column;gap:8px;">
+            ${list.map((r, i) => {
+                const sv = r.staffVerified || {};
+                const ek = getEffectiveMobtuaKeys(r);
+                const checked = ek.filter(k => sv[k] === true).length;
+                const isM4 = (r.classRoom || '').includes('4') || r.gradeLevel === 'm4';
+                const gradeBadge = isM4
+                    ? '<span style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.4</span>'
+                    : '<span style="background:#fce4ec;color:#c2185b;border:1px solid #f48fb1;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;">ม.1</span>';
+                const progressColor = checked === 0 ? '#dc2626' : checked === ek.length ? '#16a34a' : '#d97706';
+                const progressPct = ek.length > 0 ? Math.round(checked / ek.length * 100) : 0;
+                return `<button onclick="closeReadyCheckModal();openMobtuaWithCheck('${r.id}')"
+                    style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:2px solid #bfdbfe;border-radius:14px;cursor:pointer;text-align:left;font-family:'Sarabun',sans-serif;transition:all .18s;width:100%;"
+                    onmouseover="this.style.borderColor='#3b82f6';this.style.background='#eff6ff';this.style.transform='translateY(-1px)'"
+                    onmouseout="this.style.borderColor='#bfdbfe';this.style.background='#fff';this.style.transform=''">
+                    <div style="width:40px;height:40px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;font-weight:800;color:#1d4ed8;">${i+1}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;">
+                            <span style="font-weight:800;font-size:.95rem;color:#1e293b;">${r.studentName || '(ไม่ระบุ)'}</span>
+                            ${gradeBadge}
+                        </div>
+                        <div style="font-size:.75rem;color:#64748b;margin-bottom:5px;">ผู้ปกครอง: ${r.guardianName || '-'} &nbsp;·&nbsp; ${r.classRoom || '-'}</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="flex:1;height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+                                <div style="height:100%;width:${progressPct}%;background:${progressColor};border-radius:99px;transition:width .3s;"></div>
+                            </div>
+                            <span style="font-size:.73rem;font-weight:700;color:${progressColor};white-space:nowrap;">ตรวจแล้ว ${checked}/${ek.length}</span>
+                        </div>
+                    </div>
+                    <div style="background:#1d4ed8;color:#fff;font-size:.78rem;font-weight:700;padding:7px 14px;border-radius:8px;white-space:nowrap;flex-shrink:0;">ตรวจเลย →</div>
+                </button>`;
+            }).join('')}
+        </div>`;
+    };
+
+    // แยก ม.1 / ม.4
+    const m1List = readyList.filter(r => !((r.classRoom || '').includes('4') || r.gradeLevel === 'm4'));
+    const m4List = readyList.filter(r =>  (r.classRoom || '').includes('4') || r.gradeLevel === 'm4');
+
+    const tabStyle = (active) => active
+        ? 'padding:.6rem 1.4rem;border:none;border-bottom:3px solid #1d4ed8;background:transparent;font-family:\'Sarabun\',sans-serif;font-size:.92rem;font-weight:700;color:#1d4ed8;cursor:pointer;transition:all .15s;'
+        : 'padding:.6rem 1.4rem;border:none;border-bottom:3px solid transparent;background:transparent;font-family:\'Sarabun\',sans-serif;font-size:.92rem;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;';
+
+    body.innerHTML = `
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:9px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+            <span style="font-size:.82rem;color:#1e40af;font-weight:600;">ผู้ปกครองกรอกข้อมูลแล้ว รอครูตรวจเอกสาร — คลิกรายการเพื่อเปิดตรวจทันที</span>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:12px;gap:0;">
+            <button id="rcTab_m1" onclick="switchReadyCheckTab('m1')" style="${tabStyle(true)}">
+                ม.1
+                <span id="rcBadge_m1" style="background:#fce4ec;color:#c2185b;border:1px solid #f48fb1;font-size:.72rem;font-weight:800;padding:1px 8px;border-radius:99px;margin-left:6px;">${m1List.length}</span>
+            </button>
+            <button id="rcTab_m4" onclick="switchReadyCheckTab('m4')" style="${tabStyle(false)}">
+                ม.4
+                <span id="rcBadge_m4" style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.72rem;font-weight:800;padding:1px 8px;border-radius:99px;margin-left:6px;">${m4List.length}</span>
+            </button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div id="rcPanel_m1">${renderCards(m1List)}</div>
+        <div id="rcPanel_m4" style="display:none;">${renderCards(m4List)}</div>
+    `;
+
+    modal.style.display = 'flex';
 }
+
+function switchReadyCheckTab(grade) {
+    const tabs = ['m1', 'm4'];
+    tabs.forEach(g => {
+        const tab = document.getElementById(`rcTab_${g}`);
+        const panel = document.getElementById(`rcPanel_${g}`);
+        const active = g === grade;
+        if (tab) tab.style.cssText = active
+            ? 'padding:.6rem 1.4rem;border:none;border-bottom:3px solid #1d4ed8;background:transparent;font-family:\'Sarabun\',sans-serif;font-size:.92rem;font-weight:700;color:#1d4ed8;cursor:pointer;transition:all .15s;'
+            : 'padding:.6rem 1.4rem;border:none;border-bottom:3px solid transparent;background:transparent;font-family:\'Sarabun\',sans-serif;font-size:.92rem;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;';
+        if (panel) panel.style.display = active ? '' : 'none';
+    });
+}
+window.switchReadyCheckTab = switchReadyCheckTab;
 window.openReadyCheckModal = openReadyCheckModal;
 
 function closeReadyCheckModal() {

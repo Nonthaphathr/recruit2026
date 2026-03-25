@@ -2203,6 +2203,39 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
   </div>
 </div>
 
+<!-- Mobtua Print Confirm Modal -->
+<div id="mobtuaPrintConfirmModal" style="display:none;position:fixed;inset:0;z-index:6600;background:rgba(8,18,36,.75);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1.2rem;">
+  <div style="background:#fff;border-radius:20px;max-width:460px;width:calc(100% - 2rem);box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden;animation:slideUp .22s ease;">
+    <div style="background:linear-gradient(135deg,#15803d,#16a34a);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
+      <div style="width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;">📋</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.68rem;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">ยืนยันการพิมพ์</div>
+        <div style="font-size:1rem;font-weight:800;color:#fff;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="mpvcStudentName">ใบมอบตัวนักเรียน</div>
+      </div>
+      <button onclick="closeMobtuaPrintConfirmModal()" style="background:rgba(255,255,255,.15);border:none;width:34px;height:34px;border-radius:50%;color:#fff;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+    </div>
+    <div style="padding:1.3rem 1.5rem 1.2rem;">
+      <div id="mpvcDocStatus" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem;font-size:.88rem;"></div>
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:.75rem 1rem;margin-bottom:1.1rem;font-size:.84rem;color:#92400e;line-height:1.65;">
+        <strong>ยืนยันพิมพ์</strong> → สถานะเปลี่ยนเป็น <strong style="color:#15803d;">ตรวจแล้ว</strong> พร้อมสั่งพิมพ์<br>
+        <strong>ทดลองพิมพ์</strong> → สั่งพิมพ์โดยไม่เปลี่ยนสถานะ
+      </div>
+      <div style="display:flex;gap:.65rem;">
+        <button onclick="trialMobtuaPrint()"
+          style="flex:1;padding:.7rem .75rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;"
+          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+          🖨️ ทดลองสั่งพิมพ์
+        </button>
+        <button onclick="confirmMobtuaPrintAndSave()"
+          style="flex:1.4;padding:.7rem .75rem;border-radius:10px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .2s;"
+          onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+          ✅ ยืนยันพิมพ์ใบมอบตัว
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="printTarget"></div>
 
 <!-- ======================================================
@@ -2554,9 +2587,10 @@ function renderMobtua() {
   document.getElementById('tabCountMobtua').textContent = allMobtua.length;
   document.getElementById('mobtuaLastUpdate').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
 
-  // Update readyCheck count (สีน้ำเงิน = status done + ยังตรวจไม่ครบ)
+  // Update readyCheck count (สีน้ำเงิน = status done + ยังตรวจไม่ครบ + ยังไม่กด "ยืนยันพิมพ์")
   const readyList = allMobtua.filter(r => {
     if (r.status !== 'done') return false;
+    if (r.staffPrinted) return false;
     const sv = r.staffVerified || {};
     const ek = getEffectiveMobtuaKeys(r);
     return ek.length === 0 || !ek.every(k => sv[k] === true);
@@ -2582,6 +2616,13 @@ function renderMobtua() {
     let statusBadge = '';
     if (isPending) {
       statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;white-space:nowrap;">⏳ รอผู้ปกครองกรอก</span>`;
+    } else if (r.staffPrinted) {
+      const allDocsOk = effectiveKeys.length > 0 && effectiveKeys.every(k => sv[k] === true);
+      if (allDocsOk) {
+        statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;white-space:nowrap;">✅ ตรวจแล้ว (เอกสารครบ)</span>`;
+      } else {
+        statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;white-space:nowrap;">✅ ตรวจแล้ว (ส่งเอกสารยังไม่ครบ)</span>`;
+      }
     } else if (isStaffComplete) {
       statusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;white-space:nowrap;">✅ ตรวจเสร็จสิ้น</span>`;
     } else if (isDone) {
@@ -4800,7 +4841,7 @@ function buildStepperStep3() {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
                 'คลิกดูตัวอย่างและพิมพ์',
                 `<span class="print-card-badge ok">✅ พร้อมพิมพ์</span>`,
-                `openCardPreview('mobtua','${id}','mobtua')`,
+                `openMobtuaPrintConfirm('${id}')`,
                 false, '#15803d');
         }
     } else if (linkedMobtua) {
@@ -4815,7 +4856,7 @@ function buildStepperStep3() {
             card3 = card('📋', 'ใบมอบตัวนักเรียน',
                 'คลิกดูตัวอย่างและพิมพ์',
                 `<span class="print-card-badge ok">✅ พร้อมพิมพ์</span>`,
-                `openCardPreview('mobtua','${linkedMobtua.id}','mobtua')`,
+                `openMobtuaPrintConfirm('${linkedMobtua.id}')`,
                 false, '#15803d');
         }
     } else {
@@ -4942,6 +4983,78 @@ window.closePaperWarningModal = closePaperWarningModal;
 
 // ── Mobtua incomplete data warning ─────────────────────────────
 let _pendingMobtuaInspectId = null;
+let _pendingMobtuaPrintId   = null;
+
+/* ── Mobtua Print Confirm Modal ── */
+function openMobtuaPrintConfirm(mobtuaId) {
+    _pendingMobtuaPrintId = mobtuaId;
+    const rec = allMobtua.find(r => r.id === mobtuaId);
+    if (!rec) return;
+
+    document.getElementById('mpvcStudentName').textContent = rec.studentName || 'ใบมอบตัวนักเรียน';
+
+    const sv = rec.staffVerified || {};
+    const ek = getEffectiveMobtuaKeys(rec);
+    const checked = ek.filter(k => sv[k] === true).length;
+    const missing = ek.filter(k => !sv[k]);
+    const allOk = missing.length === 0;
+
+    const statusEl = document.getElementById('mpvcDocStatus');
+    if (allOk) {
+        statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:#15803d;font-weight:700;font-size:.9rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            เอกสารครบทุกรายการ (${checked}/${ek.length} รายการ)
+        </div>`;
+    } else {
+        const missingRows = missing.map((m, i) =>
+            `<div style="display:flex;align-items:flex-start;gap:6px;padding:2px 0;font-size:.82rem;color:#b91c1c;">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fef2f2;border:1.5px solid #fca5a5;color:#dc2626;font-size:.6rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</span>
+                <span>${m}</span>
+            </div>`
+        ).join('');
+        statusEl.innerHTML = `<div style="font-weight:700;color:#b45309;margin-bottom:7px;font-size:.88rem;">⚠️ ได้รับเอกสารแล้ว ${checked}/${ek.length} รายการ — ขาดอีก ${missing.length} รายการ</div>
+            <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:7px 10px;">${missingRows}</div>`;
+    }
+
+    const modal = document.getElementById('mobtuaPrintConfirmModal');
+    if (modal) modal.style.display = 'flex';
+}
+window.openMobtuaPrintConfirm = openMobtuaPrintConfirm;
+
+function closeMobtuaPrintConfirmModal() {
+    const modal = document.getElementById('mobtuaPrintConfirmModal');
+    if (modal) modal.style.display = 'none';
+    _pendingMobtuaPrintId = null;
+}
+window.closeMobtuaPrintConfirmModal = closeMobtuaPrintConfirmModal;
+
+async function confirmMobtuaPrintAndSave() {
+    const mobtuaId = _pendingMobtuaPrintId;
+    if (!mobtuaId) return;
+    closeMobtuaPrintConfirmModal();
+    try {
+        await window._fs.updateDoc(
+            window._fs.doc(window._db, 'mobtua', mobtuaId),
+            { staffPrinted: true, staffPrintedAt: window._fs.serverTimestamp(), updatedAt: window._fs.serverTimestamp() }
+        );
+        const rec = allMobtua.find(r => r.id === mobtuaId);
+        if (rec) rec.staffPrinted = true;
+        renderMobtua();
+        showToast('บันทึกสถานะ "ตรวจแล้ว" ✅', 'success');
+    } catch(e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+    }
+    openCardPreview('mobtua', mobtuaId, 'mobtua');
+}
+window.confirmMobtuaPrintAndSave = confirmMobtuaPrintAndSave;
+
+function trialMobtuaPrint() {
+    const mobtuaId = _pendingMobtuaPrintId;
+    if (!mobtuaId) return;
+    closeMobtuaPrintConfirmModal();
+    openCardPreview('mobtua', mobtuaId, 'mobtua');
+}
+window.trialMobtuaPrint = trialMobtuaPrint;
 function openMobtuaWithCheck(id) {
     const rec = allMobtua.find(r => r.id === id);
     if (!rec) { openInspectionStepper(id, 'mobtua'); return; }
@@ -6157,9 +6270,10 @@ function openReadyCheckModal() {
     const body  = document.getElementById('readyCheckBody');
     if (!modal || !body) return;
 
-    // หารายการสีน้ำเงิน: status=done + ครูยังตรวจไม่ครบ
+    // หารายการสีน้ำเงิน: status=done + ครูยังตรวจไม่ครบ + ยังไม่กด "ยืนยันพิมพ์"
     const readyList = allMobtua.filter(r => {
         if (r.status !== 'done') return false;
+        if (r.staffPrinted) return false;
         const sv = r.staffVerified || {};
         const ek = getEffectiveMobtuaKeys(r);
         return ek.length === 0 || !ek.every(k => sv[k] === true);

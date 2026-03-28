@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สถิติการสมัครเรียน 2569 | โรงเรียนกระดุมทองวิทยา</title>
+<link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─────────────────────────────────────────
+   DESIGN SYSTEM — Dark Premium Dashboard
+   Inspiration: Linear / Vercel / GitHub
+   Background: deep charcoal
+   Accent: warm gold + teal
+   Type scale: Kanit (display) + Sarabun (body) + JetBrains Mono (numbers)
+───────────────────────────────────────── */
+:root {
+  --bg:       #0d1117;
+  --bg2:      #161b22;
+  --bg3:      #1c2330;
+  --panel:    #1c2330;
+  --panel2:   #222b3a;
+  --brd:      rgba(255,255,255,.07);
+  --brd2:     rgba(255,255,255,.13);
+
+  --gold:     #e8b84b;
+  --gold-g:   rgba(232,184,75,.14);
+  --teal:     #2dd4bf;
+  --teal-g:   rgba(45,212,191,.13);
+  --blue:     #58a6ff;
+  --blue-g:   rgba(88,166,255,.11);
+  --green:    #3fb950;
+  --green-g:  rgba(63,185,80,.12);
+  --amber:    #f0883e;
+  --amber-g:  rgba(240,136,62,.12);
+  --red:      #f85149;
+  --red-g:    rgba(248,81,73,.11);
+  --violet:   #bc8cff;
+  --violet-g: rgba(188,140,255,.12);
+
+  --t1: #e6edf3;
+  --t2: #8b949e;
+  --t3: #30363d;
+
+  --r:    12px;
+  --r-lg: 18px;
+  --sh:   0 0 0 1px var(--brd), 0 8px 24px rgba(0,0,0,.38);
+  --sh2:  0 0 0 1px var(--brd2), 0 16px 48px rgba(0,0,0,.5);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* ── LOADER ── */
+#ldr {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem;
+  transition: opacity .55s, visibility .55s;
+}
+#ldr.done { opacity: 0; visibility: hidden; pointer-events: none; }
+.ldr-ring {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid var(--bg3); border-top-color: var(--gold);
+  animation: spin .75s linear infinite;
+}
+#ldr p { font-family:'JetBrains Mono',monospace; font-size:.72rem; color: var(--t3); letter-spacing:.1em; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── AUTH ── */
+#auth {
+  position: fixed; inset: 0; z-index: 8000;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+}
+#auth.gone { display: none; }
+.auth-box {
+  width: 100%; max-width: 370px;
+  background: var(--panel);
+  border: 1px solid var(--brd2);
+  border-radius: var(--r-lg);
+  padding: 3rem 2.5rem;
+  box-shadow: 0 32px 80px rgba(0,0,0,.65);
+  text-align: center; position: relative; overflow: hidden;
+}
+.auth-box::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 160px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.auth-box img { width: 62px; height: 62px; border-radius: 50%; border: 2px solid rgba(232,184,75,.4); object-fit: cover; margin-bottom: 1.5rem; }
+.auth-box h2 { font-family: 'Kanit',sans-serif; font-weight: 600; font-size: 1.15rem; color: var(--t1); margin-bottom: .3rem; }
+.auth-box p  { font-size: .8rem; color: var(--t2); margin-bottom: 2.2rem; line-height: 1.7; }
+.af {
+  width: 100%; padding: .85rem 1.2rem;
+  background: var(--bg2); border: 1px solid var(--brd2);
+  border-radius: var(--r); color: var(--t1);
+  font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+  letter-spacing: .18em; text-align: center;
+  transition: border-color .2s, box-shadow .2s; margin-bottom: 1.1rem;
+}
+.af:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-g); }
+.ab {
+  width: 100%; padding: .9rem;
+  background: var(--gold); border: none; border-radius: var(--r);
+  color: #0d1117; font-family: 'Kanit',sans-serif; font-size: .95rem; font-weight: 600;
+  cursor: pointer; transition: opacity .18s, transform .15s, box-shadow .2s;
+}
+.ab:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 8px 26px rgba(232,184,75,.32); }
+.ae { color: var(--red); font-size: .78rem; margin-top: .7rem; display: none; }
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,17,23,.88);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--brd);
+}
+.hdr-i {
+  max-width: 1580px; margin: 0 auto; padding: 0 2.5rem;
+  height: 58px; display: flex; align-items: center; gap: 1.25rem;
+}
+.hdr-logo { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid rgba(232,184,75,.4); object-fit: cover; flex-shrink: 0; }
+.hdr-t {
+  flex: 1; min-width: 0;
+  font-family: 'JetBrains Mono', monospace; font-size: .78rem;
+  color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hdr-t strong { color: var(--gold); font-weight: 600; }
+.hdr-r { display: flex; align-items: center; gap: .65rem; flex-shrink: 0; }
+.ts { font-family: 'JetBrains Mono',monospace; font-size: .7rem; color: var(--t3); padding: .3rem .75rem; background: var(--bg3); border: 1px solid var(--brd); border-radius: 8px; }
+.cpill { display: flex; align-items: center; gap: .4rem; padding: .3rem .85rem; background: var(--bg3); border: 1px solid var(--brd); border-radius: 99px; font-size: .7rem; color: var(--t2); }
+.cdot { width: 6px; height: 6px; border-radius: 50%; background: var(--t3); }
+.cdot.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pdot 2.5s ease infinite; }
+@keyframes pdot { 0%,100%{opacity:1} 50%{opacity:.25} }
+.hbtn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--bg3); border: 1px solid var(--brd2);
+  color: var(--t1); border-radius: var(--r); padding: .4rem 1rem;
+  font-family: 'Kanit',sans-serif; font-size: .78rem; font-weight: 500;
+  text-decoration: none; cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+.hbtn:hover { background: var(--panel2); }
+.hbtn.gold { background: rgba(232,184,75,.1); border-color: rgba(232,184,75,.3); color: var(--gold); }
+.hbtn.gold:hover { background: rgba(232,184,75,.17); }
+
+/* ── PAGE ── */
+#main { display: none; }
+.pg { max-width: 1580px; margin: 0 auto; padding: 2.5rem 2.5rem 6rem; position: relative; z-index: 1; }
+
+/* ── SECTION DIVIDER ── */
+.sec { display: flex; align-items: center; gap: .9rem; margin: 3rem 0 1.5rem; }
+.sec:first-of-type { margin-top: 0; }
+.sec-lbl { font-family:'JetBrains Mono',monospace; font-size:.65rem; font-weight:600; color:var(--gold); letter-spacing:.14em; white-space:nowrap; }
+.sec-hr  { flex:1; height:1px; background:var(--brd); }
+.sec-ct  { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--t3); white-space:nowrap; }
+
+/* ── HERO BANNER ── */
+.hero {
+  background: var(--panel);
+  border: 1px solid var(--brd);
+  border-radius: var(--r-lg);
+  padding: 2.25rem 2.5rem;
+  display: flex; align-items: center; gap: 2.5rem;
+  box-shadow: var(--sh); margin-bottom: 2rem;
+  position: relative; overflow: hidden;
+}
+.hero::after {
+  content:''; position:absolute; right:0; top:0; bottom:0; width:400px;
+  background: linear-gradient(90deg, transparent, rgba(232,184,75,.03));
+  pointer-events: none;
+}
+.hero-logo { width: 58px; height: 58px; border-radius: 50%; border: 2px solid rgba(232,184,75,.4); object-fit:cover; flex-shrink:0; }
+.hero-copy h1 { font-family:'Kanit',sans-serif; font-weight:600; font-size:clamp(1.1rem,2vw,1.45rem); color:var(--t1); line-height:1.25; }
+.hero-copy p  { font-size:.8rem; color:var(--t2); margin-top:.35rem; }
+.hero-nums { margin-left:auto; display:flex; gap:3.5rem; flex-shrink:0; }
+.hn { text-align:center; }
+.hn-v { display:block; font-family:'JetBrains Mono',monospace; font-size:2.4rem; font-weight:700; color:var(--gold); line-height:1; animation:popIn .8s ease both; }
+.hn-l { display:block; font-size:.72rem; color:var(--t2); margin-top:.4rem; }
+@keyframes popIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+
+/* ── KPI GRID ── */
+.kpi-grid { display:grid; gap:1.1rem; margin-bottom:1.1rem; }
+.kpi-grid.g4  { grid-template-columns:repeat(4,1fr); }
+.kpi-grid.g5  { grid-template-columns:repeat(5,1fr); }
+
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--brd);
+  border-radius: var(--r-lg);
+  padding: 1.75rem 1.6rem 1.5rem;
+  box-shadow: var(--sh);
+  position: relative; overflow: hidden;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  animation: fadeUp .5s ease both;
+}
+.kpi:hover { transform:translateY(-3px); box-shadow:var(--sh2); border-color:var(--brd2); }
+.kpi::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg,transparent,var(--kc,var(--gold)),transparent);
+  opacity:0; transition:opacity .2s;
+}
+.kpi:hover::after { opacity:1; }
+
+.kpi:nth-child(1){animation-delay:.04s} .kpi:nth-child(2){animation-delay:.08s}
+.kpi:nth-child(3){animation-delay:.12s} .kpi:nth-child(4){animation-delay:.16s}
+.kpi:nth-child(5){animation-delay:.20s} .kpi:nth-child(6){animation-delay:.24s}
+.kpi:nth-child(7){animation-delay:.28s} .kpi:nth-child(8){animation-delay:.32s}
+.kpi:nth-child(9){animation-delay:.36s}
+
+.kpi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+.kpi-ico {
+  width:38px; height:38px; border-radius:9px;
+  background:var(--kbg,rgba(232,184,75,.1));
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+}
+.kpi-v {
+  font-family:'JetBrains Mono',monospace;
+  font-size:3rem; font-weight:700; color:var(--t1);
+  line-height:1; letter-spacing:-.03em; margin-bottom:.45rem;
+}
+.kpi-v.skel {
+  background: linear-gradient(90deg,var(--bg3) 25%,var(--panel2) 50%,var(--bg3) 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite;
+  border-radius:6px; color:transparent; display:inline-block;
+  min-width:72px; height:3rem;
+}
+.kpi-lbl { font-size:.78rem; color:var(--t2); font-weight:500; }
+.kpi-sub { font-size:.7rem; color:var(--t3); margin-top:.25rem; font-family:'JetBrains Mono',monospace; }
+.kpi-bar-wrap { margin-top:1.1rem; background:var(--bg2); border-radius:99px; height:3px; overflow:hidden; }
+.kpi-bar { height:100%; border-radius:99px; background:var(--kc,var(--gold)); width:0%; transition:width 1.3s cubic-bezier(.22,1,.36,1); }
+
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@keyframes fadeUp  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── GRADE ROW ── */
+.grade-row { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; margin-bottom:1.1rem; }
+.gc {
+  background:var(--panel); border:1px solid var(--brd); border-radius:var(--r-lg);
+  padding:2rem 2rem 1.8rem;
+  box-shadow:var(--sh); display:flex; align-items:center; gap:1.75rem;
+  transition:transform .18s,box-shadow .18s;
+  position:relative; overflow:hidden;
+  animation:fadeUp .4s ease both;
+}
+.gc:nth-child(2){animation-delay:.08s}
+.gc:hover { transform:translateY(-2px); box-shadow:var(--sh2); }
+.gc::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--gca,var(--blue)); }
+.gc-badge {
+  width:60px; height:60px; border-radius:14px;
+  background:var(--gcbg,var(--blue-g));
+  color:var(--gca,var(--blue));
+  font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.gc-info .gi-l { font-size:.75rem; color:var(--t2); font-weight:500; }
+.gc-info .gi-v { font-family:'JetBrains Mono',monospace; font-size:3.4rem; font-weight:700; color:var(--t1); line-height:1; margin:.05rem 0 .2rem; }
+.gc-info .gi-p { font-size:.73rem; color:var(--t2); }
+.gc-right { margin-left:auto; text-align:right; flex-shrink:0; }
+.gc-right .gr-pct { font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--t3); margin-bottom:.5rem; }
+.gc-track { width:88px; height:4px; background:var(--bg2); border-radius:99px; overflow:hidden; margin-left:auto; }
+.gc-fill  { height:100%; border-radius:99px; background:var(--gca,var(--blue)); width:0%; transition:width 1.3s cubic-bezier(.22,1,.36,1); }
+
+/* ── PANELS (chart/table wrappers) ── */
+.row  { display:grid; gap:1.1rem; margin-bottom:1.1rem; }
+.r1   { grid-template-columns:1fr; }
+.r2   { grid-template-columns:1fr 1fr; }
+.r3   { grid-template-columns:1fr 1fr 1fr; }
+
+.pnl {
+  background:var(--panel); border:1px solid var(--brd); border-radius:var(--r-lg);
+  box-shadow:var(--sh); overflow:hidden;
+  animation:fadeUp .55s ease both;
+}
+.pnl-head {
+  padding:1.5rem 1.75rem 1rem;
+  border-bottom:1px solid var(--brd);
+  display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;
+}
+.pnl-head h3 { font-family:'Kanit',sans-serif; font-weight:600; font-size:.98rem; color:var(--t1); }
+.pnl-head p  { font-size:.74rem; color:var(--t2); margin-top:.2rem; }
+.pnl-tag {
+  font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--t3);
+  letter-spacing:.08em; background:var(--bg2); border:1px solid var(--brd);
+  border-radius:6px; padding:3px 9px; white-space:nowrap; flex-shrink:0; margin-top:2px;
+}
+.pnl-body { padding:1.5rem 1.75rem; }
+.ca { position:relative; }
+.ca.h200{height:200px} .ca.h260{height:260px}
+.ca.h320{height:320px} .ca.h380{height:380px}
+
+/* ── DOC TABLE ── */
+.dt-head {
+  display:grid; gap:.5rem; padding:.75rem 1.75rem;
+  background:var(--bg2); border-bottom:1px solid var(--brd);
+  font-family:'JetBrains Mono',monospace; font-size:.62rem;
+  letter-spacing:.08em; color:var(--t3);
+}
+.dt-head.ta, .drow-a { grid-template-columns:1fr 54px 54px 100px 58px; }
+.dt-head.tm, .drow-m { grid-template-columns:1fr 54px 54px 100px 58px; }
+.drow-a,.drow-m {
+  display:grid; gap:.5rem; align-items:center;
+  padding:.9rem 1.75rem; border-bottom:1px solid var(--brd);
+  font-size:.82rem; transition:background .14s;
+}
+.drow-a:last-child,.drow-m:last-child { border-bottom:none; }
+.drow-a:hover,.drow-m:hover { background:rgba(255,255,255,.022); }
+.dn  { color:var(--t1); }
+.dnum{ font-family:'JetBrains Mono',monospace; font-size:.77rem; font-weight:600; text-align:center; }
+.mtr { background:var(--bg2); border-radius:99px; height:5px; overflow:hidden; }
+.mfill { height:100%; border-radius:99px; width:0%; transition:width 1.3s cubic-bezier(.22,1,.36,1); }
+.dpct { font-family:'JetBrains Mono',monospace; font-size:.73rem; font-weight:600; text-align:right; }
+
+/* ── RECENT ── */
+.ai {
+  display:flex; align-items:center; gap:1rem;
+  padding:.95rem 1.75rem;
+  border-bottom:1px solid var(--brd);
+  transition:background .14s;
+}
+.ai:hover { background:rgba(255,255,255,.022); }
+.ai:last-child { border-bottom:none; }
+.ai-ico { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+.ai-ico.a { background:var(--blue-g); }
+.ai-ico.m { background:var(--green-g); }
+.ai-body { flex:1; min-width:0; }
+.ai-name { font-size:.85rem; font-weight:600; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ai-meta { font-size:.72rem; color:var(--t2); margin-top:1px; }
+.ai-r { text-align:right; flex-shrink:0; }
+.ai-ts { font-family:'JetBrains Mono',monospace; font-size:.66rem; color:var(--t3); }
+.badge {
+  display:inline-block; font-size:.64rem; font-weight:700;
+  padding:2px 7px; border-radius:5px; margin-top:3px;
+}
+.badge.m1  { background:var(--blue-g);  color:var(--blue); }
+.badge.m4  { background:var(--amber-g); color:var(--amber); }
+.badge.dn  { background:var(--green-g); color:var(--green); }
+.badge.pd  { background:var(--amber-g); color:var(--amber); }
+
+/* ── SCROLL ── */
+.sz { max-height:400px; overflow-y:auto; }
+.sz::-webkit-scrollbar { width:4px; }
+.sz::-webkit-scrollbar-track { background:transparent; }
+.sz::-webkit-scrollbar-thumb { background:var(--brd2); border-radius:99px; }
+
+/* ── EMPTY ── */
+.empty { padding:3rem 1rem; text-align:center; font-family:'JetBrains Mono',monospace; font-size:.76rem; color:var(--t3); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  .kpi-grid.g4,.kpi-grid.g5 { grid-template-columns:repeat(2,1fr); }
+  .r3 { grid-template-columns:1fr 1fr; }
+}
+@media(max-width:760px){
+  .pg { padding:1.5rem 1rem 4rem; }
+  .hero-nums { display:none; }
+  .hero { padding:1.4rem 1.5rem; }
+  .r2,.r3 { grid-template-columns:1fr; }
+  .kpi-grid.g4,.kpi-grid.g5 { grid-template-columns:repeat(2,1fr); }
+  .grade-row { grid-template-columns:1fr; }
+  .dt-head.ta,.drow-a,.dt-head.tm,.drow-m { grid-template-columns:1fr 54px 56px; }
+  .hide-sm { display:none !important; }
+  .hdr-i { padding:0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="ldr"><div class="ldr-ring"></div><p>LOADING DATA...</p></div>
+
+<div id="auth">
+  <div class="auth-box">
+    <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="logo">
+    <h2>Analytics Dashboard</h2>
+    <p>ระบบสถิติการสมัครเรียน ปีการศึกษา 2569<br>โรงเรียนกระดุมทองวิทยา</p>
+    <input class="af" type="password" id="ap" placeholder="••••••••" autocomplete="current-password">
+    <button class="ab" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="ae" id="ae">รหัสผ่านไม่ถูกต้อง</div>
+  </div>
+</div>
+
+<header class="hdr">
+  <div class="hdr-i">
+    <img class="hdr-logo" src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="logo">
+    <div class="hdr-t"><strong>ANALYTICS</strong> &nbsp;/&nbsp; โรงเรียนกระดุมทองวิทยา &nbsp;/&nbsp; ปีการศึกษา 2569</div>
+    <div class="hdr-r">
+      <span class="ts" id="tsLbl"></span>
+      <div class="cpill"><div class="cdot" id="cdot"></div><span id="clbl">กำลังเชื่อมต่อ</span></div>
+      <a class="hbtn" href="index.html" target="_blank">
+        📋 ระบบรับสมัคร
+      </a>
+      <a class="hbtn gold" href="staff.html">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        จัดการข้อมูล
+      </a>
+      <button class="hbtn" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+</header>
+
+<div id="main"><div class="pg">
+
+  <!-- HERO -->
+  <div class="hero">
+    <img class="hero-logo" src="https://nonthaphathr.github.io/uploadimg/logoschool.png" alt="logo">
+    <div class="hero-copy">
+      <h1>ภาพรวมการสมัครเรียน ปีการศึกษา 2569</h1>
+      <p>โรงเรียนกระดุมทองวิทยา · สังกัด อปท. จังหวัดศรีสะเกษ · ข้อมูล Real-time จาก Firebase Firestore</p>
+    </div>
+    <div class="hero-nums">
+      <div class="hn"><span class="hn-v" id="hnT">—</span><span class="hn-l">ใบสมัครทั้งหมด</span></div>
+      <div class="hn"><span class="hn-v" id="hnM">—</span><span class="hn-l">ใบมอบตัวสมบูรณ์</span></div>
+      <div class="hn"><span class="hn-v" id="hnV">—</span><span class="hn-l">ตรวจเอกสารครบ</span></div>
+    </div>
+  </div>
+
+  <!-- KPI ROW 1 -->
+  <div class="sec"><span class="sec-lbl">KEY METRICS</span><div class="sec-hr"></div><span class="sec-ct" id="scKpi"></span></div>
+
+  <div class="kpi-grid g4">
+    <div class="kpi" style="--kc:var(--blue);--kbg:var(--blue-g)">
+      <div class="kpi-top"><div class="kpi-ico">📄</div></div>
+      <div class="kpi-v skel" id="kv1">0</div>
+      <div class="kpi-lbl">ใบสมัครทั้งหมด</div>
+      <div class="kpi-sub" id="ks1">ม.1 + ม.4</div>
+    </div>
+    <div class="kpi" style="--kc:var(--blue);--kbg:var(--blue-g)">
+      <div class="kpi-top"><div class="kpi-ico">🏫</div></div>
+      <div class="kpi-v skel" id="kv2">0</div>
+      <div class="kpi-lbl">ม.1 สมัคร</div>
+      <div class="kpi-sub" id="ks2">มัธยมศึกษาปีที่ 1</div>
+    </div>
+    <div class="kpi" style="--kc:var(--amber);--kbg:var(--amber-g)">
+      <div class="kpi-top"><div class="kpi-ico">🏫</div></div>
+      <div class="kpi-v skel" id="kv3">0</div>
+      <div class="kpi-lbl">ม.4 สมัคร</div>
+      <div class="kpi-sub" id="ks3">มัธยมศึกษาปีที่ 4</div>
+    </div>
+    <div class="kpi" style="--kc:var(--green);--kbg:var(--green-g)">
+      <div class="kpi-top"><div class="kpi-ico">📋</div></div>
+      <div class="kpi-v skel" id="kv4">0</div>
+      <div class="kpi-lbl">ใบมอบตัวสมบูรณ์</div>
+      <div class="kpi-sub" id="ks4">status: done</div>
+      <div class="kpi-bar-wrap"><div class="kpi-bar" id="kb4"></div></div>
+    </div>
+  </div>
+
+  <div class="kpi-grid g5">
+    <div class="kpi" style="--kc:var(--amber);--kbg:var(--amber-g)">
+      <div class="kpi-top"><div class="kpi-ico">⏳</div></div>
+      <div class="kpi-v skel" id="kv5">0</div>
+      <div class="kpi-lbl">รอกรอกใบมอบตัว</div>
+      <div class="kpi-sub">ผู้ปกครองยังไม่กรอก</div>
+    </div>
+    <div class="kpi" style="--kc:var(--teal);--kbg:var(--teal-g)">
+      <div class="kpi-top"><div class="kpi-ico">✅</div></div>
+      <div class="kpi-v skel" id="kv6">0</div>
+      <div class="kpi-lbl">ตรวจเอกสารครบ (สมัคร)</div>
+      <div class="kpi-sub" id="ks6">ใบสมัคร</div>
+      <div class="kpi-bar-wrap"><div class="kpi-bar" id="kb6" style="background:var(--teal)"></div></div>
+    </div>
+    <div class="kpi" style="--kc:var(--violet);--kbg:var(--violet-g)">
+      <div class="kpi-top"><div class="kpi-ico">✅</div></div>
+      <div class="kpi-v skel" id="kv7">0</div>
+      <div class="kpi-lbl">ตรวจเอกสารครบ (มอบตัว)</div>
+      <div class="kpi-sub" id="ks7">ใบมอบตัว</div>
+      <div class="kpi-bar-wrap"><div class="kpi-bar" id="kb7" style="background:var(--violet)"></div></div>
+    </div>
+    <div class="kpi" style="--kc:var(--red);--kbg:var(--red-g)">
+      <div class="kpi-top"><div class="kpi-ico">⚠️</div></div>
+      <div class="kpi-v skel" id="kv8">0</div>
+      <div class="kpi-lbl">ยังขาดเอกสาร (สมัคร)</div>
+      <div class="kpi-sub">อย่างน้อย 1 รายการ</div>
+    </div>
+    <div class="kpi" style="--kc:var(--gold);--kbg:var(--gold-g)">
+      <div class="kpi-top"><div class="kpi-ico">📊</div></div>
+      <div class="kpi-v skel" id="kv9">0%</div>
+      <div class="kpi-lbl">อัตราการมอบตัว</div>
+      <div class="kpi-sub">มอบตัว / ใบสมัครทั้งหมด</div>
+      <div class="kpi-bar-wrap"><div class="kpi-bar" id="kb9"></div></div>
+    </div>
+  </div>
+
+  <!-- GRADE SPLIT -->
+  <div class="sec"><span class="sec-lbl">GRADE BREAKDOWN</span><div class="sec-hr"></div></div>
+  <div class="grade-row">
+    <div class="gc" style="--gca:var(--blue);--gcbg:var(--blue-g)">
+      <div class="gc-badge">ม.1</div>
+      <div class="gc-info">
+        <div class="gi-l">มัธยมศึกษาปีที่ 1</div>
+        <div class="gi-v" id="gcM1">—</div>
+        <div class="gi-p" id="gcM1p">— % ของผู้สมัคร</div>
+      </div>
+      <div class="gc-right">
+        <div class="gr-pct" id="gcM1r">—%</div>
+        <div class="gc-track"><div class="gc-fill" id="gcM1b"></div></div>
+      </div>
+    </div>
+    <div class="gc" style="--gca:var(--amber);--gcbg:var(--amber-g)">
+      <div class="gc-badge">ม.4</div>
+      <div class="gc-info">
+        <div class="gi-l">มัธยมศึกษาปีที่ 4</div>
+        <div class="gi-v" id="gcM4">—</div>
+        <div class="gi-p" id="gcM4p">— % ของผู้สมัคร</div>
+      </div>
+      <div class="gc-right">
+        <div class="gr-pct" id="gcM4r">—%</div>
+        <div class="gc-track"><div class="gc-fill" id="gcM4b" style="background:var(--amber)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="sec"><span class="sec-lbl">VISUALIZATIONS</span><div class="sec-hr"></div></div>
+
+  <!-- Timeline -->
+  <div class="row r1" style="margin-bottom:1.1rem">
+    <div class="pnl">
+      <div class="pnl-head">
+        <div><h3>จำนวนใบสมัครรายวัน</h3><p>แนวโน้มการสมัครเรียน แบ่งตามระดับชั้น</p></div>
+        <span class="pnl-tag">DAILY TIMELINE</span>
+      </div>
+      <div class="pnl-body"><div class="ca h320"><canvas id="cTl"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- 3 doughnuts -->
+  <div class="row r3">
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>สัดส่วนระดับชั้น</h3><p>ม.1 vs ม.4</p></div><span class="pnl-tag">GRADE</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cGr"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>สถานะใบมอบตัว</h3><p>สมบูรณ์ / รอกรอก</p></div><span class="pnl-tag">MOBTUA STATUS</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cMs"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>ความคืบหน้าตรวจเอกสาร</h3><p>ใบสมัคร: ครบ / บางส่วน / ยังไม่ตรวจ</p></div><span class="pnl-tag">VERIFY STATUS</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cVs"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- Doc horizontal bars -->
+  <div class="row r2" style="margin-top:1.1rem">
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>เอกสารใบสมัคร — รายเอกสาร</h3><p>จำนวนที่ได้รับการตรวจแต่ละรายการ</p></div><span class="pnl-tag">ADMISSION DOCS</span></div>
+      <div class="pnl-body"><div class="ca h320"><canvas id="cAd"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>เอกสารใบมอบตัว — รายเอกสาร</h3><p>จากใบมอบตัวที่สมบูรณ์</p></div><span class="pnl-tag">MOBTUA DOCS</span></div>
+      <div class="pnl-body"><div class="ca h320"><canvas id="cMd"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- Mixed -->
+  <div class="row r2" style="margin-top:1.1rem">
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>ใบมอบตัวสมบูรณ์ แยกชั้น</h3><p>ม.1 vs ม.4</p></div><span class="pnl-tag">MOBTUA × GRADE</span></div>
+      <div class="pnl-body"><div class="ca h260"><canvas id="cMg"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>อัตราความครบถ้วนเอกสาร</h3><p>เปรียบเทียบ ใบสมัคร vs ใบมอบตัว</p></div><span class="pnl-tag">COMPLETION RATE</span></div>
+      <div class="pnl-body"><div class="ca h260"><canvas id="cCp"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- DOC TRACKER TABLES -->
+  <div class="sec"><span class="sec-lbl">DOCUMENT TRACKER</span><div class="sec-hr"></div></div>
+  <div class="row r2">
+    <div class="pnl" style="padding:0">
+      <div class="pnl-head"><div><h3>ใบสมัคร — รายเอกสาร</h3><p>ทั้งหมด <strong id="dtAt" style="color:var(--t1)">—</strong> ใบสมัคร</p></div><span class="pnl-tag">ADMISSION</span></div>
+      <div class="dt-head ta"><span>รายการเอกสาร</span><span style="text-align:center">ได้รับ</span><span style="text-align:center">ขาด</span><span class="hide-sm">ความคืบหน้า</span><span style="text-align:right">%</span></div>
+      <div class="sz" id="dtAb"></div>
+    </div>
+    <div class="pnl" style="padding:0">
+      <div class="pnl-head"><div><h3>ใบมอบตัว — รายเอกสาร</h3><p>จากใบมอบตัวสมบูรณ์ <strong id="dtMt" style="color:var(--t1)">—</strong> ใบ</p></div><span class="pnl-tag">MOBTUA</span></div>
+      <div class="dt-head tm"><span>รายการเอกสาร</span><span style="text-align:center">ได้รับ</span><span style="text-align:center">ขาด</span><span class="hide-sm">ความคืบหน้า</span><span style="text-align:right">%</span></div>
+      <div class="sz" id="dtMb"></div>
+    </div>
+  </div>
+
+  <!-- SCHOOL ORIGIN -->
+  <div class="sec"><span class="sec-lbl">SCHOOL ORIGIN</span><div class="sec-hr"></div></div>
+  <div class="row r2" style="margin-bottom:1.1rem">
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>โรงเรียนที่ส่งนักเรียนมา (Top 15)</h3><p>จำนวนผู้สมัครจากแต่ละโรงเรียนเดิม</p></div><span class="pnl-tag">TOP SCHOOLS</span></div>
+      <div class="pnl-body"><div class="ca h380"><canvas id="cSch"></canvas></div></div>
+    </div>
+    <div class="pnl" style="padding:0">
+      <div class="pnl-head"><div><h3>รายชื่อโรงเรียน — ทั้งหมด</h3><p>เรียงจากมากไปน้อย · รวมกลุ่มชื่อคล้ายกัน</p></div><span class="pnl-tag">ALL SCHOOLS</span></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:0;padding:.6rem 1rem;border-bottom:1px solid var(--brd);">
+        <span style="font-size:.72rem;font-weight:700;color:var(--t2);letter-spacing:.04em;text-transform:uppercase">โรงเรียน</span>
+        <span style="font-size:.72rem;font-weight:700;color:var(--t2);letter-spacing:.04em;text-transform:uppercase">จำนวน (ม.1/ม.4)</span>
+      </div>
+      <div class="sz" id="schList"></div>
+    </div>
+  </div>
+  <div class="row r3" style="margin-bottom:1.1rem">
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>กลุ่มตามจำนวนที่ส่ง</h3><p>1 คน / 2-3 คน / 4+ คน</p></div><span class="pnl-tag">SCHOOL GROUP</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cSchG"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>จังหวัดที่มาสมัคร</h3><p>แบ่งตาม schoolProvince</p></div><span class="pnl-tag">PROVINCE</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cProv"></canvas></div></div>
+    </div>
+    <div class="pnl">
+      <div class="pnl-head"><div><h3>ม.1 vs ม.4 แยกโรงเรียน Top 8</h3><p>เปรียบเทียบระดับชั้น</p></div><span class="pnl-tag">GRADE × SCHOOL</span></div>
+      <div class="pnl-body"><div class="ca h200"><canvas id="cSchGr"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- RECENT -->
+  <div class="sec"><span class="sec-lbl">RECENT ACTIVITY</span><div class="sec-hr"></div></div>
+  <div class="row r2">
+    <div class="pnl" style="padding:0">
+      <div class="pnl-head"><div><h3>ใบสมัครล่าสุด</h3><p>10 รายการล่าสุด</p></div><span class="pnl-tag">ADMISSION</span></div>
+      <div class="sz" id="rA"><div class="empty">กำลังโหลด...</div></div>
+    </div>
+    <div class="pnl" style="padding:0">
+      <div class="pnl-head"><div><h3>ใบมอบตัวล่าสุด</h3><p>10 รายการล่าสุด</p></div><span class="pnl-tag">MOBTUA</span></div>
+      <div class="sz" id="rM"><div class="empty">กำลังโหลด...</div></div>
+    </div>
+  </div>
+
+</div></div><!-- /pg /main -->
+
+<script type="module">
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+  getFirestore, collection, getDocs, onSnapshot, query, orderBy,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  CACHE_SIZE_UNLIMITED
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const PASS = 'admin1234';
+const AK = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+const MK = ['สำเนา ปพ.1 (ฉบับจบการศึกษา)','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+
+const fbConf = {
+  apiKey:            "AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY",
+  authDomain:        "recruitstudents2026.firebaseapp.com",
+  projectId:         "recruitstudents2026",
+  storageBucket:     "recruitstudents2026.firebasestorage.app",
+  messagingSenderId: "312157707609",
+  appId:             "1:312157707609:web:164adccd4f6c95af990048"
+};
+
+const APP_NAME = 'dashboard-2569';
+let fbApp;
+try {
+  fbApp = getApps().find(a => a.name === APP_NAME) || initializeApp(fbConf, APP_NAME);
+} catch(e) {
+  try { fbApp = getApp(APP_NAME); } catch(e2) { fbApp = initializeApp(fbConf, APP_NAME + '_b'); }
+}
+let db;
+try {
+  db = initializeFirestore(fbApp, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+} catch(e) {
+  try { db = getFirestore(fbApp); } catch(e2) { console.error('Firestore init failed:', e2); }
+}
+
+let adm=[], mob=[];
+const ch={};
+
+window.doLogin=()=>{
+  if(document.getElementById('ap').value===PASS){
+    sessionStorage.setItem('dashAuth','1');
+    document.getElementById('auth').classList.add('gone');
+    document.getElementById('main').style.display='block';
+    boot();
+  } else {
+    document.getElementById('ae').style.display='block';
+    document.getElementById('ap').value='';
+    document.getElementById('ap').focus();
+  }
+};
+window.doLogout=()=>{ sessionStorage.removeItem('dashAuth'); location.reload(); };
+document.getElementById('ap').addEventListener('keydown',e=>{ if(e.key==='Enter') window.doLogin(); });
+
+addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>document.getElementById('ldr').classList.add('done'),1100);
+  if(sessionStorage.getItem('dashAuth')==='1'){
+    document.getElementById('auth').classList.add('gone');
+    document.getElementById('main').style.display='block';
+    boot();
+  }
+});
+
+let _firstAdm = true, _firstMob = true;
+let _renderTimer = null;
+function scheduleRender(){ clearTimeout(_renderTimer); _renderTimer = setTimeout(()=>{ render(); setTs(); }, 80); }
+
+function boot(){
+  // onSnapshot เสิร์ฟจาก cache ทันที (เหมือน staff.html)
+  onSnapshot(
+    query(collection(db,'admissions'), orderBy('createdAt','desc')),
+    snap => {
+      adm = snap.docs.map(d=>({id:d.id,...d.data()}));
+      if (_firstAdm) { _firstAdm = false; setConn(true); }
+      scheduleRender();
+    },
+    err => { console.error('admissions snapshot error:', err); setConn(false); }
+  );
+  onSnapshot(
+    query(collection(db,'mobtua'), orderBy('createdAt','desc')),
+    snap => {
+      mob = snap.docs.map(d=>({id:d.id,...d.data()}));
+      if (_firstMob) { _firstMob = false; }
+      scheduleRender();
+    },
+    err => { console.error('mobtua snapshot error:', err); }
+  );
+
+  // Fallback: ถ้า onSnapshot ไม่ fire ภายใน 6 วินาที ใช้ getDocs ตรง
+  setTimeout(async () => {
+    if (_firstAdm || adm.length === 0) {
+      try {
+        const snap = await getDocs(query(collection(db,'admissions'), orderBy('createdAt','desc')));
+        adm = snap.docs.map(d=>({id:d.id,...d.data()}));
+        _firstAdm = false; setConn(true); scheduleRender();
+      } catch(e){ console.error('admissions getDocs fallback:', e); }
+    }
+    if (_firstMob || mob.length === 0) {
+      try {
+        const snap = await getDocs(query(collection(db,'mobtua'), orderBy('createdAt','desc')));
+        mob = snap.docs.map(d=>({id:d.id,...d.data()}));
+        _firstMob = false; scheduleRender();
+      } catch(e){ console.error('mobtua getDocs fallback:', e); }
+    }
+  }, 6000);
+}
+
+function render(){
+  const s=compute();
+  rHero(s); rKPI(s); rGrade(s); rCharts(s); rDocTable(s); rSchool(); rRecent();
+}
+
+function compute(){
+  const total=adm.length, m1=adm.filter(r=>r.gradeLevel==='m1').length, m4=adm.filter(r=>r.gradeLevel==='m4').length;
+  const done=mob.filter(r=>r.status==='done'), pend=mob.filter(r=>r.status!=='done').length;
+  const mobDone=done.length;
+  const ac={}; AK.forEach(k=>ac[k]=0); let af=0,ap2=0,an=0,ai=0;
+  adm.forEach(r=>{ const sv=r.staffVerified||{}; let c=0; AK.forEach(k=>{ if(sv[k]){ac[k]++;c++;} }); if(c===AK.length)af++;else if(c>0)ap2++;else an++; if(c<AK.length)ai++; });
+  const mc={}; MK.forEach(k=>mc[k]=0); let mf=0;
+  done.forEach(r=>{ const sv=r.staffVerified||{}; let c=0; MK.forEach(k=>{ if(sv[k]){mc[k]++;c++;} }); if(c===MK.length)mf++; });
+  const dmM1=done.filter(r=>{ if(r.gradeLevel)return r.gradeLevel==='m1'; const cl=r.classRoom||''; return !cl.includes('ม.4')&&!cl.includes('4/'); }).length;
+  return {total,m1,m4,mobDone,pend,af,ap2,an,ai,mf,ac,mc,dmM1,dmM4:mobDone-dmM1};
+}
+
+function rHero(s){ set('hnT',s.total); set('hnM',s.mobDone); set('hnV',s.af); }
+
+function rKPI(s){
+  const p=pct;
+  set('kv1',s.total);       set('ks1',`ม.1 ${s.m1} · ม.4 ${s.m4}`);
+  set('kv2',s.m1);          set('ks2',`${p(s.m1,s.total)}% ของทั้งหมด`);
+  set('kv3',s.m4);          set('ks3',`${p(s.m4,s.total)}% ของทั้งหมด`);
+  set('kv4',s.mobDone);     set('ks4',`${p(s.mobDone,s.total)}% ของใบสมัคร`);
+  set('kv5',s.pend);
+  set('kv6',s.af);          set('ks6',`${p(s.af,s.total)}% จาก ${s.total} ใบ`);
+  set('kv7',s.mf);          set('ks7',`${p(s.mf,s.mobDone)}% จาก ${s.mobDone} ใบมอบตัว`);
+  set('kv8',s.ai);
+  set('kv9',p(s.mobDone,s.total)+'%');
+  document.querySelectorAll('.kpi-v.skel').forEach(e=>e.classList.remove('skel'));
+  set('scKpi',`${s.total} ใบสมัคร · ${s.mobDone} ใบมอบตัว`);
+  setTimeout(()=>{ bar('kb4',p(s.mobDone,s.total)); bar('kb6',p(s.af,s.total)); bar('kb7',p(s.mf,s.mobDone)); bar('kb9',p(s.mobDone,s.total)); },400);
+}
+
+function rGrade(s){
+  const t=s.total||1;
+  set('gcM1',s.m1); set('gcM1p',`${pct(s.m1,t)}% ของผู้สมัคร`); set('gcM1r',pct(s.m1,t)+'%');
+  set('gcM4',s.m4); set('gcM4p',`${pct(s.m4,t)}% ของผู้สมัคร`); set('gcM4r',pct(s.m4,t)+'%');
+  setTimeout(()=>{ bar('gcM1b',pct(s.m1,t)); bar('gcM4b',pct(s.m4,t)); },500);
+}
+
+const TF={family:"'Sarabun'"}, TC='#30363d', GC='rgba(255,255,255,.05)', LC='#8b949e';
+
+function mkDnt(id,labels,data,colors){
+  dx(id); ch[id]=new Chart(el(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#1c2330',hoverOffset:5}]},options:{cutout:'66%',responsive:true,maintainAspectRatio:false,animation:{duration:900,easing:'easeOutQuart'},plugins:{legend:{position:'bottom',labels:{font:TF,color:LC,padding:10,boxWidth:9}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}}}});
+}
+
+function rCharts(s){
+  const bd={},bm1={},bm4={};
+  adm.forEach(r=>{ const d=ds(r.createdAt); bd[d]=(bd[d]||0)+1; if(r.gradeLevel==='m1')bm1[d]=(bm1[d]||0)+1; else bm4[d]=(bm4[d]||0)+1; });
+  const dates=Object.keys(bd).sort();
+  dx('cTl'); ch['cTl']=new Chart(el('cTl'),{type:'bar',data:{labels:dates.map(dTH),datasets:[{label:'ม.1',data:dates.map(d=>bm1[d]||0),backgroundColor:'rgba(88,166,255,.72)',borderRadius:5,borderSkipped:false},{label:'ม.4',data:dates.map(d=>bm4[d]||0),backgroundColor:'rgba(240,136,62,.72)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000},scales:{x:{stacked:true,grid:{display:false},ticks:{font:TF,color:TC}},y:{stacked:true,beginAtZero:true,grid:{color:GC},ticks:{stepSize:1,font:{family:"'JetBrains Mono'",size:11},color:TC}}},plugins:{legend:{labels:{font:TF,color:LC,padding:14,boxWidth:9}}}}});
+  mkDnt('cGr',['ม.1','ม.4'],[s.m1,s.m4],['#58a6ff','#f0883e']);
+  mkDnt('cMs',['กรอกสมบูรณ์','รอกรอก'],[s.mobDone,s.pend],['#3fb950','#e8b84b']);
+  mkDnt('cVs',['ครบทุกรายการ','บางรายการ','ยังไม่ตรวจ'],[s.af,s.ap2,s.an],['#2dd4bf','#e8b84b','#30363d']);
+  mkHBar('cAd',AK.map(k=>k.length>22?k.slice(0,22)+'…':k),AK.map(k=>s.ac[k]),s.total,'#58a6ff');
+  mkHBar('cMd',MK.map(k=>k.length>22?k.slice(0,22)+'…':k),MK.map(k=>s.mc[k]),s.mobDone,'#3fb950');
+  dx('cMg'); ch['cMg']=new Chart(el('cMg'),{type:'bar',data:{labels:['ม.1','ม.4'],datasets:[{data:[s.dmM1,s.dmM4],backgroundColor:['#58a6ff','#f0883e'],borderRadius:10,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:900},scales:{x:{grid:{display:false},ticks:{font:{...TF,size:14},color:LC}},y:{beginAtZero:true,grid:{color:GC},ticks:{stepSize:1,font:{family:"'JetBrains Mono'",size:11},color:TC}}},plugins:{legend:{display:false}}}});
+  dx('cCp'); ch['cCp']=new Chart(el('cCp'),{type:'bar',data:{labels:['ใบสมัคร','ใบมอบตัว'],datasets:[{label:'ทั้งหมด',data:[s.total,s.mobDone],backgroundColor:'rgba(255,255,255,.06)',borderRadius:7,borderSkipped:false},{label:'ตรวจเอกสารครบ',data:[s.af,s.mf],backgroundColor:['rgba(45,212,191,.7)','rgba(188,140,255,.7)'],borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:900},scales:{x:{grid:{display:false},ticks:{font:{...TF,size:13},color:LC}},y:{beginAtZero:true,grid:{color:GC},ticks:{stepSize:1,font:{family:"'JetBrains Mono'",size:11},color:TC}}},plugins:{legend:{labels:{font:TF,color:LC,padding:12,boxWidth:9}}}}});
+}
+
+function mkHBar(id,labels,data,max,color){
+  dx(id); ch[id]=new Chart(el(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:data.map(v=>{ const r=v/(max||1); return r>=.8?color+'cc':r>=.5?color+'77':color+'33'; }),borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:1000},scales:{x:{max,beginAtZero:true,grid:{color:GC},ticks:{font:{family:"'JetBrains Mono'",size:10},color:TC}},y:{grid:{display:false},ticks:{font:{...TF,size:11},color:LC}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`ได้รับ ${c.raw}/${max} (${pct(c.raw,max)}%)`}}}}});
+}
+
+function rDocTable(s){
+  set('dtAt',s.total); set('dtMt',s.mobDone);
+  document.getElementById('dtAb').innerHTML=AK.map(k=>{ const g=s.ac[k],m=s.total-g,p2=pct(g,s.total),cl=p2>=80?'var(--green)':p2>=50?'var(--amber)':'var(--red)'; return `<div class="drow-a"><div class="dn">${k}</div><div class="dnum" style="color:var(--green)">${g}</div><div class="dnum" style="color:var(--red)">${m}</div><div class="hide-sm"><div class="mtr"><div class="mfill" style="width:${p2}%;background:${cl}"></div></div></div><div class="dpct" style="color:${cl}">${p2}%</div></div>`; }).join('');
+  document.getElementById('dtMb').innerHTML=MK.map(k=>{ const g=s.mc[k],m=s.mobDone-g,p2=pct(g,s.mobDone),cl=p2>=80?'var(--green)':p2>=50?'var(--amber)':'var(--red)'; return `<div class="drow-m"><div class="dn">${k}</div><div class="dnum" style="color:var(--green)">${g}</div><div class="dnum" style="color:var(--red)">${m}</div><div class="hide-sm"><div class="mtr"><div class="mfill" style="width:${p2}%;background:${cl}"></div></div></div><div class="dpct" style="color:${cl}">${p2}%</div></div>`; }).join('');
+}
+
+function rRecent(){
+  document.getElementById('rA').innerHTML=adm.slice(0,10).map(r=>{ const gl=r.gradeLevel==='m4'?`<span class="badge m4">ม.4</span>`:`<span class="badge m1">ม.1</span>`; const d=r.data||{}; const sch=d.previousSchool||r.previousSchool||d.school||r.school||'ไม่ระบุโรงเรียนเดิม'; const prov=(d.schoolProvince||r.schoolProvince)?` · ${d.schoolProvince||r.schoolProvince}`:''; return `<div class="ai"><div class="ai-ico a">📄</div><div class="ai-body"><div class="ai-name">${r.studentName||'—'}</div><div class="ai-meta">${sch}${prov}</div></div><div class="ai-r"><div class="ai-ts">${thD(r.createdAt)}</div>${gl}</div></div>`; }).join('')||'<div class="empty">ยังไม่มีใบสมัคร</div>';
+  const ms2=[...mob].sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
+  document.getElementById('rM').innerHTML=ms2.slice(0,10).map(r=>{ const d=r.status==='done'; return `<div class="ai"><div class="ai-ico m">📋</div><div class="ai-body"><div class="ai-name">${r.studentName||'—'}</div><div class="ai-meta">${r.classRoom||'ไม่ระบุห้อง'}</div></div><div class="ai-r"><div class="ai-ts">${thD(r.createdAt)}</div><span class="badge ${d?'dn':'pd'}">${d?'✅ สมบูรณ์':'⏳ รอกรอก'}</span></div></div>`; }).join('')||'<div class="empty">ยังไม่มีใบมอบตัว</div>';
+}
+
+/* ── School stats ── */
+// ── School normalisation + fuzzy grouping ──────────────────────────────
+//
+// ขั้นตอน:
+//  1. strip → ตัด "โรงเรียน", "บ้าน", "วัด", "ชุมชน", จ./อ./ต. ออก
+//     แล้วเหลือแค่ "ชื่อแก่น" เช่น "หนองดุมหนองม่วง"
+//  2. ทำ canonical key จาก bigrams ของชื่อแก่น
+//  3. fuzzy-merge: ถ้า 2 ชื่อมี bigram overlap ≥ 60% → ถือว่าโรงเรียนเดียวกัน
+//     เลือก representative เป็น key ที่มีชื่อยาวกว่า (ครบกว่า)
+// ─────────────────────────────────────────────────────────────────────
+
+function stripSchool(raw) {
+  if (!raw) return '';
+  return raw.trim()
+    .replace(/^โรงเรียน\s*/u, '')
+    .replace(/^บ้าน\s*/u, '')
+    .replace(/^วัด\s*/u, '')
+    .replace(/^ชุมชน\s*/u, '')
+    .replace(/\s*(จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.).*$/u, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function displaySchool(raw) {
+  if (!raw) return 'ไม่ระบุ';
+  const s = raw.trim();
+  return /^โรงเรียน/iu.test(s) ? s : 'โรงเรียน' + s;
+}
+
+// สร้าง set of bigrams จากชื่อ (char-level)
+function bigrams(str) {
+  const s = new Set();
+  for (let i = 0; i < str.length - 1; i++) s.add(str.slice(i, i + 2));
+  return s;
+}
+
+// Jaccard similarity ของ 2 bigram sets
+function jaccardBigram(a, b) {
+  if (!a.size || !b.size) return 0;
+  let intersect = 0;
+  a.forEach(v => { if (b.has(v)) intersect++; });
+  return intersect / (a.size + b.size - intersect);
+}
+
+const FUZZY_THRESHOLD = 0.55; // ≥55% bigram overlap = โรงเรียนเดียวกัน
+
+function buildSchoolMap() {
+  // Pass 1: collect raw entries { stripped, display, total, m1, m4, province }
+  const rawEntries = [];
+  let noneEntry = null;
+
+  adm.forEach(r => {
+    const d   = r.data || {};
+    const raw = d.previousSchool || r.previousSchool || d.school || r.school || '';
+    const stripped = stripSchool(raw);
+
+    if (!stripped) {
+      if (!noneEntry) noneEntry = { display: 'ไม่ระบุโรงเรียนเดิม', total: 0, m1: 0, m4: 0, province: '' };
+      noneEntry.total++;
+      if (r.gradeLevel === 'm1') noneEntry.m1++; else noneEntry.m4++;
+      return;
+    }
+
+    const province = d.schoolProvince || r.schoolProvince || d.previousSchoolProvince || r.previousSchoolProvince || '';
+    // ค้นหา rawEntries ที่มี stripped เหมือนกันก่อน (exact)
+    let found = rawEntries.find(e => e.stripped === stripped);
+    if (!found) {
+      found = { stripped, display: displaySchool(raw.trim()), total: 0, m1: 0, m4: 0, province };
+      rawEntries.push(found);
+    }
+    found.total++;
+    if (r.gradeLevel === 'm1') found.m1++; else found.m4++;
+    if (!found.province && province) found.province = province;
+    // ถ้า display ใหม่ยาวกว่า ให้ใช้อันนั้น (ครบกว่า)
+    if (displaySchool(raw.trim()).length > found.display.length) found.display = displaySchool(raw.trim());
+  });
+
+  // Pass 2: fuzzy-merge โดยใช้ bigram Jaccard
+  const groups = []; // แต่ละ group = array ของ rawEntries index
+
+  rawEntries.forEach((entry, i) => {
+    const bg = bigrams(entry.stripped);
+    // หา group ที่ใกล้เคียงที่สุด
+    let bestGroup = -1, bestScore = 0;
+    groups.forEach((g, gi) => {
+      // เทียบกับ representative (entry แรกของ group)
+      const rep = rawEntries[g[0]];
+      const score = jaccardBigram(bg, bigrams(rep.stripped));
+      if (score >= FUZZY_THRESHOLD && score > bestScore) {
+        bestScore = score;
+        bestGroup = gi;
+      }
+    });
+    if (bestGroup >= 0) {
+      groups[bestGroup].push(i);
+    } else {
+      groups.push([i]);
+    }
+  });
+
+  // Pass 3: collapse each group → single entry
+  const result = groups.map(g => {
+    // merge all entries in group
+    const merged = {
+      display: '',
+      stripped: '',
+      total: 0, m1: 0, m4: 0, province: ''
+    };
+    let longestDisplayLen = 0;
+    g.forEach(i => {
+      const e = rawEntries[i];
+      merged.total += e.total;
+      merged.m1    += e.m1;
+      merged.m4    += e.m4;
+      if (!merged.province && e.province) merged.province = e.province;
+      // ใช้ชื่อที่ยาวที่สุดเป็น display (มักจะครบกว่า)
+      if (e.display.length > longestDisplayLen) {
+        longestDisplayLen = e.display.length;
+        merged.display  = e.display;
+        merged.stripped = e.stripped;
+      }
+    });
+    return merged;
+  });
+
+  // เพิ่ม "ไม่ระบุ" ท้ายสุด
+  if (noneEntry) result.push(noneEntry);
+
+  return result.sort((a, b) => b.total - a.total);
+}
+
+function rSchool(){
+  const schools = buildSchoolMap();
+  const top15   = schools.slice(0,15);
+
+  // ── Bar chart Top 15 ──
+  const COLORS = ['#58a6ff','#3fb950','#e8b84b','#2dd4bf','#f0883e','#bc8cff',
+    '#79c0ff','#56d364','#ffc680','#76e3d4','#ffb392','#d2a8ff',
+    '#a5d6ff','#aff5b4','#ffd4a3'];
+  dx('cSch');
+  ch['cSch']=new Chart(el('cSch'),{
+    type:'bar',
+    data:{
+      labels: top15.map(s=>s.display.replace(/^โรงเรียน/,'')),
+      datasets:[
+        {label:'ม.1', data:top15.map(s=>s.m1), backgroundColor:'rgba(88,166,255,.75)', borderRadius:4, borderSkipped:false},
+        {label:'ม.4', data:top15.map(s=>s.m4), backgroundColor:'rgba(240,136,62,.75)', borderRadius:4, borderSkipped:false},
+      ]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:1000},
+      scales:{
+        x:{stacked:false,beginAtZero:true,grid:{color:GC},ticks:{stepSize:1,font:{family:"'JetBrains Mono'",size:10},color:TC}},
+        y:{stacked:false,grid:{display:false},ticks:{font:{family:"'Sarabun'",size:10.5},color:LC}}
+      },
+      plugins:{
+        legend:{labels:{font:TF,color:LC,padding:12,boxWidth:9}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw} คน`}}
+      }
+    }
+  });
+
+  // ── School group doughnut ──
+  const g1=schools.filter(s=>s.total===1).length;
+  const g23=schools.filter(s=>s.total>=2&&s.total<=3).length;
+  const g4=schools.filter(s=>s.total>=4).length;
+  mkDnt('cSchG',['ส่ง 1 คน','ส่ง 2-3 คน','ส่ง 4+ คน'],[g1,g23,g4],['#8b949e','#58a6ff','#3fb950']);
+
+  // ── Province doughnut ──
+  const provMap={};
+  adm.forEach(r=>{
+    const pv=(r.data||{}).schoolProvince||r.schoolProvince||(r.data||{}).previousSchoolProvince||r.previousSchoolProvince||'ไม่ระบุ';
+    provMap[pv]=(provMap[pv]||0)+1;
+  });
+  const provSorted=Object.entries(provMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const PC=['#58a6ff','#3fb950','#e8b84b','#2dd4bf','#f0883e','#bc8cff','#79c0ff','#56d364'];
+  mkDnt('cProv',provSorted.map(x=>x[0]),provSorted.map(x=>x[1]),PC);
+
+  // ── Grade×School grouped bar Top 8 ──
+  const top8=schools.filter(s=>s.display!=='ไม่ระบุโรงเรียนเดิม').slice(0,8);
+  dx('cSchGr');
+  ch['cSchGr']=new Chart(el('cSchGr'),{
+    type:'bar',
+    data:{
+      labels:top8.map(s=>s.display.replace(/^โรงเรียน/,'')),
+      datasets:[
+        {label:'ม.1',data:top8.map(s=>s.m1),backgroundColor:'rgba(88,166,255,.75)',borderRadius:4,borderSkipped:false},
+        {label:'ม.4',data:top8.map(s=>s.m4),backgroundColor:'rgba(240,136,62,.75)',borderRadius:4,borderSkipped:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:900},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{...TF,size:9},color:LC,maxRotation:35}},
+        y:{beginAtZero:true,grid:{color:GC},ticks:{stepSize:1,font:{family:"'JetBrains Mono'",size:10},color:TC}}
+      },
+      plugins:{legend:{labels:{font:TF,color:LC,padding:10,boxWidth:9}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw} คน`}}}
+    }
+  });
+
+  // ── List ──
+  const BARS=['#58a6ff','#3fb950','#e8b84b','#2dd4bf','#f0883e','#bc8cff'];
+  const maxCount = schools[0]?.total||1;
+  document.getElementById('schList').innerHTML = schools.map((s,i)=>{
+    const w=Math.round(s.total/maxCount*100);
+    const color=BARS[i%BARS.length];
+    const pv=s.province?`<span style="font-size:.7rem;color:var(--t2);margin-left:.4rem">${s.province}</span>`:'';
+    return `<div style="padding:.6rem 1rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:.75rem;transition:background .15s;" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:var(--t2);width:22px;flex-shrink:0;text-align:right">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.85rem;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.display}${pv}</div>
+        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:.35rem;overflow:hidden">
+          <div style="height:100%;width:${w}%;background:${color};border-radius:99px;transition:width 1s cubic-bezier(.22,1,.36,1)"></div>
+        </div>
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700;color:${color}">${s.total}</span>
+        <span style="font-size:.7rem;color:var(--t2);display:block">${s.m1>0?`ม.1: ${s.m1}`:''}${s.m1>0&&s.m4>0?' · ':''}${s.m4>0?`ม.4: ${s.m4}`:''}</span>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty">ยังไม่มีข้อมูล</div>';
+}
+
+// utils
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const set=(id,v)=>{ const e=document.getElementById(id); if(e)e.textContent=v; };
+const bar=(id,w)=>{ const e=document.getElementById(id); if(e)e.style.width=w+'%'; };
+const el=id=>document.getElementById(id);
+const dx=id=>{ if(ch[id]){ch[id].destroy();delete ch[id];} };
+const ms=ts=>{ if(!ts)return 0; if(ts.toDate)return ts.toDate().getTime(); if(ts.seconds)return ts.seconds*1000; return new Date(ts).getTime(); };
+const ds=ts=>{ const d=new Date(ms(ts)); return isNaN(d)?'?':d.toISOString().slice(0,10); };
+const MO=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const dTH=iso=>{ if(!iso||iso==='?')return'—'; const d=new Date(iso); return `${d.getDate()} ${MO[d.getMonth()]}`; };
+const thD=ts=>{ const m2=ms(ts); if(!m2)return'—'; const d=new Date(m2); return `${d.getDate()} ${MO[d.getMonth()]} ${d.getFullYear()+543}`; };
+
+function setConn(ok){
+  const d=document.getElementById('cdot'); if(d)d.className='cdot'+(ok?' live':'');
+  set('clbl',ok?'เชื่อมต่อแล้ว':'ออฟไลน์');
+  document.getElementById('ldr').classList.add('done');
+}
+function setTs(){ const e=document.getElementById('tsLbl'); if(!e)return; const n=new Date(); e.textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')} น.`; }
+</script>
+</body>
+</html>

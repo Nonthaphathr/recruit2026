@@ -1413,55 +1413,136 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
   </div>
 
   <div class="main-wrap">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1.25rem;overflow-x:auto;">
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1.25rem;">
       <div class="stat-card" style="--before-bg:#0891b2;">
         <div class="stat-label" style="color:#0891b2;">คำขอย้ายทั้งหมด</div>
         <div class="stat-num" id="tSTotal" style="color:#0891b2;">—</div>
         <div class="stat-sub">รายการในระบบ</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label" style="color:var(--gold);">วันนี้</div>
-        <div class="stat-num" id="tSToday" style="color:var(--gold);">—</div>
-        <div class="stat-sub">รายการใหม่วันนี้</div>
+        <div class="stat-label" style="color:var(--gold);">ใบมอบตัวย้าย</div>
+        <div class="stat-num" id="tSMobtua" style="color:var(--gold);">—</div>
+        <div class="stat-sub">รายการมอบตัว</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" style="color:#dc2626;">เอกสารค้าง</div>
+        <div class="stat-num" id="tSDocPending" style="color:#dc2626;">—</div>
+        <div class="stat-sub">ยังไม่ครบ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" style="color:#16a34a;">ดำเนินการครบ</div>
+        <div class="stat-num" id="tSDone" style="color:#16a34a;">—</div>
+        <div class="stat-sub">เอกสารครบแล้ว</div>
       </div>
     </div>
 
-    <div class="toolbar">
-      <div class="search-box">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
-        <input class="search-input" type="text" id="searchTransfer"
-          placeholder="ค้นหาชื่อนักเรียน, โรงเรียนเดิม…" oninput="filterTransfer()">
-      </div>
-      <select class="filter-select" id="filterTransferGrade" onchange="filterTransfer()">
-        <option value="">ทุกระดับชั้น</option>
-        <option value="m1">ม.1</option><option value="m2">ม.2</option>
-        <option value="m3">ม.3</option><option value="m4">ม.4</option>
-        <option value="m5">ม.5</option><option value="m6">ม.6</option>
-      </select>
-      <button class="btn-icon btn-refresh" onclick="loadTransfersStaff()">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-        รีเฟรช
+    <!-- Tabs -->
+    <div class="section-tabs">
+      <button class="tab-btn active" onclick="switchTransferTab('tf-admission', this)">
+        📄 ใบคำขอย้าย
+        <span class="tab-count" id="tabCountTransfer">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTransferTab('tf-mobtua', this)">
+        📋 ใบมอบตัว
+        <span class="tab-count" id="tabCountTransferMobtua">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTransferTab('tf-doctrack', this)">
+        📎 ติดตามเอกสาร
+        <span class="tab-count" id="tabCountTransferDoc" style="background:#d97706;color:#fff;">0</span>
       </button>
     </div>
 
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
+    <!-- PANEL: ใบคำขอย้าย -->
+    <div class="tab-panel active" id="panel-tf-admission">
+      <div class="toolbar">
+        <div class="search-box">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" type="text" id="searchTransfer" placeholder="ค้นหาชื่อนักเรียน, โรงเรียนเดิม…" oninput="filterTransfer()">
+        </div>
+        <select class="filter-select" id="filterTransferGrade" onchange="filterTransfer()">
+          <option value="">ทุกระดับชั้น</option>
+          <option value="m1">ม.1</option><option value="m2">ม.2</option>
+          <option value="m3">ม.3</option><option value="m4">ม.4</option>
+          <option value="m5">ม.5</option><option value="m6">ม.6</option>
+        </select>
+        <button class="btn-icon btn-refresh" onclick="loadTransfersStaff()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          รีเฟรช
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
             <th>#</th><th>ชื่อ-นามสกุล</th><th>ระดับชั้น</th>
             <th>โรงเรียนเดิม</th><th>ผู้ปกครอง</th><th>วันที่ยื่น</th><th>การดำเนินการ</th>
-          </tr>
-        </thead>
-        <tbody id="transferBody">
-          <tr><td colspan="7"><div class="empty-state"><div class="icon">⏳</div><p>กำลังโหลดข้อมูล…</p></div></td></tr>
-        </tbody>
-      </table>
-      <div class="table-footer">
-        <span id="transferCount">— รายการ</span>
+          </tr></thead>
+          <tbody id="transferBody">
+            <tr><td colspan="7"><div class="empty-state"><div class="icon">⏳</div><p>กำลังโหลดข้อมูล…</p></div></td></tr>
+          </tbody>
+        </table>
+        <div class="table-footer"><span id="transferCount">— รายการ</span></div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- PANEL: ใบมอบตัวย้าย -->
+    <div class="tab-panel" id="panel-tf-mobtua">
+      <div class="toolbar">
+        <div class="search-box">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" type="text" id="searchTransferMobtua" placeholder="ค้นหาชื่อนักเรียน…" oninput="filterTransferMobtuaTab()">
+        </div>
+        <select class="filter-select" id="filterTransferMobtuaGrade" onchange="filterTransferMobtuaTab()">
+          <option value="">ทุกระดับชั้น</option>
+          <option value="m1">ม.1</option><option value="m2">ม.2</option>
+          <option value="m3">ม.3</option><option value="m4">ม.4</option>
+          <option value="m5">ม.5</option><option value="m6">ม.6</option>
+        </select>
+        <button class="btn-icon btn-refresh" onclick="loadTransfersStaff()">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          รีเฟรช
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>#</th><th>ชื่อ-นามสกุล</th><th>ระดับชั้น</th>
+            <th>ห้อง</th><th>ผู้ปกครอง</th><th>วันที่</th><th>การดำเนินการ</th>
+          </tr></thead>
+          <tbody id="transferMobtuaBody">
+            <tr><td colspan="7"><div class="empty-state"><div class="icon">📋</div><p>ยังไม่มีใบมอบตัวย้ายเข้าเรียน</p></div></td></tr>
+          </tbody>
+        </table>
+        <div class="table-footer"><span id="transferMobtuaCount">— รายการ</span></div>
+      </div>
+    </div>
+
+    <!-- PANEL: ติดตามเอกสาร -->
+    <div class="tab-panel" id="panel-tf-doctrack">
+      <div class="toolbar">
+        <div class="search-box">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" type="text" id="searchTransferDoc" placeholder="ค้นหาชื่อนักเรียน…" oninput="renderTransferDocTracker()">
+        </div>
+        <select class="filter-select" id="filterTransferDocGrade" onchange="renderTransferDocTracker()">
+          <option value="">ทุกระดับชั้น</option>
+          <option value="m1">ม.1</option><option value="m2">ม.2</option>
+          <option value="m3">ม.3</option><option value="m4">ม.4</option>
+          <option value="m5">ม.5</option><option value="m6">ม.6</option>
+        </select>
+        <select class="filter-select" id="filterTransferDocStatus" onchange="renderTransferDocTracker()">
+          <option value="pending">เอกสารค้าง</option>
+          <option value="all">ทั้งหมด</option>
+          <option value="done">ครบแล้ว</option>
+        </select>
+      </div>
+      <div id="transferDocTrackerBody" style="display:flex;flex-direction:column;gap:.65rem;padding:.25rem 0;"></div>
+      <div class="table-footer"><span id="transferDocCount">— รายการ</span></div>
+    </div>
+
+  </div><!-- end main-wrap -->
+</div><!-- end transferContent -->
+
 
 <!-- View Transfer Detail Modal -->
 <div class="modal-backdrop" id="modalViewTransfer">
@@ -1473,10 +1554,12 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
     <div class="modal-body"><div id="transferDetailGrid"></div></div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('modalViewTransfer')">ปิด</button>
+      <button class="btn-gold" onclick="openTransferInspectionStepper(_viewingTransferId,'transfers')">🔍 ตรวจเอกสาร</button>
       <button class="btn-sm btn-delete" id="deleteTransferBtn">🗑️ ลบรายการนี้</button>
     </div>
   </div>
-</div> (ใบมอบตัว สีน้ำเงิน) ═══ -->
+</div>
+<!-- ═══ readyCheckModal (ใบมอบตัว สีน้ำเงิน) ═══ -->
 <div class="modal-backdrop" id="readyCheckModal">
   <div class="modal-card" style="max-width:680px;width:calc(100% - 2rem);background:var(--card);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
     <div style="background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 100%);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.85rem;">
@@ -2853,7 +2936,7 @@ function viewAdmission(id) {
   const table = (rows) => `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;">${rows}</table>`;
 
   const sv = rec.staffVerified || {};
-  const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+  const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
   const docRows = KEYS.map(k => {
     const subCfg = DOC_SUB_TYPES[k];
     const subVal = subCfg ? (sv[subCfg.subKey] || '') : '';
@@ -3541,7 +3624,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
     <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์'])} ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์${docChecks['_subType_ระเบียนแสดงผลการเรียน'] ? ` <strong style="font-size:12px;">[${docChecks['_subType_ระเบียนแสดงผลการเรียน']}]</strong>` : ''}</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง${docChecks['_subType_ระเบียนแสดงผลการเรียน'] ? ` <strong style="font-size:12px;">[${docChecks['_subType_ระเบียนแสดงผลการเรียน']}]</strong>` : ''}</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
@@ -3933,7 +4016,7 @@ window.exportStudentListExcel = exportStudentListExcel;
 ───────────────────────────────────────────────── */
 const ADMISSION_CHECKLIST_KEYS = [
     'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
-    'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์',
+    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
     'สำเนาทะเบียนบ้านของนักเรียน',
     'สำเนาบัตรประชาชนของนักเรียน',
     'สำเนาสูติบัตรของนักเรียน',
@@ -3983,7 +4066,7 @@ window.getEffectiveMobtuaKeys = getEffectiveMobtuaKeys;
 
 // ── Sub-type config: รายการ checklist ที่มีตัวเลือกย่อย ──
 const DOC_SUB_TYPES = {
-    'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์': {
+    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง': {
         subKey: '_subType_ระเบียนแสดงผลการเรียน',
         options: [
             { value: 'ปพ.1', label: 'ปพ.1 ระเบียนแสดงผลการเรียน' },
@@ -4158,7 +4241,7 @@ async function syncVerifiedDocsToMobtua(admId, admStaffVerified, note) {
         });
         // ── พิเศษ: ถ้าใบสมัครติ๊ก "ระเบียนแสดงผลการเรียน" และเลือก subtype = 'ปพ.1'
         //    ให้ถือว่าคือ "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวด้วย
-        const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
+        const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
         const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
         const pp1SubType  = admStaffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
         if (admStaffVerified[PP1_ADM_KEY] === true && pp1SubType === 'ปพ.1') {
@@ -4245,7 +4328,7 @@ function openInspectionStepper(id, col) {
     _verifyCurrentId         = id;
     _verifyCurrentCollection = col;
 
-    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const arr = col === 'admissions' ? allAdmissions : col === 'transfers' ? allTransfers : col === 'transfer-mobtua' ? allTransferMobtua : allMobtua;
     const rec = arr.find(r => r.id === id);
     const name = rec ? (rec.studentName || 'ไม่ระบุ') : '?';
     document.getElementById('stepperStudentName').textContent = name;
@@ -4616,7 +4699,7 @@ function buildStepperStep2() {
             linkedSV = { ...ladm.staffVerified };
             // ── พิเศษ: ถ้าใบสมัครติ๊ก ปพ.1 แบบ subtype = 'ปพ.1'
             //    ให้ถือว่า "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวครอบคลุมด้วย
-            const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
+            const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
             const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
             const admSubType  = ladm.staffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
             if (ladm.staffVerified[PP1_ADM_KEY] === true && admSubType === 'ปพ.1') {
@@ -5896,8 +5979,8 @@ function showNewDataModal() {
     const body = document.getElementById('newDataAlertBody');
     if (!body) return;
     body.innerHTML = items.map(n => {
-        const icon  = n.type === 'admission' ? '📄' : '📋';
-        const label = n.type === 'admission' ? 'ใบสมัครใหม่' : 'ใบมอบตัวใหม่';
+        const icon  = n.type === 'admission' ? '📄' : n.type === 'transfer' ? '🔄' : n.type === 'transfer-mobtua' ? '🔄📋' : '📋';
+        const label = n.type === 'admission' ? 'ใบสมัครใหม่' : n.type === 'transfer' ? 'ใบคำขอย้ายใหม่' : n.type === 'transfer-mobtua' ? 'ใบมอบตัวย้ายใหม่' : 'ใบมอบตัวใหม่';
         return `<div class="new-data-alert-item">
             <span class="nda-icon">${icon}</span>
             <div>
@@ -6141,7 +6224,7 @@ window.switchTab = switchTab;
 /* ═══════════════════════════════════════════════════════
    PP1 TRACKER — ติดตามการส่ง ปพ.1 / ปพ.7 / ใบรับรอง
 ═══════════════════════════════════════════════════════ */
-const PP1_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
+const PP1_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
 const PP1_SUBTYPE_KEY = '_subType_ระเบียนแสดงผลการเรียน';
 
 function renderPp1Tracker() {
@@ -6803,7 +6886,13 @@ window.printDocTrackList = printDocTrackList;
 let _appInited    = false;
 let _transferInited = false;
 let allTransfers  = [];
+let allTransferMobtua = [];
 let unsubTransfer = null;
+let unsubTransferMobtua = null;
+let _notifiedTransferIds = new Set();
+let _notifiedTransferMobtuaIds = new Set();
+let _viewingTransferId = '';
+const TRANSFER_GRADE_MAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
 
 function showStaffLanding() {
   document.getElementById('staffLanding').classList.remove('hidden');
@@ -6824,69 +6913,155 @@ function staffGoToTransfer() {
   document.getElementById('staffLanding').classList.add('hidden');
   document.getElementById('mainContent').style.display = 'none';
   document.getElementById('transferContent').style.display = 'block';
-  if (!_transferInited) { subscribeTransfers(); _transferInited = true; }
+  if (!_transferInited) { subscribeTransfers(); subscribeTransferMobtua(); _transferInited = true; }
 }
 window.staffGoToTransfer = staffGoToTransfer;
 
+// ── Subscribe transfers (ใบคำขอย้าย) ──
 function subscribeTransfers() {
   if (unsubTransfer) unsubTransfer();
   const q = window._fs.query(
     window._fs.collection(window._db, 'transfers'),
     window._fs.orderBy('createdAt', 'desc')
   );
+  let _firstLoad = true;
   unsubTransfer = window._fs.onSnapshot(q, snap => {
     const records = [];
     snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+    if (!_firstLoad) {
+      records.forEach(r => {
+        if (!_notifiedTransferIds.has(r.id)) {
+          _notifiedTransferIds.add(r.id);
+          addNotification('transfer', r.studentName || 'ไม่ระบุ', r.createdAt);
+          highlightRowLater(r.id, 'transfer');
+        }
+      });
+    } else {
+      records.forEach(r => _notifiedTransferIds.add(r.id));
+      _firstLoad = false;
+    }
     allTransfers = records;
     renderTransfers();
     updateTransferStats();
-  }, err => { console.error('transfers snapshot error:', err); });
-  // fallback getDocs
+    renderTransferDocTracker();
+  }, err => console.error('transfers snapshot error:', err));
+  // fallback
   setTimeout(async () => {
     if (allTransfers.length === 0) {
       try {
-        const q2 = window._fs.query(
-          window._fs.collection(window._db,'transfers'),
-          window._fs.orderBy('createdAt','desc')
-        );
-        const snap = await window._fs.getDocs(q2);
+        const snap = await window._fs.getDocs(window._fs.query(
+          window._fs.collection(window._db,'transfers'), window._fs.orderBy('createdAt','desc')
+        ));
         const records = [];
-        snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+        snap.forEach(d => { records.push({ id: d.id, ...d.data() }); _notifiedTransferIds.add(d.id); });
         allTransfers = records;
-        renderTransfers();
-        updateTransferStats();
-      } catch(e) { console.error('transfers fallback error:', e.message); }
+        renderTransfers(); updateTransferStats(); renderTransferDocTracker();
+      } catch(e) { console.error('transfers fallback:', e.message); }
     }
   }, 6000);
 }
 window.subscribeTransfers = subscribeTransfers;
 
+// ── Subscribe transfer mobtua (ใบมอบตัวย้าย) ──
+function subscribeTransferMobtua() {
+  if (unsubTransferMobtua) unsubTransferMobtua();
+  const q = window._fs.query(
+    window._fs.collection(window._db, 'mobtua'),
+    window._fs.where('transferId', '!=', null),
+    window._fs.orderBy('transferId'),
+    window._fs.orderBy('createdAt', 'desc')
+  );
+  let _firstLoad = true;
+  unsubTransferMobtua = window._fs.onSnapshot(q, snap => {
+    const records = [];
+    snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+    if (!_firstLoad) {
+      records.forEach(r => {
+        if (!_notifiedTransferMobtuaIds.has(r.id)) {
+          _notifiedTransferMobtuaIds.add(r.id);
+          addNotification('transfer-mobtua', r.studentName || 'ไม่ระบุ', r.createdAt);
+          highlightRowLater(r.id, 'transfer-mobtua');
+        }
+      });
+    } else {
+      records.forEach(r => _notifiedTransferMobtuaIds.add(r.id));
+      _firstLoad = false;
+    }
+    allTransferMobtua = records;
+    renderTransferMobtuaTab();
+    updateTransferStats();
+  }, err => {
+    console.warn('transferMobtua snapshot error (may be missing index):', err.message);
+    // Fallback: load all mobtua with formType ใบมอบตัวย้าย
+    loadTransferMobtuaFallback();
+  });
+}
+
+async function loadTransferMobtuaFallback() {
+  try {
+    const snap = await window._fs.getDocs(window._fs.query(
+      window._fs.collection(window._db,'mobtua'),
+      window._fs.orderBy('createdAt','desc')
+    ));
+    const records = [];
+    snap.forEach(d => {
+      const rec = { id: d.id, ...d.data() };
+      if (rec.transferId || rec.formType === 'ใบมอบตัวย้ายเข้าเรียน') {
+        records.push(rec);
+        _notifiedTransferMobtuaIds.add(d.id);
+      }
+    });
+    allTransferMobtua = records;
+    renderTransferMobtuaTab(); updateTransferStats();
+  } catch(e) { console.error('loadTransferMobtuaFallback:', e.message); }
+}
+
 function loadTransfersStaff() {
   _transferInited = false;
-  subscribeTransfers();
+  subscribeTransfers(); subscribeTransferMobtua();
   showToast('รีเฟรชข้อมูลย้ายเข้า...','info');
 }
 window.loadTransfersStaff = loadTransfersStaff;
 
+// ── Tab switching ──
+function switchTransferTab(name, btn) {
+  document.querySelectorAll('#transferContent .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#transferContent .tab-panel').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (name === 'tf-doctrack') renderTransferDocTracker();
+}
+window.switchTransferTab = switchTransferTab;
+
+// ── Stats ──
 function updateTransferStats() {
-  const now = new Date();
-  const todayCount = allTransfers.filter(r => {
-    if (!r.createdAt?.toDate) return false;
-    const d = r.createdAt.toDate();
-    return d.getDate()===now.getDate() && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
-  }).length;
   const tot = document.getElementById('tSTotal');
-  const tod = document.getElementById('tSToday');
+  const mob = document.getElementById('tSMobtua');
+  const pend = document.getElementById('tSDocPending');
+  const done = document.getElementById('tSDone');
   if (tot) tot.textContent = allTransfers.length;
-  if (tod) tod.textContent = todayCount;
+  if (mob) mob.textContent = allTransferMobtua.length;
+  const pendingCnt = allTransfers.filter(r => {
+    const sv = r.staffVerified || {};
+    return TRANSFER_CHECKLIST_KEYS.some(k => sv[k] !== true);
+  }).length;
+  if (pend) pend.textContent = pendingCnt;
+  if (done) done.textContent = allTransfers.length - pendingCnt;
+  const tc = document.getElementById('tabCountTransfer');
+  const tm = document.getElementById('tabCountTransferMobtua');
+  const td = document.getElementById('tabCountTransferDoc');
+  if (tc) tc.textContent = allTransfers.length;
+  if (tm) tm.textContent = allTransferMobtua.length;
+  if (td) td.textContent = pendingCnt;
 }
 
+// ── Render ใบคำขอย้าย table ──
 function renderTransfers() {
   const tbody = document.getElementById('transferBody');
   if (!tbody) return;
   const keyword = (document.getElementById('searchTransfer')?.value||'').toLowerCase().trim();
   const gradeFilter = document.getElementById('filterTransferGrade')?.value||'';
-  const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
   let rows = allTransfers.filter(r => {
     if (gradeFilter && r.gradeLevel !== gradeFilter) return false;
     if (keyword) {
@@ -6902,16 +7077,19 @@ function renderTransfers() {
     return;
   }
   tbody.innerHTML = rows.map((r, i) => {
-    const gradeBadge = r.gradeLevel ? `<span class="badge" style="background:#cffafe;color:#0e7490;font-size:.75rem;padding:2px 9px;">${gradeMap[r.gradeLevel]||r.gradeLevel}</span>` : '—';
+    const gradeBadge = r.gradeLevel ? `<span class="badge" style="background:#cffafe;color:#0e7490;font-size:.75rem;padding:2px 9px;">${TRANSFER_GRADE_MAP[r.gradeLevel]||r.gradeLevel}</span>` : '—';
     const dateStr = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const sv = r.staffVerified||{};
     const docCnt = TRANSFER_CHECKLIST_KEYS.filter(k=>sv[k]===true).length;
-    const docBadge = `<span style="font-size:.65rem;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:4px;background:${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'#dcfce7':docCnt>0?'#fef9c3':'#f1f5f9'};color:${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'#15803d':docCnt>0?'#854d0e':'#94a3b8'};">${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'✅ ครบ':docCnt>0?'📎 '+docCnt+'/'+TRANSFER_CHECKLIST_KEYS.length:'📎 ยังไม่ตรวจ'}</span>`;
+    const allDone = docCnt===TRANSFER_CHECKLIST_KEYS.length && docCnt>0;
+    const docBadge = `<span style="font-size:.65rem;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:4px;background:${allDone?'#dcfce7':docCnt>0?'#fef9c3':'#f1f5f9'};color:${allDone?'#15803d':docCnt>0?'#854d0e':'#94a3b8'};">${allDone?'✅ ครบ':docCnt>0?'📎 '+docCnt+'/'+TRANSFER_CHECKLIST_KEYS.length:'📎 ยังไม่ตรวจ'}</span>`;
     const isNew = r.createdAt?.toDate ? (() => { const d=r.createdAt.toDate(),n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); })() : false;
     const newBadge = isNew ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    const hasMobtua = allTransferMobtua.some(m => m.transferId === r.id);
+    const mobtBadge = hasMobtua ? `<span class="badge" style="background:#dbeafe;color:#1d4ed8;font-size:.65rem;margin-left:4px;">มอบตัวแล้ว</span>` : '';
     return `<tr id="row-transfer-${r.id}" class="${isNew?'new-row':''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName||'—'}${newBadge} ${docBadge}</td>
+      <td class="td-name">${r.studentName||'—'}${newBadge}${mobtBadge} ${docBadge}</td>
       <td>${gradeBadge}</td>
       <td class="td-muted">${r.previousSchool||'—'}${r.previousSchoolProvince?' <span style="font-size:.75rem;color:#0891b2;">จ.'+r.previousSchoolProvince+'</span>':''}</td>
       <td class="td-muted">${r.parentName||'—'}</td>
@@ -6919,7 +7097,8 @@ function renderTransfers() {
       <td>
         <div class="action-group">
           <button class="btn-sm btn-view" onclick="viewTransfer('${r.id}')">👁 ดูข้อมูล</button>
-          <button class="btn-sm btn-delete" onclick="confirmDeleteTransfer('${r.id}','${(r.studentName||'').replace(/'/g,"\\'")}')">🗑️</button>
+          <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','transfers')" style="padding:.45rem 1.1rem;font-size:.85rem;">🔍 ตรวจเอกสาร</button>
+          <button class="btn-sm btn-delete" onclick="confirmDeleteTransfer('${r.id}','${(r.studentName||'').replace(/'/g,"\'")}')">🗑️</button>
         </div>
       </td>
     </tr>`;
@@ -6930,11 +7109,154 @@ window.renderTransfers = renderTransfers;
 function filterTransfer() { renderTransfers(); }
 window.filterTransfer = filterTransfer;
 
+// ── Render ใบมอบตัวย้าย table ──
+function renderTransferMobtuaTab() {
+  const tbody = document.getElementById('transferMobtuaBody');
+  if (!tbody) return;
+  const keyword = (document.getElementById('searchTransferMobtua')?.value||'').toLowerCase().trim();
+  const gradeFilter = document.getElementById('filterTransferMobtuaGrade')?.value||'';
+  let rows = allTransferMobtua.filter(r => {
+    const gl = r.gradeLevel || (r.data?.mt_classRoom||'').startsWith('ม.4')?'m4':'m1';
+    if (gradeFilter && gl !== gradeFilter) return false;
+    if (keyword && !(r.studentName||'').toLowerCase().includes(keyword)) return false;
+    return true;
+  });
+  const countEl = document.getElementById('transferMobtuaCount');
+  if (countEl) countEl.textContent = `${rows.length} รายการ`;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📋</div><p>${keyword?'ไม่พบข้อมูลที่ค้นหา':'ยังไม่มีใบมอบตัวย้ายเข้าเรียน'}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r,i) => {
+    const dateStr = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const isNew = r.createdAt?.toDate ? (() => { const d=r.createdAt.toDate(),n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); })() : false;
+    const newBadge = isNew ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
+    const gl = r.gradeLevel||'';
+    const gradeBadge = gl ? `<span class="badge" style="background:#cffafe;color:#0e7490;font-size:.75rem;padding:2px 9px;">${TRANSFER_GRADE_MAP[gl]||gl}</span>` : '—';
+    return `<tr id="row-transfer-mobtua-${r.id}" class="${isNew?'new-row':''}">
+      <td class="td-muted">${i+1}</td>
+      <td class="td-name">${r.studentName||'—'}${newBadge}</td>
+      <td>${gradeBadge}</td>
+      <td class="td-muted">${r.classRoom||r.data?.mt_classRoom||'—'}</td>
+      <td class="td-muted">${r.guardianName||r.data?.mt_guardianName||r.parentName||'—'}</td>
+      <td class="td-muted">${dateStr}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','mobtua')" style="padding:.45rem 1.1rem;font-size:.85rem;">🔍 ตรวจเอกสาร</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+window.renderTransferMobtuaTab = renderTransferMobtuaTab;
+
+function filterTransferMobtuaTab() { renderTransferMobtuaTab(); }
+window.filterTransferMobtuaTab = filterTransferMobtuaTab;
+
+// ── Render Doc Tracker tab ──
+function renderTransferDocTracker() {
+  const body = document.getElementById('transferDocTrackerBody');
+  if (!body) return;
+  const keyword = (document.getElementById('searchTransferDoc')?.value||'').toLowerCase().trim();
+  const gradeFilter = document.getElementById('filterTransferDocGrade')?.value||'';
+  const statusFilter = document.getElementById('filterTransferDocStatus')?.value||'pending';
+  let rows = allTransfers.filter(r => {
+    if (gradeFilter && r.gradeLevel !== gradeFilter) return false;
+    if (keyword && !(r.studentName||'').toLowerCase().includes(keyword)) return false;
+    const sv = r.staffVerified||{};
+    const allDone = TRANSFER_CHECKLIST_KEYS.every(k => sv[k] === true);
+    if (statusFilter === 'pending' && allDone) return false;
+    if (statusFilter === 'done' && !allDone) return false;
+    return true;
+  });
+  const countEl = document.getElementById('transferDocCount');
+  if (countEl) countEl.textContent = `${rows.length} รายการ`;
+  if (!rows.length) {
+    body.innerHTML = `<div class="empty-state" style="padding:2rem;"><div class="icon">✅</div><p>${statusFilter==='pending'?'เอกสารทุกรายการครบแล้ว':'ยังไม่มีข้อมูล'}</p></div>`;
+    return;
+  }
+  body.innerHTML = rows.map(r => {
+    const sv = r.staffVerified||{};
+    const dc = r.docChecks||{};
+    const combined = {...dc,...sv};
+    const checkedCnt = TRANSFER_CHECKLIST_KEYS.filter(k => combined[k]===true).length;
+    const allDone = checkedCnt === TRANSFER_CHECKLIST_KEYS.length;
+    const gl = TRANSFER_GRADE_MAP[r.gradeLevel]||r.gradeLevel||'';
+    const docsHtml = TRANSFER_CHECKLIST_KEYS.map(k => {
+      const checked = combined[k] === true;
+      return `<div style="display:flex;align-items:center;gap:5px;font-size:.76rem;padding:3px 0;">
+        <span style="color:${checked?'#16a34a':'#dc2626'};font-size:.85rem;">${checked?'✅':'❌'}</span>
+        <span style="color:${checked?'var(--text)':'var(--text-soft)'};">${k}</span>
+      </div>`;
+    }).join('');
+    return `<div style="background:var(--card);border:1.5px solid ${allDone?'#86efac':'#fca5a5'};border-left:5px solid ${allDone?'#16a34a':'#dc2626'};border-radius:var(--r-lg);padding:1rem 1.25rem;transition:box-shadow .2s;" id="dt-transfer-${r.id}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.6rem;">
+        <div>
+          <div style="font-weight:700;font-size:.95rem;color:var(--text);">${r.studentName||'ไม่ระบุ'}</div>
+          <div style="font-size:.77rem;color:var(--text-soft);margin-top:2px;">${gl} · โรงเรียนเดิม: ${r.previousSchool||'ไม่ระบุ'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span style="font-size:.75rem;padding:2px 10px;border-radius:99px;font-weight:700;background:${allDone?'#dcfce7':'#fef2f2'};color:${allDone?'#15803d':'#dc2626'};">${allDone?'✅ ครบ':'❌ ค้าง '+checkedCnt+'/'+TRANSFER_CHECKLIST_KEYS.length}</span>
+          <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','transfers')" style="font-size:.75rem;">🔍 ตรวจ</button>
+        </div>
+      </div>
+      <details ${allDone?'':'open'}>
+        <summary style="cursor:pointer;font-size:.78rem;color:#0891b2;font-weight:600;margin-bottom:.4rem;">แสดงรายการหลักฐาน</summary>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;padding:.4rem 0;">${docsHtml}</div>
+      </details>
+    </div>`;
+  }).join('');
+}
+window.renderTransferDocTracker = renderTransferDocTracker;
+
+// ── Transfer Inspection Stepper (reuses main stepper infrastructure) ──
+function openTransferInspectionStepper(id, col) {
+  const arr = col === 'transfers' ? allTransfers : (col === 'mobtua' ? allTransferMobtua : allTransfers);
+  const rec = arr.find(r => r.id === id);
+  if (!rec) { showToast('ไม่พบข้อมูล','error'); return; }
+
+  // Set stepper state using the same global vars as admission stepper
+  _stepperRecId  = id;
+  _stepperCol    = col === 'transfers' ? 'transfers' : 'mobtua';
+  _verifyCurrentId         = id;
+  _verifyCurrentCollection = col === 'transfers' ? 'transfers' : 'mobtua';
+
+  // Initialize verify draft from staffVerified
+  const sv = rec.staffVerified || {};
+  const checkKeys = col === 'mobtua' ? MOBTUA_CHECKLIST_KEYS : TRANSFER_CHECKLIST_KEYS;
+  _verifyDraft = {};
+  checkKeys.forEach(k => { _verifyDraft[k] = sv[k] === true; });
+  Object.keys(sv).forEach(k => { if (k.startsWith('_subType_')) _verifyDraft[k] = sv[k]; });
+
+  const name = rec.studentName || 'ไม่ระบุ';
+  document.getElementById('stepperStudentName').textContent = name;
+  const gradeBadge = document.getElementById('stepperGradeBadge');
+  if (gradeBadge) {
+    const gl = rec.gradeLevel || '';
+    gradeBadge.textContent = TRANSFER_GRADE_MAP[gl] || gl || 'ย้าย';
+    gradeBadge.style.display = '';
+    gradeBadge.style.background = '#ecfeff';
+    gradeBadge.style.color = '#0e7490';
+  }
+
+  const instrModal = document.getElementById('step1InstructionModal');
+  if (instrModal) {
+    instrModal.style.display = 'flex';
+    const nameEl = document.getElementById('step1ModalStudentName');
+    if (nameEl) nameEl.textContent = name;
+    return;
+  }
+  goToStep(1);
+  document.getElementById('inspectionStepper').style.display = 'flex';
+}
+window.openTransferInspectionStepper = openTransferInspectionStepper;
+
+// ── viewTransfer ──
 function viewTransfer(id) {
   const rec = allTransfers.find(r => r.id === id);
   if (!rec) return;
+  _viewingTransferId = id;
   const d = rec.data || {};
-  const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
   document.getElementById('modalViewTransferTitle').textContent = `🔄 ${rec.studentName||'ใบคำขอย้ายเข้าเรียน'}`;
   const tr = (label, val) => `<tr>
     <td style="width:38%;padding:7px 10px;font-weight:600;color:var(--text-soft);font-size:.8rem;vertical-align:top;background:rgba(0,0,0,.02);border-bottom:1px solid var(--border);">${label}</td>
@@ -6943,42 +7265,31 @@ function viewTransfer(id) {
   const sec = t => `<tr><td colspan="2" style="padding:8px 10px 4px;font-weight:700;font-size:.78rem;letter-spacing:.06em;color:#0891b2;background:rgba(8,145,178,.05);border-bottom:1px solid var(--border);">${t}</td></tr>`;
   const tbl = rows => `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:.75rem;">${rows}</table>`;
   const thaiDate = ts => ts?.toDate ? ts.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}) : '—';
-  const docLabels = {tf_doc_pp1:'ระเบียนแสดงผลการเรียน (ปพ.1)',tf_doc_housebook_student:'สำเนาทะเบียนบ้านนักเรียน',tf_doc_idcard_student:'สำเนาบัตรประชาชนนักเรียน',tf_doc_housebook_parent:'สำเนาทะเบียนบ้านผู้ปกครอง',tf_doc_idcard_parent:'สำเนาบัตรประชาชนผู้ปกครอง',tf_doc_transfer_cert:'ใบย้ายจากโรงเรียนเดิม'};
-  const docChecks = rec.docChecks || {};
-  const docRows = Object.entries(docLabels).map(([k,v])=>`<tr><td style="padding:5px 10px;font-size:.8rem;border-bottom:1px solid var(--border);">${docChecks[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#94a3b8;">⬜</span>'} ${v}</td></tr>`).join('');
+  const fatherName = `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
+  const motherName = `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
+  const talents = Array.isArray(d.tf_talent)?d.tf_talent:[];
+  const talentStr = [
+    talents.includes('sports') ? ('กีฬา'+(d.tf_sportsType?' ('+d.tf_sportsType+')':'')) : '',
+    talents.includes('music')  ? ('ดนตรี'+(d.tf_musicType?' ('+d.tf_musicType+')':''))  : '',
+    talents.includes('other')  ? (d.tf_otherTalent||'อื่นๆ') : ''
+  ].filter(Boolean).join(', ') || '—';
   document.getElementById('transferDetailGrid').innerHTML = `<div style="display:flex;flex-direction:column;gap:.6rem;">
-    ${tbl(sec('👤 ข้อมูลนักเรียน')+tr('ชื่อ-นามสกุล',rec.studentName)+tr('ระดับชั้นที่ย้ายเข้า',gradeMap[rec.gradeLevel]||rec.gradeLevel)+tr('ปีการศึกษา',rec.academicYear)+tr('เลขบัตรประชาชน',d.tf_nationalId)+tr('โทรศัพท์',d.tf_phone))}
-    ${tbl(sec('🏫 โรงเรียนเดิม')+tr('โรงเรียน',rec.previousSchool)+tr('อำเภอ',d.tf_prevDistrict)+tr('จังหวัด',rec.previousSchoolProvince)+tr('ชั้นที่กำลังเรียน (ก่อนย้าย)',d.tf_currentGrade))}
-    ${tbl(sec('🏠 ที่อยู่')+tr('บ้านเลขที่',d.tf_houseNumber+(d.tf_moo?' หมู่ '+d.tf_moo:''))+tr('ตำบล/อำเภอ',(d.tf_subdistrict?'ต.'+d.tf_subdistrict+' ':'')+( d.tf_district?'อ.'+d.tf_district:''))+tr('จังหวัด',d.tf_province))}
-    ${tbl(sec('👨‍👩‍👦 ผู้ปกครอง')+tr('ชื่อ',rec.parentName)+tr('ความสัมพันธ์',d.tf_parentRelation)+tr('โทรศัพท์',rec.parentPhone))}
+    ${tbl(sec('👤 ข้อมูลนักเรียน')+tr('ชื่อ-นามสกุล',rec.studentName)+tr('ระดับชั้นที่ย้ายเข้า',TRANSFER_GRADE_MAP[rec.gradeLevel]||rec.gradeLevel)+tr('ปีการศึกษา',rec.academicYear)+tr('เลขบัตรประชาชน',d.tf_nationalId)+tr('วันเกิด',(d.tf_birthDay||'')+(d.tf_birthMonth?' '+d.tf_birthMonth:'')+( d.tf_birthYear?' '+d.tf_birthYear:''))+tr('หมู่เลือด',d.tf_bloodType)+tr('โทรศัพท์',d.tf_phone)+tr('อีเมล',d.tf_email))}
+    ${tbl(sec('👨‍👩‍👦 บิดา-มารดา')+tr('ชื่อบิดา',fatherName||'—')+tr('อาชีพบิดา',d.tf_fatherOccupation)+tr('ชื่อมารดา',motherName||'—')+tr('อาชีพมารดา',d.tf_motherOccupation))}
+    ${tbl(sec('🏠 ที่อยู่ปัจจุบัน')+tr('บ้านเลขที่',d.tf_houseNumber+(d.tf_moo?' หมู่ '+d.tf_moo:'')+(d.tf_village?' บ้าน'+d.tf_village:''))+tr('ตำบล/อำเภอ',(d.tf_subdistrict?'ต.'+d.tf_subdistrict+' ':'')+( d.tf_district?'อ.'+d.tf_district:''))+tr('จังหวัด',d.tf_province))}
+    ${tbl(sec('🏫 โรงเรียนเดิม')+tr('โรงเรียน',rec.previousSchool)+tr('อำเภอ',d.tf_prevDistrict)+tr('จังหวัด',rec.previousSchoolProvince)+tr('ชั้นที่กำลังเรียน',d.tf_currentGrade))}
+    ${tbl(sec('⭐ ความสามารถพิเศษ')+tr('ความสามารถ',talentStr))}
+    ${tbl(sec('🧑‍🤝‍🧑 ผู้ปกครอง')+tr('ชื่อ',rec.parentName)+tr('ความสัมพันธ์',d.tf_parentRelation)+tr('โทรศัพท์',rec.parentPhone))}
     ${tbl(sec('📝 เหตุผลในการย้าย')+`<tr><td style="padding:8px 10px;font-size:.88rem;">${rec.reason||'—'}</td></tr>`)}
-    ${tbl(sec('📎 เอกสารที่แจ้งว่านำมา')+`<tr><td style="padding:5px 0 5px 10px;"><table style="width:100%;">${docRows}</table></td></tr>`)}
     ${tbl(sec('🕐 ข้อมูลระบบ')+tr('วันที่ยื่น',thaiDate(rec.createdAt)))}
   </div>`;
   const delBtn = document.getElementById('deleteTransferBtn');
   if (delBtn) delBtn.onclick = () => confirmDeleteTransfer(id, rec.studentName||'');
-
-  // append transfer checklist verification panel
-  const sv2 = rec.staffVerified || {};
-  const checkedCnt = TRANSFER_CHECKLIST_KEYS.filter(k => sv2[k] === true).length;
-  document.getElementById('transferDetailGrid').innerHTML +=
-    `<details style="margin-top:.5rem;border:1px solid var(--border);border-radius:8px;overflow:hidden;" open>
-      <summary style="padding:8px 12px;cursor:pointer;font-size:.82rem;font-weight:700;color:#0891b2;background:#ecfeff;list-style:none;display:flex;align-items:center;gap:6px;">
-        📎 ตรวจสอบหลักฐาน — ยืนยันแล้ว ${checkedCnt}/${TRANSFER_CHECKLIST_KEYS.length} รายการ
-      </summary>
-      <div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:.8rem;">
-        ${TRANSFER_CHECKLIST_KEYS.map(k=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;">
-          <input type="checkbox" ${sv2[k]?'checked':''} style="accent-color:#0891b2;width:14px;height:14px;cursor:pointer;"
-            onchange="toggleTransferDocStaff('${id}','${k.replace(/'/g,"\\'")}',this)">
-          <span style="color:${sv2[k]?'#0e7490':'var(--text-soft)'};">${k}</span>
-        </div>`).join('')}
-      </div>
-    </details>`;
-
   openModal('modalViewTransfer');
 }
 window.viewTransfer = viewTransfer;
 
+// ── toggleTransferDocStaff ──
 async function toggleTransferDocStaff(id, itemKey, cbEl) {
   const rec = allTransfers.find(r => r.id === id);
   if (!rec) return;
@@ -6991,8 +7302,8 @@ async function toggleTransferDocStaff(id, itemKey, cbEl) {
     const cnt = TRANSFER_CHECKLIST_KEYS.filter(k=>sv[k]===true).length;
     const summary = document.querySelector('#transferDetailGrid details summary');
     if (summary) summary.textContent = `📎 ตรวจสอบหลักฐาน — ยืนยันแล้ว ${cnt}/${TRANSFER_CHECKLIST_KEYS.length} รายการ`;
-    showToast(cbEl.checked ? '✅ บันทึกแล้ว' : 'บันทึกแล้ว', 'success');
-    renderTransfers();
+    showToast(cbEl.checked ? '✅ บันทึกแล้ว' : 'บันทึกแล้ว','success');
+    renderTransfers(); renderTransferDocTracker();
   } catch(e) { showToast('บันทึกไม่ได้: '+e.message,'error'); cbEl.checked = !cbEl.checked; }
 }
 window.toggleTransferDocStaff = toggleTransferDocStaff;

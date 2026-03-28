@@ -2853,7 +2853,7 @@ function viewAdmission(id) {
   const table = (rows) => `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;">${rows}</table>`;
 
   const sv = rec.staffVerified || {};
-  const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
+  const KEYS = ['ใบสมัครพร้อมรูปถ่าย 2 แผ่น','ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์','สำเนาทะเบียนบ้านของนักเรียน','สำเนาบัตรประชาชนของนักเรียน','สำเนาสูติบัตรของนักเรียน','สำเนาทะเบียนบ้านของบิดา','สำเนาบัตรประชาชนของบิดา','สำเนาทะเบียนบ้านของมารดา','สำเนาบัตรประชาชนของมารดา'];
   const docRows = KEYS.map(k => {
     const subCfg = DOC_SUB_TYPES[k];
     const subVal = subCfg ? (sv[subCfg.subKey] || '') : '';
@@ -3541,7 +3541,7 @@ function generateAdmissionDocHTML(data, docChecks, docVerified) {
     <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง${docChecks['_subType_ระเบียนแสดงผลการเรียน'] ? ` <strong style="font-size:12px;">[${docChecks['_subType_ระเบียนแสดงผลการเรียน']}]</strong>` : ''}</div>
+      <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์'])} ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์${docChecks['_subType_ระเบียนแสดงผลการเรียน'] ? ` <strong style="font-size:12px;">[${docChecks['_subType_ระเบียนแสดงผลการเรียน']}]</strong>` : ''}</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
@@ -3933,7 +3933,7 @@ window.exportStudentListExcel = exportStudentListExcel;
 ───────────────────────────────────────────────── */
 const ADMISSION_CHECKLIST_KEYS = [
     'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
-    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
+    'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์',
     'สำเนาทะเบียนบ้านของนักเรียน',
     'สำเนาบัตรประชาชนของนักเรียน',
     'สำเนาสูติบัตรของนักเรียน',
@@ -3955,6 +3955,20 @@ const MOBTUA_CHECKLIST_KEYS = [
     'สำเนาบัตรประชาชนของผู้ปกครอง (กรณีไม่อยู่กับบิดา/มารดา)',
 ];
 
+const TRANSFER_CHECKLIST_KEYS = [
+    'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
+    'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์',
+    'ใบแจ้งย้ายจากสถานศึกษาเดิม',
+    'หลักฐานบันทึกคะแนนเก็บรายวิชา (กรณีย้ายระหว่างเทอม)',
+    'สำเนาทะเบียนบ้านของนักเรียน',
+    'สำเนาบัตรประชาชนของนักเรียน',
+    'สำเนาสูติบัตรของนักเรียน',
+    'สำเนาทะเบียนบ้านของบิดา',
+    'สำเนาบัตรประชาชนของบิดา',
+    'สำเนาทะเบียนบ้านของมารดา',
+    'สำเนาบัตรประชาชนของมารดา',
+];
+
 // คืน checklist keys ของ mobtua โดยข้าม alt-guardian items
 // ถ้าไม่มีข้อมูลผู้ปกครอง (กรณีไม่ได้อยู่กับบิดา/มารดา)
 function getEffectiveMobtuaKeys(rec) {
@@ -3969,7 +3983,7 @@ window.getEffectiveMobtuaKeys = getEffectiveMobtuaKeys;
 
 // ── Sub-type config: รายการ checklist ที่มีตัวเลือกย่อย ──
 const DOC_SUB_TYPES = {
-    'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง': {
+    'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์': {
         subKey: '_subType_ระเบียนแสดงผลการเรียน',
         options: [
             { value: 'ปพ.1', label: 'ปพ.1 ระเบียนแสดงผลการเรียน' },
@@ -4144,7 +4158,7 @@ async function syncVerifiedDocsToMobtua(admId, admStaffVerified, note) {
         });
         // ── พิเศษ: ถ้าใบสมัครติ๊ก "ระเบียนแสดงผลการเรียน" และเลือก subtype = 'ปพ.1'
         //    ให้ถือว่าคือ "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวด้วย
-        const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+        const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
         const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
         const pp1SubType  = admStaffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
         if (admStaffVerified[PP1_ADM_KEY] === true && pp1SubType === 'ปพ.1') {
@@ -4602,7 +4616,7 @@ function buildStepperStep2() {
             linkedSV = { ...ladm.staffVerified };
             // ── พิเศษ: ถ้าใบสมัครติ๊ก ปพ.1 แบบ subtype = 'ปพ.1'
             //    ให้ถือว่า "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวครอบคลุมด้วย
-            const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+            const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
             const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
             const admSubType  = ladm.staffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
             if (ladm.staffVerified[PP1_ADM_KEY] === true && admSubType === 'ปพ.1') {
@@ -6127,7 +6141,7 @@ window.switchTab = switchTab;
 /* ═══════════════════════════════════════════════════════
    PP1 TRACKER — ติดตามการส่ง ปพ.1 / ปพ.7 / ใบรับรอง
 ═══════════════════════════════════════════════════════ */
-const PP1_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
+const PP1_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์';
 const PP1_SUBTYPE_KEY = '_subType_ระเบียนแสดงผลการเรียน';
 
 function renderPp1Tracker() {
@@ -6890,11 +6904,14 @@ function renderTransfers() {
   tbody.innerHTML = rows.map((r, i) => {
     const gradeBadge = r.gradeLevel ? `<span class="badge" style="background:#cffafe;color:#0e7490;font-size:.75rem;padding:2px 9px;">${gradeMap[r.gradeLevel]||r.gradeLevel}</span>` : '—';
     const dateStr = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const sv = r.staffVerified||{};
+    const docCnt = TRANSFER_CHECKLIST_KEYS.filter(k=>sv[k]===true).length;
+    const docBadge = `<span style="font-size:.65rem;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:4px;background:${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'#dcfce7':docCnt>0?'#fef9c3':'#f1f5f9'};color:${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'#15803d':docCnt>0?'#854d0e':'#94a3b8'};">${docCnt===TRANSFER_CHECKLIST_KEYS.length&&docCnt>0?'✅ ครบ':docCnt>0?'📎 '+docCnt+'/'+TRANSFER_CHECKLIST_KEYS.length:'📎 ยังไม่ตรวจ'}</span>`;
     const isNew = r.createdAt?.toDate ? (() => { const d=r.createdAt.toDate(),n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); })() : false;
     const newBadge = isNew ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     return `<tr id="row-transfer-${r.id}" class="${isNew?'new-row':''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName||'—'}${newBadge}</td>
+      <td class="td-name">${r.studentName||'—'}${newBadge} ${docBadge}</td>
       <td>${gradeBadge}</td>
       <td class="td-muted">${r.previousSchool||'—'}${r.previousSchoolProvince?' <span style="font-size:.75rem;color:#0891b2;">จ.'+r.previousSchoolProvince+'</span>':''}</td>
       <td class="td-muted">${r.parentName||'—'}</td>
@@ -6940,9 +6957,45 @@ function viewTransfer(id) {
   </div>`;
   const delBtn = document.getElementById('deleteTransferBtn');
   if (delBtn) delBtn.onclick = () => confirmDeleteTransfer(id, rec.studentName||'');
+
+  // append transfer checklist verification panel
+  const sv2 = rec.staffVerified || {};
+  const checkedCnt = TRANSFER_CHECKLIST_KEYS.filter(k => sv2[k] === true).length;
+  document.getElementById('transferDetailGrid').innerHTML +=
+    `<details style="margin-top:.5rem;border:1px solid var(--border);border-radius:8px;overflow:hidden;" open>
+      <summary style="padding:8px 12px;cursor:pointer;font-size:.82rem;font-weight:700;color:#0891b2;background:#ecfeff;list-style:none;display:flex;align-items:center;gap:6px;">
+        📎 ตรวจสอบหลักฐาน — ยืนยันแล้ว ${checkedCnt}/${TRANSFER_CHECKLIST_KEYS.length} รายการ
+      </summary>
+      <div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:.8rem;">
+        ${TRANSFER_CHECKLIST_KEYS.map(k=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;">
+          <input type="checkbox" ${sv2[k]?'checked':''} style="accent-color:#0891b2;width:14px;height:14px;cursor:pointer;"
+            onchange="toggleTransferDocStaff('${id}','${k.replace(/'/g,"\\'")}',this)">
+          <span style="color:${sv2[k]?'#0e7490':'var(--text-soft)'};">${k}</span>
+        </div>`).join('')}
+      </div>
+    </details>`;
+
   openModal('modalViewTransfer');
 }
 window.viewTransfer = viewTransfer;
+
+async function toggleTransferDocStaff(id, itemKey, cbEl) {
+  const rec = allTransfers.find(r => r.id === id);
+  if (!rec) return;
+  const sv = { ...(rec.staffVerified||{}) };
+  sv[itemKey] = cbEl.checked;
+  try {
+    await window._fs.updateDoc(window._fs.doc(window._db,'transfers',id),
+      { staffVerified: sv, updatedAt: window._fs.serverTimestamp() });
+    rec.staffVerified = sv;
+    const cnt = TRANSFER_CHECKLIST_KEYS.filter(k=>sv[k]===true).length;
+    const summary = document.querySelector('#transferDetailGrid details summary');
+    if (summary) summary.textContent = `📎 ตรวจสอบหลักฐาน — ยืนยันแล้ว ${cnt}/${TRANSFER_CHECKLIST_KEYS.length} รายการ`;
+    showToast(cbEl.checked ? '✅ บันทึกแล้ว' : 'บันทึกแล้ว', 'success');
+    renderTransfers();
+  } catch(e) { showToast('บันทึกไม่ได้: '+e.message,'error'); cbEl.checked = !cbEl.checked; }
+}
+window.toggleTransferDocStaff = toggleTransferDocStaff;
 
 function confirmDeleteTransfer(id, name) {
   if (!confirm(`ยืนยันลบข้อมูลใบคำขอย้ายเข้าเรียนของ "${name}" ?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้`)) return;

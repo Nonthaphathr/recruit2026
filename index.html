@@ -4146,6 +4146,11 @@
                             onclick="clearAutosave(AUTOSAVE_KEY_TRANSFER)">
                             🔄 ล้างข้อมูล
                         </button>
+                        <button type="button" class="btn hidden" id="transferTestDataBtn"
+                            onclick="fillTransferTestData()"
+                            style="background:#f59e0b;color:white;">
+                            🧪 กรอกข้อมูลตัวอย่าง
+                        </button>
                     </div>
 
                 </form>
@@ -5458,7 +5463,7 @@
                         <p style="font-weight: 600; margin-bottom: 6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px;">
                             <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ใบสมัครพร้อมรูปถ่าย 2 แผ่น'])} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์'])} ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์</div>
+                            <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง'])} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
                             <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาทะเบียนบ้านของนักเรียน'])} สำเนาทะเบียนบ้านของนักเรียน</div>
                             <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาบัตรประชาชนของนักเรียน'])} สำเนาบัตรประชาชนของนักเรียน</div>
                             <div class="checkbox-line" style="margin:2px 0;">${checkbox(docChecks['สำเนาสูติบัตรของนักเรียน'])} สำเนาสูติบัตรของนักเรียน</div>
@@ -6584,7 +6589,7 @@
         // ===== CHECKLIST MANAGEMENT =====
         const DEFAULT_CHECKLIST = [
             'ใบสมัครพร้อมรูปถ่าย 2 แผ่น',
-            'ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์',
+            'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง',
             'สำเนาทะเบียนบ้านของนักเรียน',
             'สำเนาบัตรประชาชนของนักเรียน',
             'สำเนาสูติบัตรของนักเรียน',
@@ -7001,6 +7006,68 @@
 
             showToast('กรอกข้อมูลตัวอย่างใบมอบตัวสำเร็จ');
         }
+
+        function fillTransferTestData() {
+            const f = (name, val) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = val;
+            };
+            const selName = (name, val) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = val;
+            };
+            const year = localStorage.getItem('defaultAcademicYear') || (new Date().getFullYear() + 543).toString();
+            selName('tf_gradeLevel','m3');
+            document.getElementById('tf_gradeLevel') && (document.getElementById('tf_gradeLevel').value = 'm3');
+            document.getElementById('tf_academicYear') && (document.getElementById('tf_academicYear').value = year);
+            const todayVal = new Date().toISOString().split('T')[0];
+            document.querySelector('[name="tf_applicationDate"]') && (document.querySelector('[name="tf_applicationDate"]').value = todayVal);
+            // นักเรียน
+            selName('tf_prefix','เด็กหญิง');
+            f('tf_firstName','มะลิ'); f('tf_lastName','สุขใส');
+            f('tf_birthDay','15');
+            selName('tf_birthMonth','5');
+            f('tf_birthYear','2549');
+            document.getElementById('tf_nationalIdInput') && (document.getElementById('tf_nationalIdInput').value = '1-3305-01234-56-7');
+            f('tf_phone','065-123-4567');
+            selName('tf_bloodType','O'); f('tf_nickname','มะลิ');
+            f('tf_height','155'); f('tf_weight','45');
+            f('tf_email','-');
+            // บิดา
+            selName('tf_fatherPrefix','นาย');
+            f('tf_fatherFirstName','สมชาย'); f('tf_fatherLastName','สุขใส');
+            f('tf_fatherAge','48'); f('tf_fatherOccupation','เกษตรกร');
+            // มารดา
+            selName('tf_motherPrefix','นาง');
+            f('tf_motherFirstName','สมหวัง'); f('tf_motherLastName','สุขใส');
+            f('tf_motherAge','45'); f('tf_motherOccupation','ค้าขาย');
+            // ที่อยู่
+            f('tf_houseNumber','123'); f('tf_moo','4'); f('tf_road','-');
+            f('tf_soi','-'); f('tf_village','บ้านกระดุมทอง');
+            f('tf_subdistrict','กระดุมทอง'); f('tf_district','กันทรารมย์'); f('tf_province','ศรีสะเกษ');
+            f('tf_postalCode','33130');
+            // โรงเรียนเดิม
+            f('tf_previousSchool','โรงเรียนกันทรารมณ์วิทยาคม');
+            f('tf_schoolSubdistrict','กันทรารมย์'); f('tf_prevDistrict','กันทรารมย์'); f('tf_prevProvince','ศรีสะเกษ');
+            f('tf_currentGrade','ม.2/3');
+            // ผู้ปกครอง
+            selName('tf_parentPrefix','นาง');
+            f('tf_parentFirstName','สมหวัง'); f('tf_parentLastName','สุขใส');
+            f('tf_parentRelation','มารดา'); f('tf_parentPhone','081-234-5678');
+            // ความสามารถพิเศษ
+            const sportsCb = document.querySelector('[name="tf_talent"][value="sports"]');
+            if (sportsCb) { sportsCb.checked = true; sportsCb.dispatchEvent(new Event('change')); }
+            f('tf_sportsType','วอลเลย์บอล');
+            // เหตุผล
+            f('tf_reason','ย้ายที่อยู่อาศัยใกล้โรงเรียนกระดุมทองวิทยา สะดวกในการเดินทาง');
+            // checklist
+            if (typeof getTransferChecklistItems === 'function') {
+                getTransferChecklistItems().forEach(item => { _transferDocChecks[item] = true; });
+                if (typeof renderTransferFormChecklist === 'function') renderTransferFormChecklist();
+            }
+            showToast('🧪 กรอกข้อมูลตัวอย่างใบย้ายเรียบร้อยแล้ว');
+        }
+        window.fillTransferTestData = fillTransferTestData;
 
         function fillTestData() {
             // เลือกระดับชั้น
@@ -8720,7 +8787,7 @@ ${lines}
     <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการสมัคร (สำหรับเจ้าหน้าที่)</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
       <div class="checkbox-line" style="margin:2px 0;">${cb()} ใบสมัครพร้อมรูปถ่าย 2 แผ่น</div>
-      <div class="checkbox-line" style="margin:2px 0;">${cb()} ระเบียนแสดงผลการเรียน (ปพ.1) ฉบับสมบูรณ์</div>
+      <div class="checkbox-line" style="margin:2px 0;">${cb()} ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง</div>
       <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาทะเบียนบ้านของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาบัตรประชาชนของนักเรียน</div>
       <div class="checkbox-line" style="margin:2px 0;">${cb()} สำเนาสูติบัตรของนักเรียน</div>
@@ -8939,6 +9006,20 @@ ${lines}
                 });
             }
             renderTransferFormChecklist();
+            // auto-calc อายุจากปีเกิด
+            const tfByEl = document.getElementById('tf_birthYear');
+            const tfAgeEl = document.getElementById('tf_ageField');
+            if (tfByEl && tfAgeEl && !tfByEl._ageInited) {
+                tfByEl._ageInited = true;
+                const calcAge = () => {
+                    const y = parseInt(tfByEl.value);
+                    if (y >= 2500 && y <= 2570) {
+                        tfAgeEl.value = new Date().getFullYear() - (y - 543);
+                    } else { tfAgeEl.value = ''; }
+                };
+                tfByEl.addEventListener('input', calcAge);
+                calcAge();
+            }
             setupAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
             promptRestoreAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
             loadTransferHistory();
@@ -9317,82 +9398,129 @@ ${lines}
         window.deleteTransferHistoryRecord = deleteTransferHistoryRecord;
 
         function generateTransferDocumentHTML(data, studentDocChecks, staffVerified) {
-            const d  = data || {};
-            const dc = { ...(studentDocChecks||{}), ...(staffVerified||{}) };
-            const checkbox = (val) => val
-                ? '<span style="display:inline-block;width:12px;height:12px;border:1.5px solid #333;background:#333;margin-right:5px;"></span>'
-                : '<span style="display:inline-block;width:12px;height:12px;border:1.5px solid #333;background:white;margin-right:5px;"></span>';
-            const gradeMap = {m1:'1',m2:'2',m3:'3',m4:'4',m5:'5',m6:'6'};
-            const gradeNum   = gradeMap[d.tf_gradeLevel]||'';
+            staffVerified = staffVerified || {};
+            studentDocChecks = studentDocChecks || {};
+            const docChecks = { ...studentDocChecks, ...staffVerified };
+            const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+            const d = data || {};
+            const gradeMap = {m1:'มัธยมศึกษาปีที่ 1',m2:'มัธยมศึกษาปีที่ 2',m3:'มัธยมศึกษาปีที่ 3',
+                              m4:'มัธยมศึกษาปีที่ 4',m5:'มัธยมศึกษาปีที่ 5',m6:'มัธยมศึกษาปีที่ 6'};
+            const gradeLabel = gradeMap[d.tf_gradeLevel] || '-';
             const studentName = `${d.tf_prefix||''}${d.tf_firstName||''} ${d.tf_lastName||''}`.trim();
             const parentName  = `${d.tf_parentPrefix||''}${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
-            const addr = [d.tf_houseNumber?`${d.tf_houseNumber}`:'',d.tf_moo?`หมู่ ${d.tf_moo}`:'',
-                d.tf_road?`ถ.${d.tf_road}`:'',d.tf_subdistrict?`ต.${d.tf_subdistrict}`:'',
-                d.tf_district?`อ.${d.tf_district}`:'',d.tf_province?`จ.${d.tf_province}`:''].filter(Boolean).join(' ');
-            return `<div class="print-document" style="font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.7;color:#333;max-width:210mm;margin:0 auto;padding:15mm 15mm 20mm;">
-                <div style="text-align:right;font-size:12px;margin-bottom:5px;color:#555;">วก.กทว.207</div>
-                <div style="text-align:center;font-size:17px;font-weight:700;margin-bottom:3px;">ใบคำขอย้ายเข้าเรียน</div>
-                <div style="text-align:center;font-size:14px;margin-bottom:15px;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
-                <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13.5px;">
-                    <tr><td style="width:50%;padding:3px 6px;">วันที่ยื่น: ${d.tf_applicationDate||'______________'}</td>
-                        <td style="width:50%;padding:3px 6px;">ปีการศึกษา: ${d.tf_academicYear||'______________'}</td></tr>
-                </table>
-                <div style="border:1.5px solid #333;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
-                    <div style="font-weight:700;font-size:14px;margin-bottom:7px;border-bottom:1px solid #ccc;padding-bottom:4px;">📋 ข้อมูลนักเรียน</div>
-                    <table style="width:100%;border-collapse:collapse;font-size:13.5px;">
-                        <tr><td style="padding:3px 6px;width:40%;">ชื่อ-นามสกุล</td><td style="padding:3px 6px;font-weight:600;">${studentName||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">ระดับชั้นที่ขอย้ายเข้า</td><td style="padding:3px 6px;">มัธยมศึกษาปีที่ ${gradeNum||'___'} ปีการศึกษา ${d.tf_academicYear||'_____'}</td></tr>
-                        <tr><td style="padding:3px 6px;">เลขประจำตัวประชาชน</td><td style="padding:3px 6px;">${d.tf_nationalId||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">วัน/เดือน/ปีเกิด</td><td style="padding:3px 6px;">${d.tf_birthDay||'__'} ${d.tf_birthMonth||'________'} ${d.tf_birthYear||'____'}</td></tr>
-                        <tr><td style="padding:3px 6px;">ที่อยู่ปัจจุบัน</td><td style="padding:3px 6px;">${addr||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">โทรศัพท์</td><td style="padding:3px 6px;">${d.tf_phone||'____________________________'}</td></tr>
-                    </table>
-                </div>
-                <div style="border:1.5px solid #333;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
-                    <div style="font-weight:700;font-size:14px;margin-bottom:7px;border-bottom:1px solid #ccc;padding-bottom:4px;">🏫 โรงเรียนเดิม</div>
-                    <table style="width:100%;border-collapse:collapse;font-size:13.5px;">
-                        <tr><td style="padding:3px 6px;width:40%;">โรงเรียน</td><td style="padding:3px 6px;font-weight:600;">${d.tf_previousSchool||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">อำเภอ/เขต</td><td style="padding:3px 6px;">${d.tf_prevDistrict||'_________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">จังหวัด</td><td style="padding:3px 6px;">${d.tf_prevProvince||'_________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">ชั้นที่กำลังศึกษา (ก่อนย้าย)</td><td style="padding:3px 6px;">${d.tf_currentGrade||'_________________'}</td></tr>
-                    </table>
-                </div>
-                <div style="border:1.5px solid #333;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
-                    <div style="font-weight:700;font-size:14px;margin-bottom:7px;border-bottom:1px solid #ccc;padding-bottom:4px;">👨‍👩‍👦 ผู้ปกครอง</div>
-                    <table style="width:100%;border-collapse:collapse;font-size:13.5px;">
-                        <tr><td style="padding:3px 6px;width:40%;">ชื่อผู้ปกครอง</td><td style="padding:3px 6px;font-weight:600;">${parentName||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">ความสัมพันธ์</td><td style="padding:3px 6px;">${d.tf_parentRelation||'____________________________'}</td></tr>
-                        <tr><td style="padding:3px 6px;">โทรศัพท์</td><td style="padding:3px 6px;">${d.tf_parentPhone||'____________________________'}</td></tr>
-                    </table>
-                </div>
-                <div style="border:1.5px solid #333;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
-                    <div style="font-weight:700;font-size:14px;margin-bottom:6px;">📝 เหตุผลในการย้ายเข้าเรียน</div>
-                    <div style="min-height:40px;padding:4px 6px;">${d.tf_reason||'_______________________________________________________________'}</div>
-                </div>
-                <div style="border:1.5px solid #333;border-radius:6px;padding:10px 14px;margin-bottom:18px;">
-                    <div style="font-weight:700;font-size:14px;margin-bottom:8px;">📎 หลักฐานประกอบการย้ายเข้าเรียน</div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;">
-                        ${getTransferChecklistItems().map(item=>`<div style="display:flex;align-items:center;">${checkbox(dc[item])}${item}</div>`).join('')}
+            function tfCb(val) { return `<span class="doc-checkbox${val?' checked':''}"></span>`; }
+            function tfIdBoxes(idStr) {
+                const clean=(idStr||'').replace(/[^0-9]/g,'');
+                const boxes=[];
+                for(let i=0;i<13;i++){
+                    if(i===1||i===5||i===10||i===12) boxes.push('<span class="id-dash"></span>');
+                    boxes.push(clean[i]?`<span class="id-box">${clean[i]}</span>`:'<span class="id-box"></span>');
+                }
+                return boxes.join('');
+            }
+            function thaiDate(s){
+                if(!s) return '...............................';
+                const p=s.split('-');
+                if(p.length<3) return s;
+                const m=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                         'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+                return parseInt(p[2])+' '+m[parseInt(p[1])]+' '+(parseInt(p[0])+543);
+            }
+            const checklistItems = getTransferChecklistItems();
+            return `
+                <div class="print-document">
+                    <div class="doc-code">วก.กทว.207</div>
+                    <div class="doc-header">
+                        <div class="doc-logo-section">
+                            <img src="${logoUrl}" class="doc-logo" alt="โลโก้โรงเรียน">
+                        </div>
+                        <div class="doc-school-info">
+                            วันที่ ${thaiDate(d.tf_applicationDate)}
+                        </div>
+                    </div>
+                    <div class="doc-title-section">
+                        <div class="doc-title">ใบคำขอย้ายเข้าเรียนชั้น${gradeLabel} ปีการศึกษา ${d.tf_academicYear||'.........................'}</div>
+                        <div style="text-align:center;font-size:14px;margin:4px 0;">
+                            โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>
+                            สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ
+                        </div>
+                    </div>
+                    <div class="doc-content">
+                        <div class="field-line" style="margin-top:8px;">
+                            <span class="field-label">1. ชื่อ-สกุล ผู้ขอย้ายเข้าเรียน</span>
+                            <span class="field-value">${studentName}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">เกิดวันที่</span>
+                            <span class="field-value">${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear?parseInt(d.tf_birthYear)+543:''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">เลขประจำตัวประชาชน</span>
+                            <div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">
+                                ${tfIdBoxes(d.tf_nationalId)}
+                            </div>
+                        </div>
+                        <div class="field-line" style="margin-top:6px;">
+                            <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span>
+                            <span class="field-value">${d.tf_houseNumber||''}</span>
+                            <span class="field-label">หมู่ที่</span>
+                            <span class="field-value">${d.tf_moo||''}</span>
+                            <span class="field-label">ถนน</span>
+                            <span class="field-value">${d.tf_road||''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">ตำบล</span>
+                            <span class="field-value">${d.tf_subdistrict||''}</span>
+                            <span class="field-label">อำเภอ</span>
+                            <span class="field-value">${d.tf_district||''}</span>
+                            <span class="field-label">จังหวัด</span>
+                            <span class="field-value">${d.tf_province||''}</span>
+                            <span class="field-label">โทรศัพท์</span>
+                            <span class="field-value">${d.tf_phone||''}</span>
+                        </div>
+                        <div class="field-line" style="margin-top:6px;">
+                            <span class="field-label">3. ปัจจุบันศึกษาอยู่ชั้น</span>
+                            <span class="field-value">${d.tf_currentGrade||''}</span>
+                            <span class="field-label">จากโรงเรียน</span>
+                            <span class="field-value">${d.tf_previousSchool||''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">อำเภอ/เขต</span>
+                            <span class="field-value">${d.tf_prevDistrict||''}</span>
+                            <span class="field-label">จังหวัด</span>
+                            <span class="field-value">${d.tf_prevProvince||''}</span>
+                        </div>
+                        <div class="field-line" style="margin-top:6px;">
+                            <span class="field-label">4. ผู้ปกครอง</span>
+                            <span class="field-value">${parentName}</span>
+                            <span class="field-label">ความสัมพันธ์</span>
+                            <span class="field-value">${d.tf_parentRelation||''}</span>
+                            <span class="field-label">โทรศัพท์</span>
+                            <span class="field-value">${d.tf_parentPhone||''}</span>
+                        </div>
+                        <div class="field-line" style="margin-top:6px;">
+                            <span class="field-label">5. เหตุผลในการย้ายเข้าเรียน</span>
+                            <span class="field-value">${d.tf_reason||''}</span>
+                        </div>
+                    </div>
+                    <div class="signature-section" style="text-align:right;margin-top:12px;">
+                        <p>ลงชื่อ..........................................................................ผู้ขอย้ายเข้าเรียน/ผู้ปกครอง</p>
+                        <p style="margin-right:1cm;">( ${parentName||'.......................................................................................'} )</p>
+                        <p>วันที่.................เดือน...............................พ.ศ................</p>
+                    </div>
+                    <div class="approval-section">
+                        <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการย้ายเข้าเรียน (สำหรับเจ้าหน้าที่)</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
+                            ${checklistItems.map(item=>`<div class="checkbox-line" style="margin:2px 0;">${tfCb(docChecks[item])} ${item}</div>`).join('')}
+                        </div>
+                        <div style="text-align:right;margin-top:12px;">
+                            <p>ลงชื่อ.............................................................กรรมการรับย้าย</p>
+                            <p style="margin-right:3cm;">(.......................................................)</p>
+                            <p>วันที่.................เดือน..............................พ.ศ...............</p>
+                        </div>
                     </div>
                 </div>
-                <table style="width:100%;border-collapse:collapse;margin-top:20px;font-size:13.5px;">
-                    <tr>
-                        <td style="width:50%;text-align:center;padding:4px;">
-                            <div style="margin-bottom:45px;"></div>
-                            <div>ลงชื่อ.............................................ผู้ปกครอง</div>
-                            <div>(${parentName||'..............................................'})</div>
-                            <div>วันที่..........เดือน...................พ.ศ..........</div>
-                        </td>
-                        <td style="width:50%;text-align:center;padding:4px;">
-                            <div style="margin-bottom:45px;"></div>
-                            <div>ลงชื่อ.............................................ผู้รับเรื่อง</div>
-                            <div>(..............................................)</div>
-                            <div>วันที่..........เดือน...................พ.ศ..........</div>
-                        </td>
-                    </tr>
-                </table>
-                <div style="margin-top:10px;text-align:center;font-size:11px;color:#999;">ระบบรับสมัครนักเรียนออนไลน์ — โรงเรียนกระดุมทองวิทยา</div>
-            </div>`;
+            `;
         }
         window.generateTransferDocumentHTML = generateTransferDocumentHTML;
 

@@ -1554,11 +1554,130 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
     <div class="modal-body"><div id="transferDetailGrid"></div></div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('modalViewTransfer')">ปิด</button>
-      <button class="btn-gold" onclick="openTransferInspectionStepper(_viewingTransferId,'transfers')">🔍 ตรวจเอกสาร</button>
+      <button class="btn-sm btn-verify" style="padding:.35rem .75rem;font-size:.82rem;" onclick="openTransferInspectionStepper(_viewingTransferId,'transfers')">🔍 ตรวจเอกสาร</button>
+      <button class="btn-gold" onclick="printTransferById(_viewingTransferId)">🖨️ พิมพ์เอกสาร</button>
+      <button class="btn-sm btn-verify" style="background:#0891b2;color:#fff;" onclick="editTransferFromStaff(_viewingTransferId)">✏️ แก้ไข</button>
       <button class="btn-sm btn-delete" id="deleteTransferBtn">🗑️ ลบรายการนี้</button>
     </div>
   </div>
 </div>
+
+<!-- EDIT: Transfer (ใบคำขอย้ายเข้าเรียน) -->
+<div class="modal-backdrop" id="modalEditTransfer">
+  <div class="modal-box" style="max-width:820px;">
+    <div class="modal-header" style="background:linear-gradient(135deg,#0e7490,#0891b2);">
+      <h3>✏️ แก้ไขข้อมูลใบคำขอย้ายเข้าเรียน</h3>
+      <button class="modal-close-btn" onclick="closeModal('modalEditTransfer')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full" style="font-weight:700;color:#67e8f9;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;">📋 ข้อมูลนักเรียน</div>
+        <div class="form-group">
+          <label class="form-label">คำนำหน้า</label>
+          <select class="form-control" id="etPrefix">
+            <option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option>
+            <option value="นาย">นาย</option><option value="นางสาว">นางสาว</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อ <span style="color:var(--red)">*</span></label>
+          <input class="form-control" id="etFirstName" placeholder="ชื่อ">
+        </div>
+        <div class="form-group">
+          <label class="form-label">นามสกุล <span style="color:var(--red)">*</span></label>
+          <input class="form-control" id="etLastName" placeholder="นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อเล่น</label>
+          <input class="form-control" id="etNickname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ระดับชั้นที่ย้ายเข้า</label>
+          <select class="form-control" id="etGradeLevel">
+            <option value="m1">ม.1</option><option value="m2">ม.2</option><option value="m3">ม.3</option>
+            <option value="m4">ม.4</option><option value="m5">ม.5</option><option value="m6">ม.6</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ปีการศึกษา</label>
+          <input class="form-control" id="etAcademicYear" placeholder="เช่น 2569">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมู่เลือด</label>
+          <select class="form-control" id="etBloodType">
+            <option value="">—</option><option value="A">A</option><option value="B">B</option>
+            <option value="O">O</option><option value="AB">AB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เลขบัตรประชาชน</label>
+          <input class="form-control" id="etNationalId" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x">
+        </div>
+        <div class="form-group">
+          <label class="form-label">โทรศัพท์</label>
+          <input class="form-control" id="etPhone" placeholder="เช่น 081-234-5678">
+        </div>
+        <div class="form-group full" style="font-weight:700;color:#67e8f9;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.75rem;">👨‍👩‍👦 บิดา-มารดา</div>
+        <div class="form-group">
+          <label class="form-label">ชื่อ-นามสกุลบิดา</label>
+          <input class="form-control" id="etFatherName" placeholder="คำนำหน้า ชื่อ นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อาชีพบิดา</label>
+          <input class="form-control" id="etFatherOcc">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อ-นามสกุลมารดา</label>
+          <input class="form-control" id="etMotherName" placeholder="คำนำหน้า ชื่อ นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">อาชีพมารดา</label>
+          <input class="form-control" id="etMotherOcc">
+        </div>
+        <div class="form-group full" style="font-weight:700;color:#67e8f9;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.75rem;">🏠 ที่อยู่ / 🏫 โรงเรียนเดิม</div>
+        <div class="form-group">
+          <label class="form-label">จังหวัด (ที่อยู่)</label>
+          <input class="form-control" id="etProvince">
+        </div>
+        <div class="form-group">
+          <label class="form-label">โรงเรียนเดิม</label>
+          <input class="form-control" id="etPrevSchool">
+        </div>
+        <div class="form-group">
+          <label class="form-label">จังหวัด (โรงเรียนเดิม)</label>
+          <input class="form-control" id="etPrevProvince">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชั้นที่กำลังเรียน (ก่อนย้าย)</label>
+          <input class="form-control" id="etCurrentGrade" placeholder="เช่น ม.2/3">
+        </div>
+        <div class="form-group full" style="font-weight:700;color:#67e8f9;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.3rem;margin-bottom:.25rem;margin-top:.75rem;">🧑‍🤝‍🧑 ผู้ปกครอง</div>
+        <div class="form-group">
+          <label class="form-label">ชื่อผู้ปกครอง</label>
+          <input class="form-control" id="etParentName" placeholder="คำนำหน้า ชื่อ นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ความสัมพันธ์</label>
+          <input class="form-control" id="etParentRelation">
+        </div>
+        <div class="form-group">
+          <label class="form-label">โทรศัพท์ผู้ปกครอง</label>
+          <input class="form-control" id="etParentPhone">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">เหตุผลในการย้าย</label>
+          <textarea class="form-control" id="etReason" rows="3" style="resize:vertical;"></textarea>
+        </div>
+        <p style="font-size:.75rem;color:var(--text-soft);margin-top:.5rem;">* สำหรับแก้ไขข้อมูลหลัก — ข้อมูลอื่นๆ แก้ไขได้จาก index.html ฝั่งผู้ปกครอง</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modalEditTransfer')">ยกเลิก</button>
+      <button class="btn-gold" onclick="saveEditTransfer()">💾 บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ readyCheckModal (ใบมอบตัว สีน้ำเงิน) ═══ -->
 <div class="modal-backdrop" id="readyCheckModal">
   <div class="modal-card" style="max-width:680px;width:calc(100% - 2rem);background:var(--card);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
@@ -4574,13 +4693,15 @@ window.goToStep = goToStep;
 function buildStepperStep1() {
     const id  = _stepperRecId;
     const col = _stepperCol;
-    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const arr = col === 'admissions' ? allAdmissions : col === 'transfers' ? allTransfers : allMobtua;
     const rec = arr.find(r => r.id === id);
     if (!rec) { document.getElementById('stepperDetailBody').innerHTML = '<p>ไม่พบข้อมูล</p>'; return; }
 
     const d = rec.data || {};
     const gradeLabel = col === 'admissions'
         ? (rec.gradeLevel === 'm4' ? 'ม.4' : 'ม.1')
+        : col === 'transfers'
+        ? (TRANSFER_GRADE_MAP[rec.gradeLevel] || rec.gradeLevel || '—')
         : ((rec.gradeLevel || rec.classRoom || '').includes('4') ? 'ม.4' : 'ม.1');
 
     const dash = '<span style="color:#94a3b8">—</span>';
@@ -4595,7 +4716,53 @@ function buildStepperStep1() {
 
     let html = '';
 
-    if (col === 'admissions') {
+    if (col === 'transfers') {
+        const birthStr = d.tf_birthDay && d.tf_birthMonth
+            ? `${d.tf_birthDay} ${d.tf_birthMonth} ${d.tf_birthYear||''}`.trim() : '';
+        const fatherFull = `${d.tf_fatherPrefix||''} ${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
+        const motherFull = `${d.tf_motherPrefix||''} ${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
+        const parentFull = `${d.tf_parentPrefix||''} ${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
+        const studentAddr = addrStr([d.tf_houseNumber,
+            d.tf_moo ? `หมู่ ${d.tf_moo}` : '', d.tf_village ? `บ้าน${d.tf_village}` : '',
+            d.tf_subdistrict ? `ต.${d.tf_subdistrict}` : '', d.tf_district ? `อ.${d.tf_district}` : '',
+            d.tf_province ? `จ.${d.tf_province}` : '', d.tf_postalCode || '']);
+        const talents = Array.isArray(d.tf_talent) ? d.tf_talent : [];
+        const talentStr = [
+            talents.includes('sports') ? ('กีฬา' + (d.tf_sportsType ? ' ('+d.tf_sportsType+')' : '')) : '',
+            talents.includes('music')  ? ('ดนตรี' + (d.tf_musicType  ? ' ('+d.tf_musicType+')' : ''))  : '',
+            talents.includes('other')  ? (d.tf_otherTalent || 'อื่นๆ') : ''
+        ].filter(Boolean).join(', ') || '—';
+
+        html = sec('👤 ข้อมูลนักเรียน') +
+            row('ชื่อ-นามสกุล', `${d.tf_prefix||''}${d.tf_firstName||''} ${d.tf_lastName||''}`.trim(), true) +
+            row('ระดับชั้นที่ย้ายเข้า', gradeLabel) + row('ชื่อเล่น', d.tf_nickname) +
+            row('วันเกิด', birthStr) + row('อายุ', d.tf_age ? d.tf_age + ' ปี' : '') +
+            row('หมู่เลือด', d.tf_bloodType) + row('ส่วนสูง / น้ำหนัก', `${d.tf_height||'—'} cm / ${d.tf_weight||'—'} kg`) +
+            rowId('เลขบัตรประชาชนนักเรียน', d.tf_nationalId) + row('โทรศัพท์', d.tf_phone) + row('อีเมล', d.tf_email) +
+            sec('🏠 ที่อยู่ปัจจุบัน') +
+            row('บ้านเลขที่', d.tf_houseNumber) + row('หมู่', d.tf_moo) +
+            row('ซอย', d.tf_soi) + row('หมู่บ้าน', d.tf_village) +
+            row('ตำบล', d.tf_subdistrict) + row('อำเภอ', d.tf_district) +
+            row('จังหวัด', d.tf_province) + row('รหัสไปรษณีย์', d.tf_postalCode) +
+            row('ที่อยู่เต็ม', studentAddr) +
+            sec('🏫 โรงเรียนเดิม') +
+            row('โรงเรียน', d.tf_previousSchool) + row('ตำบล', d.tf_schoolSubdistrict) +
+            row('อำเภอ', d.tf_prevDistrict) + row('จังหวัด', d.tf_prevProvince) +
+            row('ชั้นที่กำลังเรียน (ก่อนย้าย)', d.tf_currentGrade) +
+            sec('👨 บิดา') + row('ชื่อบิดา', fatherFull) +
+            row('อายุบิดา', d.tf_fatherAge ? d.tf_fatherAge + ' ปี' : '') + row('อาชีพบิดา', d.tf_fatherOccupation) +
+            sec('👩 มารดา') + row('ชื่อมารดา', motherFull) +
+            row('อายุมารดา', d.tf_motherAge ? d.tf_motherAge + ' ปี' : '') + row('อาชีพมารดา', d.tf_motherOccupation) +
+            sec('⭐ ความสามารถพิเศษ') + row('ความสามารถ', talentStr) +
+            sec('🧑‍🤝‍🧑 ผู้ปกครอง') +
+            row('ชื่อผู้ปกครอง', parentFull, true) + row('ความสัมพันธ์', d.tf_parentRelation) +
+            row('โทรศัพท์', d.tf_parentPhone) +
+            sec('📝 เหตุผลในการย้าย') +
+            `<div class="sdc-row" style="align-items:flex-start;"><span class="sdc-label">เหตุผล</span><span class="sdc-val" style="white-space:pre-wrap;">${d.tf_reason || dash}</span></div>` +
+            sec('🕐 ข้อมูลระบบ') +
+            row('วันที่ยื่น', thaiDate(rec.createdAt)) + row('อัปเดตล่าสุด', thaiDate(rec.updatedAt));
+
+    } else if (col === 'admissions') {
         const birthStr = d.birthDay && d.birthMonth
             ? `${d.birthDay} ${d.birthMonth} ${d.birthYear || ''}`.trim() : (d.birthDate || '');
         const studentAddr = addrStr([d.houseNumber,
@@ -4671,40 +4838,39 @@ function buildStepperStep2() {
     const id  = _stepperRecId;
     const col = _stepperCol;
     const isAdm = col === 'admissions';
-    const arr = isAdm ? allAdmissions : allMobtua;
+    const isTransfer = col === 'transfers';
+    const arr = isAdm ? allAdmissions : isTransfer ? allTransfers : allMobtua;
     const rec = arr.find(r => r.id === id);
     if (!rec) return;
 
     _verifyCurrentId         = id;
     _verifyCurrentCollection = col;
 
-    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
+    const items = isAdm ? ADMISSION_CHECKLIST_KEYS : isTransfer ? TRANSFER_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
     const sv    = rec.staffVerified || {};
     const docChecks = rec.docChecks || {};
 
     // init draft (carry over existing staffVerified)
     _verifyDraft = {};
     items.forEach(k => { _verifyDraft[k] = sv[k] === true; });
-    // load sub-type values (e.g. _subType_ระเบียนแสดงผลการเรียน)
+    // load sub-type values
     Object.keys(sv).forEach(k => { if (k.startsWith('_subType_')) _verifyDraft[k] = sv[k]; });
 
-    // linked record staffVerified
+    // linked record staffVerified — transfers don't link to admissions
     let linkedSV = {};
     if (isAdm) {
         const lmt = allMobtua.find(r => r.admissionId === id || r.studentName === rec.studentName);
         if (lmt?.staffVerified) linkedSV = lmt.staffVerified;
-    } else {
+    } else if (!isTransfer) {
         const ladm = allAdmissions.find(r => r.id === rec.admissionId || r.studentName === rec.studentName);
         if (ladm?.staffVerified) {
             linkedSV = { ...ladm.staffVerified };
-            // ── พิเศษ: ถ้าใบสมัครติ๊ก ปพ.1 แบบ subtype = 'ปพ.1'
-            //    ให้ถือว่า "สำเนา ปพ.1 (ฉบับจบการศึกษา)" ของใบมอบตัวครอบคลุมด้วย
             const PP1_ADM_KEY = 'ระเบียนแสดงผลการเรียน (ปพ.1) หรือใบรับรอง';
             const PP1_MT_KEY  = 'สำเนา ปพ.1 (ฉบับจบการศึกษา)';
             const admSubType  = ladm.staffVerified['_subType_ระเบียนแสดงผลการเรียน'] || '';
             if (ladm.staffVerified[PP1_ADM_KEY] === true && admSubType === 'ปพ.1') {
                 linkedSV[PP1_MT_KEY] = true;
-                linkedSV['_pp1SourceLabel'] = 'ปพ.1 จากใบสมัคร'; // label สำหรับแสดงใน UI
+                linkedSV['_pp1SourceLabel'] = 'ปพ.1 จากใบสมัคร';
             }
         }
     }
@@ -4724,7 +4890,7 @@ function buildStepperStep2() {
     // Linked note
     const linkedNote = document.getElementById('stepperLinkedNote');
     const hasLinked = Object.values(linkedSV).some(v => v === true);
-    if (hasLinked && linkedNote) {
+    if (hasLinked && linkedNote && !isTransfer) {
         const lbl = isAdm ? 'ใบมอบตัว' : 'ใบสมัคร';
         const sharedCnt = SHARED_DOC_KEYS.filter(k => linkedSV[k] === true).length;
         const pp1Crossed = !isAdm && linkedSV['สำเนา ปพ.1 (ฉบับจบการศึกษา)'] === true && linkedSV['_pp1SourceLabel'];
@@ -4736,8 +4902,8 @@ function buildStepperStep2() {
         linkedNote.style.display = 'none';
     }
 
-    // ── สำหรับ mobtua: แยก checklist เป็น 2 ส่วน ──
-    if (!isAdm) {
+    // ── สำหรับ mobtua (ไม่ใช่ transfers/admissions): แยก checklist เป็น 2 ส่วน ──
+    if (!isAdm && !isTransfer) {
         // รายการที่ยืนยันแล้วจากใบสมัคร (linkedSV) → แสดงแบบ read-only
         // กรอง internal key ออกก่อนใช้
         const alreadyDoneItems = items.filter(k => linkedSV[k] === true && !k.startsWith('_'));
@@ -4809,6 +4975,25 @@ function buildStepperStep2() {
         }
 
         document.getElementById('stepperVerifyChecklist').innerHTML = checklistHTML;
+
+    } else if (isTransfer) {
+        // ── transfers: simple checklist แบบเดียวกับ admissions แต่ใช้ TRANSFER_CHECKLIST_KEYS ──
+        document.getElementById('stepperVerifyChecklist').innerHTML = items.map((item, i) => {
+            const studentDone = docChecks[item] === true;
+            const staffDone   = _verifyDraft[item] === true;
+            const studentTag  = studentDone
+                ? `<span style="font-size:.65rem;color:#0e7490;background:#ecfeff;border:1px solid #a5f3fc;padding:2px 7px;border-radius:99px;white-space:nowrap;">📱 แจ้งว่าแนบมา</span>`
+                : `<span style="font-size:.65rem;color:#b45309;background:#fefce8;border:1px solid #fde68a;padding:2px 7px;border-radius:99px;white-space:nowrap;">⚠ ยังไม่แจ้ง</span>`;
+            const warnCls = (!studentDone && !staffDone) ? ' warn-student' : '';
+            return `<div>
+                <div class="verify-check-item ${staffDone ? 'done' : ''}${warnCls}" id="svci_${i}"
+                    onclick="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                    <input type="checkbox" ${staffDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="stepperToggleVerify('${item.replace(/'/g,"\'")}', ${i})">
+                    <span style="flex:1;font-size:.9rem;">${item}</span>
+                    <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${studentTag}</span>
+                </div>
+            </div>`;
+        }).join('');
 
     } else {
         // ── admissions: checklist แบบเดิมทุก item + sub-type panels ──
@@ -4978,7 +5163,8 @@ async function saveStepperVerify() {
     const note = document.getElementById('stepperVerifyNote')?.value?.trim() || '';
     const newSV = { ..._verifyDraft };
 
-    const fsCol = col === 'admissions' ? 'admissions' : 'mobtua';
+    // map col to Firestore collection name
+    const fsCol = col === 'admissions' ? 'admissions' : col === 'transfers' ? 'transfers' : 'mobtua';
     const fsDoc = window._fs.doc(window._db, fsCol, id);
     try {
         await window._fs.updateDoc(fsDoc, {
@@ -4987,8 +5173,8 @@ async function saveStepperVerify() {
             docVerifiedAt: window._fs.serverTimestamp(),
             updatedAt: window._fs.serverTimestamp()
         });
-        // ── update local cache immediately (no loadAll to avoid notification storm) ──
-        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        // ── update local cache immediately ──
+        const arr = col === 'admissions' ? allAdmissions : col === 'transfers' ? allTransfers : allMobtua;
         const rec = arr.find(r => r.id === id);
         if (rec) {
             rec.staffVerified   = { ...newSV };
@@ -4999,14 +5185,15 @@ async function saveStepperVerify() {
         const label = cnt === total ? '✅ ครบถ้วน' : cnt > 0 ? `⚠️ ยืนยัน ${cnt}/${total}` : '❌ ยังไม่มี';
         showToast(`บันทึกแล้ว — ${label}`, 'success');
 
-        // Bidirectional sync (fire-and-forget — does NOT call loadAll internally)
+        // Bidirectional sync (skip for transfers)
         if (col === 'admissions') {
             syncVerifiedDocsToMobtua(id, newSV, note);
-        } else {
+        } else if (col === 'mobtua') {
             syncVerifiedDocsFromMobtua(id, newSV, note);
         }
-        // Re-render tables quietly without resetting subscriptions
+        // Re-render
         if (col === 'admissions') renderAdmissions();
+        else if (col === 'transfers') { renderTransfers(); renderTransferDocTracker(); }
         else renderMobtua();
     } catch(e) {
         showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
@@ -5018,12 +5205,14 @@ async function saveStepperVerify() {
 function buildStepperStep3() {
     const id  = _stepperRecId;
     const col = _stepperCol;
-    const arr = col === 'admissions' ? allAdmissions : allMobtua;
+    const arr = col === 'admissions' ? allAdmissions : col === 'transfers' ? allTransfers : allMobtua;
     const rec = arr.find(r => r.id === id);
 
-    // Check verify completeness — use shared constants
+    // Check verify completeness
     const sv = rec?.staffVerified || {};
-    const docItems = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
+    const docItems = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS :
+                     col === 'transfers'  ? TRANSFER_CHECKLIST_KEYS :
+                     getEffectiveMobtuaKeys(rec);
 
     const allDone = docItems.every(k => sv[k] === true);
     const missingDocs = docItems.filter(k => sv[k] !== true);
@@ -5090,22 +5279,43 @@ function buildStepperStep3() {
             '', true, '#94a3b8');
     }
 
-    document.getElementById('printCardsGrid').innerHTML =
-        card('📄', 'ใบสมัครเรียน',
-            col === 'admissions' ? 'แบบฟอร์มใบสมัครที่นักเรียนกรอก' : 'ใบสมัครที่เชื่อมโยง',
-            verifyBadge,
-            col === 'admissions'
-                ? `openAdmissionCardWithWarning('admission','${id}','${col}')`
-                : `openAdmissionCardWithWarning('linkedAdmission','${id}','${col}')`,
-            false, '#1e3352') +
-        card('📅', 'ใบนัดหมายมอบตัว',
-            missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
-            missingCount > 0
-                ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
-                : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
-            `openCardPreview('appointment','${id}','${col}')`,
-            false, '#d4a843') +
-        card3;
+    if (col === 'transfers') {
+        // ── Transfer: 3 cards เฉพาะ ──
+        const linkedMobtuaTf = allTransferMobtua.find(m => m.transferId === id);
+        const card3tf = linkedMobtuaTf
+            ? card('📋','ใบมอบตัวย้ายเข้าเรียน','คลิกดูตัวอย่างและพิมพ์',
+                `<span class="print-card-badge ok">✅ มีใบมอบตัวแล้ว</span>`,
+                `openCardPreview('mobtua','${linkedMobtuaTf.id}','mobtua')`,false,'#15803d')
+            : card('📋','ใบมอบตัวย้ายเข้าเรียน','ยังไม่มีข้อมูลใบมอบตัว',
+                `<span class="print-card-badge na">รอผู้ปกครอง</span>`,'',true,'#94a3b8');
+        document.getElementById('printCardsGrid').innerHTML =
+            card('🔄','ใบคำขอย้ายเข้าเรียน (วก.กทว.207)','คลิกพิมพ์ใบคำขอย้ายเข้าเรียน',
+                verifyBadge,`openCardPreview('transfer','${id}','transfers')`,false,'#0891b2') +
+            card('📅','ใบนัดหมายมอบตัว',
+                missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ` : 'ออกใบนัดหมายมอบตัว',
+                missingCount > 0
+                    ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
+                    : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
+                `openCardPreview('appointment-transfer','${id}','transfers')`,false,'#d4a843') +
+            card3tf;
+    } else {
+        document.getElementById('printCardsGrid').innerHTML =
+            card('📄', 'ใบสมัครเรียน',
+                col === 'admissions' ? 'แบบฟอร์มใบสมัครที่นักเรียนกรอก' : 'ใบสมัครที่เชื่อมโยง',
+                verifyBadge,
+                col === 'admissions'
+                    ? `openAdmissionCardWithWarning('admission','${id}','${col}')`
+                    : `openAdmissionCardWithWarning('linkedAdmission','${id}','${col}')`,
+                false, '#1e3352') +
+            card('📅', 'ใบนัดหมายมอบตัว',
+                missingCount > 0 ? `แจ้งเอกสารขาด ${missingCount} รายการ + QR code` : 'ออกใบนัดหมายมอบตัว',
+                missingCount > 0
+                    ? `<span class="print-card-badge warn">⚠️ ขาด ${missingCount} รายการ</span>`
+                    : `<span class="print-card-badge ok">✅ ครบถ้วน</span>`,
+                `openCardPreview('appointment','${id}','${col}')`,
+                false, '#d4a843') +
+            card3;
+    }
 }
 
 // ── openCardPreview: show cardPreviewModal above stepper (step 3 stays visible) ──
@@ -5140,6 +5350,92 @@ async function openCardPreview(type, id, col) {
             html = rec ? generateMobtuaDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
             titleEl.textContent = '📋 ใบมอบตัวนักเรียน';
             if (subtitleEl) subtitleEl.textContent = rec ? `${rec.studentName || ''} · ${rec.classRoom || ''}` : '';
+        } else if (type === 'transfer') {
+            const rec = allTransfers.find(r => r.id === id);
+            if (rec) {
+                const d = rec.data || {};
+                const sv = rec.staffVerified || {};
+                const dc = { ...(rec.docChecks||{}), ...sv };
+                const gradeMap = {m1:'มัธยมศึกษาปีที่ 1',m2:'มัธยมศึกษาปีที่ 2',m3:'มัธยมศึกษาปีที่ 3',
+                                  m4:'มัธยมศึกษาปีที่ 4',m5:'มัธยมศึกษาปีที่ 5',m6:'มัธยมศึกษาปีที่ 6'};
+                const gradeLabel = gradeMap[rec.gradeLevel]||'-';
+                const studentName = `${d.tf_prefix||''}${d.tf_firstName||''} ${d.tf_lastName||''}`.trim();
+                const parentName  = `${d.tf_parentPrefix||''}${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
+                const fatherFull  = `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
+                const motherFull  = `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
+                const talents = Array.isArray(d.tf_talent)?d.tf_talent:[];
+                const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
+                const cb = v => `<span class="doc-checkbox${v?' checked':''}"></span>`;
+                const tfId = (idStr) => {
+                    const clean=(idStr||'').replace(/[^0-9]/g,'');
+                    const boxes=[];
+                    for(let i=0;i<13;i++){if(i===1||i===5||i===10||i===12)boxes.push('<span class="id-dash"></span>');
+                        boxes.push(clean[i]?`<span class="id-box">${clean[i]}</span>`:'<span class="id-box"></span>');}
+                    return boxes.join('');
+                };
+                const checksHtml = TRANSFER_CHECKLIST_KEYS.map(k=>`<div class="checkbox-line" style="margin:2px 0;">${cb(dc[k])} ${k}</div>`).join('');
+                html = `<div class="print-document">
+                    <div class="doc-code">วก.กทว.207</div>
+                    <div class="doc-header">
+                        <div class="doc-logo-section"><img src="${logoUrl}" class="doc-logo" alt="โลโก้โรงเรียน"></div>
+                        <div class="doc-school-info">วันที่ ${d.tf_applicationDate||'—'}</div>
+                    </div>
+                    <div class="doc-title-section">
+                        <div class="doc-title">ใบคำขอย้ายเข้าเรียนชั้น${gradeLabel} ปีการศึกษา ${rec.academicYear||d.tf_academicYear||'—'}</div>
+                        <div style="text-align:center;font-size:14px;margin:4px 0;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
+                    </div>
+                    <div class="doc-content">
+                        <div class="field-line" style="margin-top:8px;"><span class="field-label">1. ชื่อ-สกุล ผู้ขอย้าย</span><span class="field-value">${studentName}</span><span class="field-label">ชื่อเล่น</span><span class="field-value">${d.tf_nickname||''}</span></div>
+                        <div class="field-line"><span class="field-label">เกิดวันที่</span><span class="field-value">${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear?parseInt(d.tf_birthYear)+543:''}</span><span class="field-label">อายุ</span><span class="field-value">${d.tf_age||''}</span><span class="field-label">ปี หมู่เลือด</span><span class="field-value">${d.tf_bloodType||''}</span></div>
+                        <div class="field-line"><span class="field-label">เลขประจำตัวประชาชน</span><div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">${tfId(d.tf_nationalId)}</div></div>
+                        <div class="field-line" style="margin-top:6px;"><span class="field-label">ชื่อ-สกุลบิดา</span><span class="field-value">${fatherFull}</span><span class="field-label">อาชีพ</span><span class="field-value">${d.tf_fatherOccupation||''}</span></div>
+                        <div class="field-line"><span class="field-label">ชื่อ-สกุลมารดา</span><span class="field-value">${motherFull}</span><span class="field-label">อาชีพ</span><span class="field-value">${d.tf_motherOccupation||''}</span></div>
+                        <div class="field-line" style="margin-top:6px;"><span class="field-label">2. ที่อยู่ บ้านเลขที่</span><span class="field-value">${d.tf_houseNumber||''}</span><span class="field-label">หมู่</span><span class="field-value">${d.tf_moo||''}</span><span class="field-label">ตำบล</span><span class="field-value">${d.tf_subdistrict||''}</span><span class="field-label">อำเภอ</span><span class="field-value">${d.tf_district||''}</span><span class="field-label">จังหวัด</span><span class="field-value">${d.tf_province||''}</span></div>
+                        <div class="field-line" style="margin-top:6px;"><span class="field-label">3. ปัจจุบันศึกษาอยู่ชั้น</span><span class="field-value">${d.tf_currentGrade||''}</span><span class="field-label">จากโรงเรียน</span><span class="field-value">${d.tf_previousSchool||''}</span><span class="field-label">จ.</span><span class="field-value">${d.tf_prevProvince||''}</span></div>
+                        <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
+                        <div class="checkbox-line">${cb(talents.includes('sports'))} กีฬา ${talents.includes('sports')&&d.tf_sportsType?'('+d.tf_sportsType+')':''}</div>
+                        <div class="checkbox-line">${cb(talents.includes('music'))} ดนตรี/ศิลปะ ${talents.includes('music')&&d.tf_musicType?'('+d.tf_musicType+')':''}</div>
+                        <div class="field-line" style="margin-top:6px;"><span class="field-label">5. ผู้ปกครอง</span><span class="field-value">${parentName}</span><span class="field-label">โทรศัพท์</span><span class="field-value">${d.tf_parentPhone||''}</span></div>
+                        <div class="field-line" style="margin-top:6px;"><span class="field-label">6. เหตุผล</span><span class="field-value">${d.tf_reason||''}</span></div>
+                    </div>
+                    <div class="signature-section" style="text-align:right;margin-top:12px;">
+                        <p>ลงชื่อ.................................................ผู้ขอย้าย/ผู้ปกครอง</p>
+                        <p style="margin-right:1cm;">( ${parentName||'...................................'} )</p>
+                        <p>วันที่.............เดือน....................พ.ศ............</p>
+                    </div>
+                    <div class="approval-section">
+                        <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการย้ายเข้าเรียน</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">${checksHtml}</div>
+                        <div style="text-align:right;margin-top:12px;"><p>ลงชื่อ.............................................กรรมการรับย้าย</p><p>วันที่.............เดือน.................พ.ศ...........</p></div>
+                    </div></div>`;
+                titleEl.textContent = '🔄 ใบคำขอย้ายเข้าเรียน';
+                if (subtitleEl) subtitleEl.textContent = rec.studentName || '';
+            } else { html = '<p>ไม่พบข้อมูล</p>'; }
+        } else if (type === 'appointment-transfer') {
+            const rec = allTransfers.find(r => r.id === id);
+            if (rec) {
+                const sv = rec.staffVerified || {};
+                const missingItems = TRANSFER_CHECKLIST_KEYS.filter(k => sv[k] !== true);
+                const allOk = missingItems.length === 0;
+                html = `<div style="font-family:'Sarabun',sans-serif;padding:20px;max-width:500px;margin:0 auto;text-align:center;">
+                    <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" style="width:70px;margin-bottom:10px;">
+                    <h2 style="font-size:16px;margin-bottom:4px;">ใบนัดหมายมอบตัว</h2>
+                    <div style="font-size:13px;margin-bottom:16px;">โรงเรียนกระดุมทองวิทยา</div>
+                    <div style="border:2px solid #0891b2;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;">
+                        <p><strong>นักเรียน:</strong> ${rec.studentName||'—'}</p>
+                        <p><strong>ระดับชั้น:</strong> ${{m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'}[rec.gradeLevel]||'-'}</p>
+                        <p><strong>โรงเรียนเดิม:</strong> ${rec.previousSchool||'—'}</p>
+                    </div>
+                    ${allOk ? '<div style="background:#dcfce7;border-radius:8px;padding:12px;color:#15803d;font-weight:700;">✅ เอกสารครบถ้วน — พร้อมดำเนินการ</div>'
+                    : `<div style="background:#fef9c3;border-radius:8px;padding:12px;text-align:left;">
+                        <p style="font-weight:700;color:#854d0e;margin-bottom:8px;">⚠️ กรุณานำเอกสารที่ขาดมาด้วย</p>
+                        ${missingItems.map(k=>`<div style="font-size:13px;color:#92400e;padding:2px 0;">• ${k}</div>`).join('')}
+                        </div>`}
+                    <div style="margin-top:16px;font-size:12px;color:#64748b;">กรุณาติดต่องานทะเบียนนักเรียน โรงเรียนกระดุมทองวิทยา</div>
+                </div>`;
+                titleEl.textContent = '📅 ใบนัดหมายย้ายเข้าเรียน';
+                if (subtitleEl) subtitleEl.textContent = rec.studentName || '';
+            } else { html = '<p>ไม่พบข้อมูล</p>'; }
         } else if (type === 'appointment') {
             const arr = (col === 'mobtua') ? allMobtua : allAdmissions;
             const rec = arr.find(r => r.id === id);
@@ -5347,6 +5643,7 @@ function stepperPrint(type, id, col) {
         if (type === 'admission')       printAdmissionById(id);
         else if (type === 'mobtua')     printMobtuaById(id);
         else if (type === 'linkedAdmission') printLinkedAdmission(id);
+        else if (type === 'transfer' || type === 'appointment-transfer') printTransferById(id);
         else if (type === 'appointment') printAppointmentDoc(id, col || _stepperCol);
     }, 200);
 }
@@ -5364,13 +5661,14 @@ window.printLinkedAdmission = printLinkedAdmission;
 function openEditFromStepper() {
     const col = _stepperCol;
     const id  = _stepperRecId;
-    // Temporarily raise edit modal z-index above stepper (6000)
-    // so it floats on top without closing the stepper
     const adm = document.getElementById('modalEditAdmission');
     const mt  = document.getElementById('modalEditMobtua');
+    const tf  = document.getElementById('modalEditTransfer');
     if (adm) adm.style.zIndex = '6500';
     if (mt)  mt.style.zIndex  = '6500';
+    if (tf)  tf.style.zIndex  = '6500';
     if (col === 'admissions') editAdmission(id);
+    else if (col === 'transfers') editTransferFromStaff(id);
     else editMobtua(id);
     _stepperReopenAfterEdit = { id, col };
 }
@@ -6964,17 +7262,20 @@ window.subscribeTransfers = subscribeTransfers;
 
 // ── Subscribe transfer mobtua (ใบมอบตัวย้าย) ──
 function subscribeTransferMobtua() {
+  // ใช้ orderBy('createdAt') เดิม แล้ว filter client-side เพื่อหลีกเลี่ยง composite index
   if (unsubTransferMobtua) unsubTransferMobtua();
   const q = window._fs.query(
     window._fs.collection(window._db, 'mobtua'),
-    window._fs.where('transferId', '!=', null),
-    window._fs.orderBy('transferId'),
     window._fs.orderBy('createdAt', 'desc')
   );
   let _firstLoad = true;
   unsubTransferMobtua = window._fs.onSnapshot(q, snap => {
     const records = [];
-    snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => {
+      const rec = { id: d.id, ...d.data() };
+      // filter: มี transferId หรือ formType = ใบมอบตัวย้ายเข้าเรียน
+      if (rec.transferId || rec.formType === 'ใบมอบตัวย้ายเข้าเรียน') records.push(rec);
+    });
     if (!_firstLoad) {
       records.forEach(r => {
         if (!_notifiedTransferMobtuaIds.has(r.id)) {
@@ -6991,8 +7292,7 @@ function subscribeTransferMobtua() {
     renderTransferMobtuaTab();
     updateTransferStats();
   }, err => {
-    console.warn('transferMobtua snapshot error (may be missing index):', err.message);
-    // Fallback: load all mobtua with formType ใบมอบตัวย้าย
+    console.warn('transferMobtua snapshot error:', err.message);
     loadTransferMobtuaFallback();
   });
 }
@@ -7307,6 +7607,148 @@ async function toggleTransferDocStaff(id, itemKey, cbEl) {
   } catch(e) { showToast('บันทึกไม่ได้: '+e.message,'error'); cbEl.checked = !cbEl.checked; }
 }
 window.toggleTransferDocStaff = toggleTransferDocStaff;
+
+function editTransferFromStaff(id) {
+  const rec = allTransfers.find(r => r.id === id);
+  if (!rec) return;
+  const d = rec.data || {};
+  document.getElementById('modalEditTransfer').dataset.editId = id;
+  document.getElementById('etPrefix').value       = d.tf_prefix || '';
+  document.getElementById('etFirstName').value    = d.tf_firstName || '';
+  document.getElementById('etLastName').value     = d.tf_lastName || '';
+  document.getElementById('etNickname').value     = d.tf_nickname || '';
+  document.getElementById('etGradeLevel').value   = rec.gradeLevel || 'm1';
+  document.getElementById('etAcademicYear').value = rec.academicYear || d.tf_academicYear || '';
+  document.getElementById('etBloodType').value    = d.tf_bloodType || '';
+  document.getElementById('etNationalId').value   = d.tf_nationalId || '';
+  document.getElementById('etPhone').value        = d.tf_phone || rec.phone || '';
+  document.getElementById('etFatherName').value   = `${d.tf_fatherPrefix||''} ${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
+  document.getElementById('etFatherOcc').value    = d.tf_fatherOccupation || '';
+  document.getElementById('etMotherName').value   = `${d.tf_motherPrefix||''} ${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
+  document.getElementById('etMotherOcc').value    = d.tf_motherOccupation || '';
+  document.getElementById('etProvince').value     = d.tf_province || '';
+  document.getElementById('etPrevSchool').value   = rec.previousSchool || d.tf_previousSchool || '';
+  document.getElementById('etPrevProvince').value = rec.previousSchoolProvince || d.tf_prevProvince || '';
+  document.getElementById('etCurrentGrade').value = d.tf_currentGrade || '';
+  document.getElementById('etParentName').value   = `${d.tf_parentPrefix||''} ${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
+  document.getElementById('etParentRelation').value = d.tf_parentRelation || '';
+  document.getElementById('etParentPhone').value  = d.tf_parentPhone || rec.parentPhone || '';
+  document.getElementById('etReason').value       = d.tf_reason || rec.reason || '';
+  closeModal('modalViewTransfer');
+  openModal('modalEditTransfer');
+}
+window.editTransferFromStaff = editTransferFromStaff;
+
+async function saveEditTransfer() {
+  const modal = document.getElementById('modalEditTransfer');
+  const id = modal.dataset.editId;
+  if (!id) return;
+  const firstName = document.getElementById('etFirstName').value.trim();
+  const lastName  = document.getElementById('etLastName').value.trim();
+  if (!firstName || !lastName) { showToast('กรุณากรอกชื่อและนามสกุล','error'); return; }
+  const prefix = document.getElementById('etPrefix').value;
+  const gradeLevel = document.getElementById('etGradeLevel').value;
+  const studentName = `${prefix}${firstName} ${lastName}`.trim();
+  const TGMAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+  const rec = allTransfers.find(r => r.id === id);
+  const oldD = rec?.data || {};
+  const newD = { ...oldD,
+    tf_prefix: prefix, tf_firstName: firstName, tf_lastName: lastName,
+    tf_nickname:   document.getElementById('etNickname').value,
+    tf_gradeLevel: gradeLevel,
+    tf_bloodType:  document.getElementById('etBloodType').value,
+    tf_nationalId: document.getElementById('etNationalId').value,
+    tf_phone:      document.getElementById('etPhone').value,
+    tf_previousSchool:  document.getElementById('etPrevSchool').value,
+    tf_prevProvince:    document.getElementById('etPrevProvince').value,
+    tf_currentGrade:    document.getElementById('etCurrentGrade').value,
+    tf_parentRelation:  document.getElementById('etParentRelation').value,
+    tf_parentPhone:     document.getElementById('etParentPhone').value,
+    tf_reason:          document.getElementById('etReason').value,
+  };
+  try {
+    showLoading(true);
+    await window._fs.updateDoc(window._fs.doc(window._db,'transfers',id), {
+      studentName, gradeLevel, gradeName: TGMAP[gradeLevel]||gradeLevel,
+      academicYear:            document.getElementById('etAcademicYear').value,
+      phone:                   document.getElementById('etPhone').value,
+      previousSchool:          document.getElementById('etPrevSchool').value,
+      previousSchoolProvince:  document.getElementById('etPrevProvince').value,
+      parentName:              document.getElementById('etParentName').value,
+      parentPhone:             document.getElementById('etParentPhone').value,
+      reason:                  document.getElementById('etReason').value,
+      data:                    newD,
+      updatedAt:               window._fs.serverTimestamp(),
+    });
+    if (rec) { Object.assign(rec, { studentName, gradeLevel, gradeName: TGMAP[gradeLevel]||gradeLevel, data: newD }); }
+    showToast(`✅ แก้ไขข้อมูล ${studentName} สำเร็จ`,'success');
+    closeModal('modalEditTransfer');
+    renderTransfers(); renderTransferDocTracker();
+  } catch(e) { showToast('แก้ไขไม่สำเร็จ: '+e.message,'error');
+  } finally { showLoading(false); }
+}
+window.saveEditTransfer = saveEditTransfer;
+
+function printTransferById(id) {
+  const rec = allTransfers.find(r => r.id === id);
+  if (!rec) return;
+  // generate document using shared function from index.html (not available here)
+  // so build a simple printable view from record
+  const d = rec.data || {};
+  const sv = rec.staffVerified || {};
+  const dc = { ...(rec.docChecks||{}), ...sv };
+  const TGMAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+  const gradeLabel = {m1:'มัธยมศึกษาปีที่ 1',m2:'มัธยมศึกษาปีที่ 2',m3:'มัธยมศึกษาปีที่ 3',
+                      m4:'มัธยมศึกษาปีที่ 4',m5:'มัธยมศึกษาปีที่ 5',m6:'มัธยมศึกษาปีที่ 6'}[rec.gradeLevel]||'-';
+  const cb = (v) => v ? '☑' : '☐';
+  const fatherFull = `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
+  const motherFull = `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
+  const parentFull = `${d.tf_parentPrefix||''}${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
+  const talents = Array.isArray(d.tf_talent) ? d.tf_talent : [];
+  const checksHtml = TRANSFER_CHECKLIST_KEYS.map(k=>`<div style="display:flex;gap:6px;font-size:12px;padding:2px 0;">${dc[k]?'<span style="color:#16a34a;font-weight:700;">✅</span>':'<span style="color:#dc2626;">☐</span>'} ${k}</div>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>ใบคำขอย้ายเข้าเรียน — ${rec.studentName||''}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Kanit:wght@700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.7;color:#333;margin:0;padding:20mm 15mm;} h1{font-size:17px;text-align:center;margin-bottom:3px;} .sub{text-align:center;font-size:13px;margin-bottom:14px;} .code{text-align:right;font-size:11px;color:#555;} .sec{font-weight:700;border-bottom:1px solid #ccc;margin:12px 0 6px;padding-bottom:3px;} table{width:100%;border-collapse:collapse;margin-bottom:8px;} td{padding:3px 6px;font-size:13px;} .lab{width:38%;color:#555;font-weight:600;} .sig{text-align:right;margin-top:20px;} .checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;} @media print{@page{margin:15mm 12mm;}}</style>
+    </head><body>
+    <div class="code">วก.กทว.207</div>
+    <h1>ใบคำขอย้ายเข้าเรียนชั้น${gradeLabel} ปีการศึกษา ${rec.academicYear||d.tf_academicYear||'—'}</h1>
+    <div class="sub">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ<br>สังกัดองค์การบริหารส่วนจังหวัดศรีสะเกษ</div>
+    <p style="text-align:right;">วันที่ ${d.tf_applicationDate||'—'}</p>
+    <div class="sec">1. ข้อมูลนักเรียน</div>
+    <table><tr><td class="lab">ชื่อ-นามสกุล</td><td><strong>${rec.studentName||'—'}</strong></td><td class="lab">ชื่อเล่น</td><td>${d.tf_nickname||'—'}</td></tr>
+    <tr><td class="lab">วัน/เดือน/ปีเกิด</td><td>${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear||''}</td><td class="lab">อายุ / หมู่เลือด</td><td>${d.tf_age||'—'} ปี / ${d.tf_bloodType||'—'}</td></tr>
+    <tr><td class="lab">เลขบัตรประชาชน</td><td>${d.tf_nationalId||'—'}</td><td class="lab">โทรศัพท์</td><td>${d.tf_phone||'—'}</td></tr>
+    <tr><td class="lab">ส่วนสูง / น้ำหนัก</td><td>${d.tf_height||'—'} ซม. / ${d.tf_weight||'—'} กก.</td><td class="lab">E-mail</td><td>${d.tf_email||'—'}</td></tr></table>
+    <div class="sec">2. บิดา-มารดา</div>
+    <table><tr><td class="lab">ชื่อบิดา</td><td>${fatherFull||'—'}</td><td class="lab">อาชีพ</td><td>${d.tf_fatherOccupation||'—'}</td></tr>
+    <tr><td class="lab">ชื่อมารดา</td><td>${motherFull||'—'}</td><td class="lab">อาชีพ</td><td>${d.tf_motherOccupation||'—'}</td></tr></table>
+    <div class="sec">3. ที่อยู่ปัจจุบัน</div>
+    <table><tr><td>${[d.tf_houseNumber?'บ้านเลขที่ '+d.tf_houseNumber:'',d.tf_moo?'หมู่ '+d.tf_moo:'',d.tf_village?'บ้าน'+d.tf_village:'',d.tf_subdistrict?'ต.'+d.tf_subdistrict:'',d.tf_district?'อ.'+d.tf_district:'',d.tf_province?'จ.'+d.tf_province:'',d.tf_postalCode||''].filter(Boolean).join(' ')||'—'}</td></tr></table>
+    <div class="sec">4. โรงเรียนเดิม</div>
+    <table><tr><td class="lab">โรงเรียน</td><td><strong>${rec.previousSchool||d.tf_previousSchool||'—'}</strong></td></tr>
+    <tr><td class="lab">จังหวัด</td><td>${rec.previousSchoolProvince||d.tf_prevProvince||'—'}</td><td class="lab">ชั้นที่กำลังเรียน</td><td>${d.tf_currentGrade||'—'}</td></tr></table>
+    <div class="sec">5. ความสามารถพิเศษ</div>
+    <p>${cb(talents.includes('sports'))} นักกีฬา ${talents.includes('sports')&&d.tf_sportsType?'('+d.tf_sportsType+')':''} &nbsp;&nbsp;
+       ${cb(talents.includes('music'))} นักดนตรี/ศิลปะ ${talents.includes('music')&&d.tf_musicType?'('+d.tf_musicType+')':''} &nbsp;&nbsp;
+       ${cb(talents.includes('other'))} อื่นๆ ${talents.includes('other')&&d.tf_otherTalent?'('+d.tf_otherTalent+')':''}</p>
+    <div class="sec">6. ผู้ปกครอง</div>
+    <table><tr><td class="lab">ชื่อ</td><td>${parentFull||rec.parentName||'—'}</td><td class="lab">ความสัมพันธ์</td><td>${d.tf_parentRelation||'—'}</td></tr>
+    <tr><td class="lab">โทรศัพท์</td><td>${d.tf_parentPhone||rec.parentPhone||'—'}</td></tr></table>
+    <div class="sec">7. เหตุผลในการย้าย</div>
+    <p>${d.tf_reason||rec.reason||'—'}</p>
+    <div class="sec">หลักฐานประกอบการย้ายเข้าเรียน (สำหรับเจ้าหน้าที่)</div>
+    <div class="checks">${checksHtml}</div>
+    <div class="sig">
+      <p>ลงชื่อ..................................................................ผู้ขอย้าย/ผู้ปกครอง</p>
+      <p>(${parentFull||rec.parentName||'................................................'})</p>
+      <p>วันที่...........เดือน............................พ.ศ............</p>
+    </div>
+    <script>window.onload=()=>window.print();<\/script></body></html>`;
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (win) { win.document.write(html); win.document.close(); }
+}
+window.printTransferById = printTransferById;
 
 function confirmDeleteTransfer(id, name) {
   if (!confirm(`ยืนยันลบข้อมูลใบคำขอย้ายเข้าเรียนของ "${name}" ?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้`)) return;

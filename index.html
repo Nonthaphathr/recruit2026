@@ -1633,7 +1633,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
-            max-width: 720px;
+            max-width: 1100px;
             width: 100%;
         }
 
@@ -1669,6 +1669,11 @@
         }
         .doc-type-card.admission .card-badge { background: var(--accent-light); color: var(--primary-dark); }
         .doc-type-card.mobtua   .card-badge { background: #e9d5ff; color: #5b21b6; }
+        .doc-type-card.transfer { border-color: #0891b2; }
+        .doc-type-card.transfer h3 { color: #0891b2; }
+        .doc-type-card.transfer .card-badge { background: #cffafe; color: #0e7490; }
+        .doc-type-card.card-locked { opacity: 0.68; cursor: default; pointer-events: none; }
+        .doc-type-card.card-locked:hover { transform: none; box-shadow: var(--shadow-lg); }
 
         /* ===== Step 2: grade sub-selection ===== */
         .grade-step {
@@ -2564,14 +2569,17 @@
 
         <!-- Step 1: เลือกประเภทเอกสาร -->
         <div class="doc-type-grid" id="landingStep1">
-            <div class="doc-type-card admission" onclick="showLandingStep2('admission')">
+            <div class="doc-type-card admission" id="admissionCard" onclick="handleAdmissionClick()">
                 <div class="card-icon">📝</div>
                 <span class="card-badge">วก.กทว.202 / 203</span>
                 <h3>ใบสมัครเข้าเรียน</h3>
                 <p>สมัครเข้าเรียนชั้นมัธยมศึกษาปีที่ 1 หรือ 4<br>โรงเรียนกระดุมทองวิทยา</p>
-                <div style="margin-top:1rem; color:var(--primary); font-size:0.85rem; font-weight:600;">คลิกเพื่อเลือกระดับชั้น →</div>
+                <div style="margin-top:1rem; color:var(--primary); font-size:0.85rem; font-weight:600;" id="admissionCardArrow">คลิกเพื่อเลือกระดับชั้น →</div>
                 <div style="margin-top:0.5rem; font-size:0.8rem; color:#16a34a; font-weight:600; background:#f0fdf4; border-radius:8px; padding:6px 10px;">
                     🖥️ นักเรียนสมัครเรียนออนไลน์คลิกปุ่มนี้
+                </div>
+                <div id="admissionLockedMsg" style="margin-top:0.5rem; font-size:0.8rem; color:#b45309; font-weight:600; background:#fffbeb; border-radius:8px; padding:6px 10px; display:none;">
+                    🔒 ปิดรับสมัครชั่วคราว
                 </div>
             </div>
             <div class="doc-type-card mobtua" id="mobtuaCard" onclick="handleMobtuaClick()">
@@ -2582,6 +2590,36 @@
                 <div style="margin-top:1rem; color:#7b3f9e; font-size:0.85rem; font-weight:600;" id="mobtuaCardArrow">คลิกเพื่อเลือกระดับชั้น →</div>
                 <div id="mobtuaLockedMsg" style="margin-top:0.5rem; font-size:0.8rem; color:#b45309; font-weight:600; background:#fffbeb; border-radius:8px; padding:6px 10px; display:none;">
                     🔒 เปิดให้มอบตัววันที่ รร.กำหนด
+                </div>
+            </div>
+            <div class="doc-type-card transfer" id="transferCard" onclick="handleTransferClick()">
+                <div class="card-icon">🔄</div>
+                <span class="card-badge">วก.กทว.207</span>
+                <h3>ใบคำขอย้ายเข้าเรียน</h3>
+                <p>สำหรับนักเรียนที่ย้ายเข้ามาเรียน<br>ระดับชั้น ม.1–ม.6</p>
+                <div style="margin-top:1rem; color:#0891b2; font-size:0.85rem; font-weight:600;" id="transferCardArrow">คลิกเพื่อกรอกคำขอย้ายเข้า →</div>
+                <div id="transferLockedMsg" style="margin-top:0.5rem; font-size:0.8rem; color:#b45309; font-weight:600; background:#fffbeb; border-radius:8px; padding:6px 10px; display:none;">
+                    🔒 ปิดให้บริการชั่วคราว
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1.5: เลือกประเภทใบมอบตัว (สมัครเรียน vs ย้ายเข้าเรียน) -->
+        <div class="grade-step" id="landingStepMobtuaType">
+            <button class="step-back-btn" onclick="backToStep1()">← กลับ</button>
+            <p class="grade-step-title">📋 ใบมอบตัวนักเรียน — <strong>เลือกประเภท</strong></p>
+            <div class="grade-sub-grid">
+                <div class="grade-sub-card mobtua-m1" onclick="showLandingStep2('mobtua')"
+                    style="border-color:#7b3f9e;">
+                    <div class="sub-icon">📋</div>
+                    <h3 style="color:#7b3f9e;">สมัครเรียน<br><span style="font-size:1rem;">ม.1 / ม.4</span></h3>
+                    <p>ใบมอบตัวสำหรับนักเรียนที่<br>สมัครเรียนใหม่ ม.1 หรือ ม.4</p>
+                </div>
+                <div class="grade-sub-card mobtua-m4" onclick="showLandingStep2('transfer-mobtua')"
+                    style="border-color:#0891b2;">
+                    <div class="sub-icon">🔄</div>
+                    <h3 style="color:#0891b2;">ย้ายเข้าเรียน<br><span style="font-size:1rem;">ม.1–ม.6</span></h3>
+                    <p>ใบมอบตัวสำหรับนักเรียน<br>ที่ยื่นคำขอย้ายเข้าเรียน</p>
                 </div>
             </div>
         </div>
@@ -2604,10 +2642,10 @@
             </div>
         </div>
 
-        <!-- Step 2b: เลือกระดับชั้นสำหรับใบมอบตัว -->
+        <!-- Step 2b: เลือกระดับชั้นสำหรับใบมอบตัว (สมัครเรียน ม.1/ม.4) -->
         <div class="grade-step" id="landingStep2Mobtua">
-            <button class="step-back-btn" onclick="backToStep1()">← กลับ</button>
-            <p class="grade-step-title">📋 ใบมอบตัวนักเรียน — <strong>เลือกระดับชั้น</strong></p>
+            <button class="step-back-btn" onclick="backToStepMobtuaType()">← กลับ</button>
+            <p class="grade-step-title">📋 ใบมอบตัวสมัครเรียน — <strong>เลือกระดับชั้น</strong></p>
             <div class="grade-sub-grid">
                 <div class="grade-sub-card mobtua-m1" onclick="showPendingMobtuaList('m1')">
                     <div class="sub-icon">🎒</div>
@@ -2620,6 +2658,56 @@
                     <p>มัธยมศึกษาปีที่ 4</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Step 2c: เลือกระดับชั้นสำหรับใบมอบตัวย้ายเข้าเรียน (ม.1–ม.6) -->
+        <div class="grade-step" id="landingStep2TransferMobtua">
+            <button class="step-back-btn" onclick="backToStepMobtuaType()">← กลับ</button>
+            <p class="grade-step-title">🔄 ใบมอบตัวย้ายเข้าเรียน — <strong>เลือกระดับชั้น</strong></p>
+            <div class="grade-sub-grid" style="grid-template-columns:repeat(3,1fr); gap:1rem;">
+                <div class="grade-sub-card" style="border-color:#0891b2;" onclick="showTransferMobtuaList('m1')">
+                    <div class="sub-icon">📘</div>
+                    <h3 style="color:#0891b2;">ม.1</h3>
+                    <p>มัธยมศึกษาปีที่ 1</p>
+                </div>
+                <div class="grade-sub-card" style="border-color:#0891b2;" onclick="showTransferMobtuaList('m2')">
+                    <div class="sub-icon">📗</div>
+                    <h3 style="color:#0891b2;">ม.2</h3>
+                    <p>มัธยมศึกษาปีที่ 2</p>
+                </div>
+                <div class="grade-sub-card" style="border-color:#0891b2;" onclick="showTransferMobtuaList('m3')">
+                    <div class="sub-icon">📙</div>
+                    <h3 style="color:#0891b2;">ม.3</h3>
+                    <p>มัธยมศึกษาปีที่ 3</p>
+                </div>
+                <div class="grade-sub-card" style="border-color:#0e7490;" onclick="showTransferMobtuaList('m4')">
+                    <div class="sub-icon">📕</div>
+                    <h3 style="color:#0e7490;">ม.4</h3>
+                    <p>มัธยมศึกษาปีที่ 4</p>
+                </div>
+                <div class="grade-sub-card" style="border-color:#0e7490;" onclick="showTransferMobtuaList('m5')">
+                    <div class="sub-icon">📒</div>
+                    <h3 style="color:#0e7490;">ม.5</h3>
+                    <p>มัธยมศึกษาปีที่ 5</p>
+                </div>
+                <div class="grade-sub-card" style="border-color:#0e7490;" onclick="showTransferMobtuaList('m6')">
+                    <div class="sub-icon">🎓</div>
+                    <h3 style="color:#0e7490;">ม.6</h3>
+                    <p>มัธยมศึกษาปีที่ 6</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: รายการรอมอบตัวย้ายเข้าเรียน -->
+        <div class="grade-step" id="landingStep3TransferMobtua">
+            <button class="step-back-btn" onclick="backToTransferMobtuaGrade()">← กลับ</button>
+            <p class="grade-step-title" id="transferMobtuaListTitle">🔄 รายการรอมอบตัวย้าย</p>
+            <div style="position:relative;margin-top:.75rem;">
+                <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none;">🔍</span>
+                <input type="text" id="transferMobtuaSearchInput" placeholder="ค้นหาชื่อนักเรียน..." oninput="filterTransferMobtuaList()"
+                    style="width:100%;box-sizing:border-box;padding:.55rem .75rem .55rem 2.2rem;border:1.5px solid #a5f3fc;border-radius:10px;font-size:.9rem;font-family:inherit;outline:none;background:#fff;color:#1e293b;">
+            </div>
+            <div id="pendingTransferMobtuaList" style="display:flex;flex-direction:column;gap:10px;margin-top:.75rem;max-height:52vh;overflow-y:auto;"></div>
         </div>
 
         <!-- Step 3: รายการรอมอบตัว (pending list) -->
@@ -3812,6 +3900,256 @@
         </div><!-- end mobtua-page-body -->
     </div><!-- end mobtua-page -->
 
+    <!-- ===== Transfer Page (ใบคำขอย้ายเข้าเรียน) ===== -->
+    <div class="mobtua-page" id="transferPage">
+
+        <div class="mobtua-page-header" style="background:linear-gradient(135deg,#0e7490 0%,#0891b2 50%,#06b6d4 100%);box-shadow:0 4px 20px rgba(8,145,178,0.4);">
+            <button class="mobtua-back-btn" onclick="backToLandingFromTransfer()">← กลับหน้าแรก</button>
+            <h2>🔄 ใบคำขอย้ายเข้าเรียน — วก.กทว.207</h2>
+            <span id="transferAutoBadge" style="font-size:0.75rem;opacity:0;transition:opacity 0.5s;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:999px;display:inline-block;color:#fff;"></span>
+        </div>
+
+        <div class="mobtua-page-body">
+            <!-- LEFT: Form -->
+            <div class="mobtua-form-card">
+                <div class="mobtua-form-card-header" style="background:linear-gradient(135deg,#0e7490 0%,#0891b2 100%);">
+                    <div class="form-header-icon" style="background:rgba(255,255,255,0.2);">🔄</div>
+                    <div style="flex:1;">
+                        <h2>ใบคำขอย้ายเข้าเรียน</h2>
+                        <p>วก.กทว.207 — โรงเรียนกระดุมทองวิทยา</p>
+                    </div>
+                </div>
+                <div class="mobtua-form-card-body">
+                <form id="transferForm">
+
+                    <h3 style="color:#0891b2; margin-bottom:var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        📚 ข้อมูลการย้ายเข้าเรียน
+                    </h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ระดับชั้นที่ย้ายเข้า <span class="required">*</span></label>
+                            <select class="form-control" name="tf_gradeLevel" id="tf_gradeLevel" required style="border-color:#a5f3fc;">
+                                <option value="">-- เลือกระดับชั้น --</option>
+                                <option value="m1">มัธยมศึกษาปีที่ 1</option>
+                                <option value="m2">มัธยมศึกษาปีที่ 2</option>
+                                <option value="m3">มัธยมศึกษาปีที่ 3</option>
+                                <option value="m4">มัธยมศึกษาปีที่ 4</option>
+                                <option value="m5">มัธยมศึกษาปีที่ 5</option>
+                                <option value="m6">มัธยมศึกษาปีที่ 6</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ปีการศึกษา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_academicYear" id="tf_academicYear" required placeholder="เช่น 2569" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>วันที่ยื่นคำขอ <span class="required">*</span></label>
+                            <input type="date" class="form-control" name="tf_applicationDate" required style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        📋 ข้อมูลส่วนตัวนักเรียน
+                    </h3>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>คำนำหน้า <span class="required">*</span></label>
+                            <select class="form-control" name="tf_prefix" required style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
+                                <option value="เด็กชาย">เด็กชาย</option>
+                                <option value="เด็กหญิง">เด็กหญิง</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_firstName" required placeholder="ชื่อ" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_lastName" required placeholder="นามสกุล" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>วันเกิด</label>
+                            <input type="number" class="form-control" name="tf_birthDay" min="1" max="31" placeholder="วัน" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>เดือนเกิด</label>
+                            <select class="form-control" name="tf_birthMonth" style="border-color:#a5f3fc;">
+                                <option value="">-- เดือน --</option>
+                                <option value="มกราคม">มกราคม</option><option value="กุมภาพันธ์">กุมภาพันธ์</option>
+                                <option value="มีนาคม">มีนาคม</option><option value="เมษายน">เมษายน</option>
+                                <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option>
+                                <option value="กรกฎาคม">กรกฎาคม</option><option value="สิงหาคม">สิงหาคม</option>
+                                <option value="กันยายน">กันยายน</option><option value="ตุลาคม">ตุลาคม</option>
+                                <option value="พฤศจิกายน">พฤศจิกายน</option><option value="ธันวาคม">ธันวาคม</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ปีเกิด (พ.ศ.)</label>
+                            <input type="number" class="form-control" name="tf_birthYear" min="2540" max="2560" placeholder="เช่น 2553" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>เลขประจำตัวประชาชน (13 หลัก) <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="tf_nationalId" required maxlength="17" placeholder="x-xxxx-xxxxx-xx-x" id="tf_nationalIdInput" style="border-color:#a5f3fc;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>โทรศัพท์นักเรียน/ผู้ปกครอง <span class="required">*</span></label>
+                            <input type="tel" class="form-control" name="tf_phone" required placeholder="เช่น 081-234-5678" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        🏠 ที่อยู่ปัจจุบัน
+                    </h3>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>บ้านเลขที่ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_houseNumber" required placeholder="เช่น 123" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่ที่</label>
+                            <input type="text" class="form-control" name="tf_moo" placeholder="เช่น 5" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>ถนน</label>
+                            <input type="text" class="form-control" name="tf_road" placeholder="ถนน" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ตำบล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_subdistrict" required placeholder="ตำบล" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_district" required placeholder="อำเภอ" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>จังหวัด <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_province" required placeholder="จังหวัด" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>รหัสไปรษณีย์</label>
+                            <input type="text" class="form-control" name="tf_postalCode" maxlength="5" placeholder="เช่น 33130" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        🏫 ข้อมูลโรงเรียนเดิม
+                    </h3>
+                    <div class="form-group">
+                        <label>ชื่อโรงเรียนเดิม <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="tf_previousSchool" required placeholder="ชื่อโรงเรียน" style="border-color:#a5f3fc;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อำเภอ/เขต (โรงเรียนเดิม)</label>
+                            <input type="text" class="form-control" name="tf_prevDistrict" placeholder="อำเภอ" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด (โรงเรียนเดิม) <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_prevProvince" required placeholder="จังหวัด" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ระดับชั้นที่กำลังศึกษาอยู่ (ก่อนย้าย)</label>
+                        <input type="text" class="form-control" name="tf_currentGrade" placeholder="เช่น ม.2/3 หรือ ม.5/1" style="border-color:#a5f3fc;">
+                    </div>
+
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        👨‍👩‍👦 ข้อมูลผู้ปกครอง
+                    </h3>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>คำนำหน้า</label>
+                            <select class="form-control" name="tf_parentPrefix" style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อผู้ปกครอง <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_parentFirstName" required placeholder="ชื่อ" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุล <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_parentLastName" required placeholder="นามสกุล" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ความสัมพันธ์</label>
+                            <input type="text" class="form-control" name="tf_parentRelation" placeholder="เช่น บิดา, มารดา, ผู้ปกครอง" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>โทรศัพท์ผู้ปกครอง <span class="required">*</span></label>
+                            <input type="tel" class="form-control" name="tf_parentPhone" required placeholder="เช่น 081-234-5678" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        📝 เหตุผลในการย้ายเข้าเรียน
+                    </h3>
+                    <div class="form-group">
+                        <label>เหตุผล <span class="required">*</span></label>
+                        <textarea class="form-control" name="tf_reason" required rows="3" placeholder="ระบุเหตุผลในการย้ายเข้าเรียน เช่น ย้ายที่อยู่อาศัย, ใกล้บ้านกว่า..." style="border-color:#a5f3fc; resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="background:#ecfeff; border:1.5px solid #a5f3fc; border-radius:12px; padding:1rem; margin:1rem 0;">
+                        <p style="font-size:var(--text-sm); font-weight:700; color:#0e7490; margin-bottom:0.75rem;">📎 เอกสารที่ต้องนำมายื่น (กาถูกเอกสารที่เตรียมแล้ว)</p>
+                        <div class="checkbox-group" style="flex-direction:row; flex-wrap:wrap; gap:0.5rem 1.5rem;">
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_pp1"><span>ระเบียนแสดงผลการเรียน (ปพ.1)</span></label>
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_housebook_student"><span>สำเนาทะเบียนบ้านนักเรียน</span></label>
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_idcard_student"><span>สำเนาบัตรประชาชนนักเรียน</span></label>
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_housebook_parent"><span>สำเนาทะเบียนบ้านผู้ปกครอง</span></label>
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_idcard_parent"><span>สำเนาบัตรประชาชนผู้ปกครอง</span></label>
+                            <label class="checkbox-item" style="min-height:auto;"><input type="checkbox" name="tf_doc_transfer_cert"><span>ใบย้ายจากโรงเรียนเดิม</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-success" onclick="saveTransferDocument()"
+                            style="background:linear-gradient(135deg,#0e7490,#0891b2);">
+                            💾 บันทึกใบคำขอย้ายเข้าเรียน
+                        </button>
+                        <button type="reset" class="btn btn-outline" style="color:#0891b2; border-color:#0891b2;">
+                            🔄 ล้างข้อมูล
+                        </button>
+                    </div>
+
+                </form>
+                </div>
+            </div><!-- end mobtua-form-card -->
+
+            <!-- RIGHT: History Sidebar -->
+            <div class="mobtua-history-sidebar">
+                <div class="mobtua-history-sidebar-header" style="background:linear-gradient(135deg,#a5f3fc 0%,#cffafe 100%);">
+                    <h3 style="color:#0e7490;">
+                        📚 ประวัติใบคำขอย้ายเข้าเรียน
+                        <span id="transferHistoryCount" style="background:#0891b2; color:white; padding:2px 10px; border-radius:999px; font-size:0.8rem;">0</span>
+                    </h3>
+                </div>
+                <div class="history-list" id="transferHistoryList">
+                    <div style="text-align:center; padding:2rem 1rem; color:var(--text-light);">
+                        <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔄</div>
+                        <p>ยังไม่มีประวัติการยื่นคำขอ</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end mobtua-page-body -->
+    </div><!-- end transferPage -->
+
     <!-- ใบมอบตัว Preview Modal -->
     <div class="modal-overlay" id="mobtuaPreviewModal" style="z-index: 1200;">
         <div class="modal-content" style="max-width: 950px;">
@@ -4017,6 +4355,19 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 1rem; color: var(--primary);">🔒 ล็อกเมนูใบสมัครเข้าเรียน</h4>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="admissionLockToggle" onchange="toggleAdmissionLock()" style="width: 20px; height: 20px;">
+                            <span>ล็อกเมนูใบสมัครเข้าเรียน (การ์ดที่ 1)</span>
+                        </label>
+                        <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:6px;">
+                            เมื่อล็อก นักเรียน/ผู้ปกครองจะกดเข้าเมนูใบสมัครเข้าเรียนไม่ได้
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
                     <h4 style="margin-bottom: 1rem; color: #b45309;">🔒 ล็อกเมนูใบมอบตัว</h4>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -4025,6 +4376,19 @@
                         </label>
                         <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:6px;">
                             เมื่อล็อก นักเรียน/ผู้ปกครองจะกดเข้าเมนูใบมอบตัวไม่ได้
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <h4 style="margin-bottom: 1rem; color: #0e7490;">🔒 ล็อกเมนูใบคำขอย้ายเข้าเรียน</h4>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="transferLockToggle" onchange="toggleTransferLock()" style="width: 20px; height: 20px;">
+                            <span>ล็อกเมนูใบคำขอย้ายเข้าเรียน (การ์ดที่ 3)</span>
+                        </label>
+                        <p style="font-size:var(--text-sm); color:var(--text-light); margin-top:6px;">
+                            เมื่อล็อก นักเรียนจะกดเข้าเมนูใบคำขอย้ายไม่ได้
                         </p>
                     </div>
                 </div>
@@ -4461,8 +4825,11 @@
 
         function showLandingStep2(type) {
             document.getElementById('landingStep1').style.display = 'none';
+            document.getElementById('landingStepMobtuaType').classList.remove('active');
             if (type === 'admission') {
                 document.getElementById('landingStep2Admission').classList.add('active');
+            } else if (type === 'transfer-mobtua') {
+                document.getElementById('landingStep2TransferMobtua').classList.add('active');
             } else {
                 document.getElementById('landingStep2Mobtua').classList.add('active');
             }
@@ -4470,11 +4837,229 @@
 
         function backToStep1() {
             document.getElementById('landingStep1').style.display = '';
+            document.getElementById('landingStepMobtuaType').classList.remove('active');
             document.getElementById('landingStep2Admission').classList.remove('active');
             document.getElementById('landingStep2Mobtua').classList.remove('active');
+            document.getElementById('landingStep2TransferMobtua').classList.remove('active');
             const s3 = document.getElementById('landingStep3Mobtua');
             if (s3) s3.classList.remove('active');
+            const s3t = document.getElementById('landingStep3TransferMobtua');
+            if (s3t) s3t.classList.remove('active');
         }
+
+        function backToStepMobtuaType() {
+            document.getElementById('landingStep1').style.display = 'none';
+            document.getElementById('landingStep2Mobtua').classList.remove('active');
+            document.getElementById('landingStep2TransferMobtua').classList.remove('active');
+            document.getElementById('landingStep3Mobtua')?.classList.remove('active');
+            document.getElementById('landingStep3TransferMobtua')?.classList.remove('active');
+            document.getElementById('landingStepMobtuaType').classList.add('active');
+        }
+        window.backToStepMobtuaType = backToStepMobtuaType;
+
+        function backToTransferMobtuaGrade() {
+            document.getElementById('landingStep3TransferMobtua').classList.remove('active');
+            document.getElementById('landingStep2TransferMobtua').classList.add('active');
+        }
+        window.backToTransferMobtuaGrade = backToTransferMobtuaGrade;
+
+        // ════════════════════════════════════════════════
+        //  TRANSFER MOBTUA — รายการรอมอบตัวจากคำขอย้าย
+        // ════════════════════════════════════════════════
+        let _pendingTransferRecordsAll = [];
+        let _pendingTransferGrade = 'm1';
+
+        async function showTransferMobtuaList(grade, _retryCount) {
+            _retryCount = _retryCount || 0;
+            _pendingTransferGrade = grade;
+            const gradeLabel = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'}[grade] || grade;
+            document.getElementById('landingStep2TransferMobtua').classList.remove('active');
+            document.getElementById('landingStep3TransferMobtua').classList.add('active');
+            document.getElementById('transferMobtuaListTitle').textContent =
+                `🔄 รายการรอมอบตัวย้ายเข้าเรียน ${gradeLabel}`;
+            const searchEl = document.getElementById('transferMobtuaSearchInput');
+            if (searchEl) searchEl.value = '';
+            const listEl = document.getElementById('pendingTransferMobtuaList');
+            listEl.innerHTML = `
+                <div class="loading-banner" style="background:linear-gradient(135deg,#ecfeff 0%,#cffafe 100%);border-color:#a5f3fc;">
+                    <div style="margin-bottom:.6rem;">
+                        <span class="loading-banner-spinner" style="border-color:#a5f3fc;border-top-color:#0891b2;"></span>
+                        <span style="font-size:1rem;font-weight:700;color:#0e7490;">กำลังโหลดรายชื่อนักเรียนย้ายเข้า${_retryCount > 0 ? ` (ครั้งที่ ${_retryCount + 1})` : ''}</span>
+                    </div>
+                    <p style="font-size:.82rem;color:#0891b2;margin:0;">กรุณารอสักครู่<span class="loading-dots"></span></p>
+                </div>`;
+            try {
+                await waitForFirebase();
+                if (!window.firestore || !window.db) throw new Error('Firebase ยังไม่พร้อม');
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'transfers'),
+                    window.firestore.orderBy('createdAt', 'asc')
+                );
+                const snap = await window.firestore.getDocs(q);
+                const allRecords = [];
+                snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
+                const records = allRecords.filter(r => (r.gradeLevel||'') === grade);
+                if (records.length === 0) {
+                    if (_retryCount < 1 && allRecords.length === 0) {
+                        setTimeout(() => showTransferMobtuaList(grade, _retryCount + 1), 2000);
+                        return;
+                    }
+                    _pendingTransferRecordsAll = [];
+                    listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
+                        <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
+                        <p style="font-weight:600;margin-bottom:.5rem;">ไม่พบรายการคำขอย้ายเข้า ${gradeLabel}</p>
+                        <p style="font-size:.82rem;">ผู้ปกครองต้องยื่นใบคำขอย้ายเข้าเรียนก่อน<br>จึงจะปรากฏในรายการนี้</p>
+                        <button onclick="showTransferMobtuaList('${grade}')" style="margin-top:1rem;background:#0891b2;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 โหลดใหม่</button>
+                    </div>`;
+                    return;
+                }
+                _pendingTransferRecordsAll = records;
+                renderTransferMobtuaCards(records);
+            } catch(e) {
+                console.error('[TransferMobtuaList] error:', e.message);
+                if (_retryCount < 2) {
+                    setTimeout(() => showTransferMobtuaList(grade, _retryCount + 1), (_retryCount + 1) * 2000);
+                    return;
+                }
+                listEl.innerHTML = `<div style="text-align:center;padding:1.5rem 1rem;">
+                    <div style="font-size:2.5rem;margin-bottom:.5rem;">⚠️</div>
+                    <p style="color:#dc2626;font-weight:600;margin-bottom:.5rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                    <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">${e.message}</p>
+                    <button onclick="showTransferMobtuaList('${grade}')" style="background:#2563eb;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 ลองใหม่</button>
+                </div>`;
+            }
+        }
+        window.showTransferMobtuaList = showTransferMobtuaList;
+
+        function renderTransferMobtuaCards(records) {
+            const listEl = document.getElementById('pendingTransferMobtuaList');
+            if (!records.length) {
+                listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
+                    <div style="font-size:3.5rem;margin-bottom:.75rem;">🔍</div>
+                    <p style="font-weight:600;">ไม่พบรายการที่ตรงกัน</p>
+                </div>`;
+                return;
+            }
+            const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+            listEl.innerHTML = records.map(rec => {
+                let dateStr = '';
+                if (rec.createdAt?.toDate) {
+                    dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+                }
+                const schoolStr = rec.previousSchool
+                    ? `<span style="font-size:.73rem;color:#0891b2;background:#ecfeff;padding:1px 7px;border-radius:99px;margin-left:4px;">${rec.previousSchool}</span>` : '';
+                return `<button class="pending-mobtua-card" style="border-left:4px solid #0891b2;background:white;" onclick="openTransferMobtuaForm('${rec.id}')">
+                    <div class="pending-mobtua-card-icon">🔄</div>
+                    <div class="pending-mobtua-card-body">
+                        <div class="pending-mobtua-card-name">${rec.studentName||'(ไม่ระบุชื่อ)'}${schoolStr}</div>
+                        <div class="pending-mobtua-card-detail">${rec.gradeName||gradeMap[rec.gradeLevel]||''} · ผปค: ${rec.parentName||'ไม่ระบุ'}</div>
+                        ${dateStr ? `<div class="pending-mobtua-card-detail" style="color:#94a3b8;">ยื่นคำขอ ${dateStr}</div>` : ''}
+                    </div>
+                    <span class="pending-mobtua-status" style="background:#ecfeff;color:#0e7490;">รอมอบตัว</span>
+                </button>`;
+            }).join('');
+        }
+        window.renderTransferMobtuaCards = renderTransferMobtuaCards;
+
+        function filterTransferMobtuaList() {
+            const q = (document.getElementById('transferMobtuaSearchInput')?.value||'').trim().toLowerCase();
+            if (!q) { renderTransferMobtuaCards(_pendingTransferRecordsAll); return; }
+            const filtered = _pendingTransferRecordsAll.filter(r =>
+                (r.studentName||'').toLowerCase().includes(q) ||
+                (r.previousSchool||'').toLowerCase().includes(q) ||
+                (r.parentName||'').toLowerCase().includes(q)
+            );
+            renderTransferMobtuaCards(filtered);
+        }
+        window.filterTransferMobtuaList = filterTransferMobtuaList;
+
+        async function openTransferMobtuaForm(transferId) {
+            try {
+                showLoading(true);
+                await waitForFirebase();
+                const snap = await window.firestore.getDoc(
+                    window.firestore.doc(window.db, 'transfers', transferId)
+                );
+                if (!snap.exists()) { showToast('ไม่พบข้อมูลคำขอย้าย', 'error'); return; }
+                const rec = snap.data();
+                const d = rec.data || {};
+                const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+
+                // เปิดหน้า mobtua form พร้อม prefill จากข้อมูลคำขอย้าย
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('mainContainer').classList.add('hidden');
+                document.getElementById('reportPage').classList.remove('active');
+                const transferPage = document.getElementById('transferPage');
+                if (transferPage) transferPage.classList.remove('active');
+                const mobtuaPage = document.getElementById('mobtuaPage');
+                if (mobtuaPage) mobtuaPage.classList.add('active');
+                backToStep1();
+
+                setTimeout(() => {
+                    document.getElementById('mobtuaForm').reset();
+                    // Prefill ข้อมูลจากคำขอย้าย → ฟอร์มมอบตัว
+                    const set = (name, val) => {
+                        const el = document.querySelector(`[name="${name}"]`);
+                        if (!el || val === undefined || val === null) return;
+                        el.value = val;
+                    };
+                    const setCheck = (name, val) => {
+                        const el = document.querySelector(`[name="${name}"]`);
+                        if (el) el.value = val;
+                    };
+                    // ชั้นเรียน
+                    const gradeStr = gradeMap[rec.gradeLevel]||rec.gradeLevel||'';
+                    set('mt_classRoom', gradeStr + '/');
+                    set('mt_academicYear', rec.academicYear||'');
+                    // นักเรียน
+                    set('mt_studentPrefix', d.tf_prefix||'');
+                    set('mt_studentFirstName', d.tf_firstName||'');
+                    set('mt_studentLastName', d.tf_lastName||'');
+                    set('mt_studentNationalId', d.tf_nationalId||'');
+                    set('mt_birthDay', d.tf_birthDay||'');
+                    set('mt_birthMonth', d.tf_birthMonth||'');
+                    set('mt_birthYear', d.tf_birthYear||'');
+                    // ที่อยู่
+                    set('mt_houseNo', d.tf_houseNumber||'');
+                    set('mt_moo', d.tf_moo||'');
+                    set('mt_road', d.tf_road||'');
+                    set('mt_subdistrict', d.tf_subdistrict||'');
+                    set('mt_district', d.tf_district||'');
+                    set('mt_province', d.tf_province||'');
+                    set('mt_postalCode', d.tf_postalCode||'');
+                    // โรงเรียนเดิม
+                    set('mt_previousSchool', rec.previousSchool||'');
+                    set('mt_previousSchoolDistrict', d.tf_prevDistrict||'');
+                    set('mt_previousSchoolProvince', rec.previousSchoolProvince||d.tf_prevProvince||'');
+                    // ผู้ปกครอง
+                    set('mt_altGuardianPrefix', d.tf_parentPrefix||'');
+                    set('mt_altGuardianFirstName', d.tf_parentFirstName||'');
+                    set('mt_altGuardianLastName', d.tf_parentLastName||'');
+                    set('mt_altGuardianMobile', rec.parentPhone||d.tf_parentPhone||'');
+                    set('mt_altGuardianRelation', d.tf_parentRelation||'');
+
+                    // badge แสดงว่า prefill จากคำขอย้าย
+                    const badge = document.getElementById('mobtuaLockedBadge');
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = `🔄 มอบตัวย้ายเข้า: ${rec.studentName||''}`;
+                        badge.style.cssText = 'background:rgba(8,145,178,.25);color:#fff;border-radius:999px;padding:3px 14px;font-size:.8rem;font-weight:600;';
+                    }
+                    showToast(`โหลดข้อมูล ${rec.studentName||''} จากคำขอย้ายเรียบร้อย — กรอกส่วนที่เหลือได้เลย`, 'success');
+                    // link transferId ไว้ใน _editingMobtuaId (ใช้ prefix เพื่อแยกประเภท)
+                    _editingMobtuaId = '';
+                    window._prefillFromTransferId = transferId;
+                }, 150);
+
+                loadMobtuaHistory();
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+                console.error('openTransferMobtuaForm error:', e);
+            } finally {
+                showLoading(false);
+            }
+        }
+        window.openTransferMobtuaForm = openTransferMobtuaForm;
 
         function selectGrade(grade) {
             document.getElementById('landingPage').classList.add('hidden');
@@ -5671,6 +6256,10 @@
             document.getElementById('landingStep2Admission')?.classList.remove('active');
             document.getElementById('landingStep2Mobtua')?.classList.remove('active');
             document.getElementById('landingStep3Mobtua')?.classList.remove('active');
+            document.getElementById('landingStepMobtuaType')?.classList.remove('active');
+            document.getElementById('landingStep2TransferMobtua')?.classList.remove('active');
+            document.getElementById('landingStep3TransferMobtua')?.classList.remove('active');
+            document.getElementById('landingStep1').style.display = '';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         window.closeSuccessAndGoHome = closeSuccessAndGoHome;
@@ -5700,6 +6289,7 @@
                 loadAdminSettings();
                 loadAppointmentSettings();
                 loadEmailSettings();
+                applyAllCardLocks();
                 document.getElementById('adminModal').classList.add('active');
             } else if (password !== null) {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -5839,6 +6429,7 @@
         const SETTINGS_KEYS = [
             'alertEnabled','alertMessage','defaultAcademicYear',
             'testModeEnabled','historyLocked','mobtuaLocked',
+            'admissionLock','transferLock',
             'appointmentDateText','appointmentTimeText','appointmentPlaceText',
             'checklistItems','lineNotifyEnabled'
         ];
@@ -5877,6 +6468,7 @@
                 applyHistoryLockUI(historyLocked);
                 const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
                 applyMobtuaLock(mobtuaLocked);
+                applyAllCardLocks();
                 // FIX: แสดง alert เฉพาะกรณียังไม่เคยแสดง
                 if (!window._alertShown) showAlertIfEnabled();
                 console.log('[Settings] loaded from Firestore');
@@ -6120,7 +6712,9 @@
                 showToast('🔒 เปิดให้มอบตัววันที่ รร.กำหนด', 'error');
                 return;
             }
-            showLandingStep2('mobtua');
+            // แสดง step 1.5 — เลือกประเภทใบมอบตัว
+            document.getElementById('landingStep1').style.display = 'none';
+            document.getElementById('landingStepMobtuaType').classList.add('active');
         }
 
         function saveAppointmentSettings() {
@@ -6795,7 +7389,15 @@
                     await syncMobtuaToAdmission(_editingMobtuaId, d, d.mt_studentFullName || '');
                     // toast handled by success modal
                 } else {
-                    // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์)
+                    // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์ หรือย้ายเข้า)
+                    // ตรวจสอบ gradeLevel จาก classRoom (ม.1–ม.6)
+                    const crStr = d.mt_classRoom || '';
+                    let detectedGrade = 'm1';
+                    if (crStr.startsWith('ม.6')) detectedGrade = 'm6';
+                    else if (crStr.startsWith('ม.5')) detectedGrade = 'm5';
+                    else if (crStr.startsWith('ม.4')) detectedGrade = 'm4';
+                    else if (crStr.startsWith('ม.3')) detectedGrade = 'm3';
+                    else if (crStr.startsWith('ม.2')) detectedGrade = 'm2';
                     const record = {
                         formType:     'ใบมอบตัวนักเรียน',
                         formCode:     'วก.กทว.205',
@@ -6803,16 +7405,22 @@
                         guardianName: d.mt_guardianName || '',
                         academicYear: d.mt_academicYear || '',
                         classRoom:    d.mt_classRoom || '',
-                        gradeLevel:   d.mt_classRoom?.startsWith('ม.4') ? 'm4' : 'm1',
+                        gradeLevel:   detectedGrade,
                         status:       'done',
                         data:         d,
                         createdAt:    window.firestore.serverTimestamp(),
                         updatedAt:    window.firestore.serverTimestamp()
                     };
+                    // ถ้ามาจากคำขอย้ายเข้าเรียน → เก็บ transferId ไว้ด้วย
+                    if (window._prefillFromTransferId) {
+                        record.transferId = window._prefillFromTransferId;
+                        record.formType   = 'ใบมอบตัวย้ายเข้าเรียน';
+                    }
                     await window.firestore.addDoc(
                         window.firestore.collection(window.db, 'mobtua'),
                         record
                     );
+                    window._prefillFromTransferId = null;
                     // toast handled by success modal
                 }
                 const html = generateMobtuaDocumentHTML(d, {}, false);
@@ -6834,6 +7442,7 @@
                 await loadMobtuaHistory();
                 // reset state
                 _editingMobtuaId = '';
+                window._prefillFromTransferId = null;
                 // ล้างฟอร์มและ autosave
                 document.getElementById('mobtuaForm').reset();
                 clearAutosave(AUTOSAVE_KEY_MOBTUA);
@@ -7377,6 +7986,7 @@
             if (lockBadge) historyLocked ? lockBadge.classList.remove('hidden') : lockBadge.classList.add('hidden');
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             applyMobtuaLock(mobtuaLocked);
+            applyAllCardLocks();
             setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
             promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
 
@@ -8168,6 +8778,237 @@ ${lines}
         // ════════════════════════════════════════════════════
         //  EMAIL NOTIFY via Google Apps Script
         //  ใช้ GET ผ่าน Image pixel (ไม่มี CORS issue)
+
+        // ════════════════════════════════════════════════
+        //  TRANSFER FORM — handleTransferClick / save / history
+        // ════════════════════════════════════════════════
+
+        function handleAdmissionClick() {
+            const isLocked = localStorage.getItem('admissionLock') === 'true';
+            if (isLocked) {
+                const msg = document.getElementById('admissionLockedMsg');
+                if (msg) msg.style.display = 'block';
+                showToast('ขณะนี้ปิดรับสมัครชั่วคราว');
+                return;
+            }
+            showLandingStep2('admission');
+        }
+        window.handleAdmissionClick = handleAdmissionClick;
+
+        function handleTransferClick() {
+            const isLocked = localStorage.getItem('transferLock') === 'true';
+            if (isLocked) {
+                showToast('ขณะนี้ปิดให้บริการใบคำขอย้ายเข้าเรียนชั่วคราว');
+                return;
+            }
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('reportPage').classList.remove('active');
+            const mobtuaPage = document.getElementById('mobtuaPage');
+            if (mobtuaPage) mobtuaPage.classList.remove('active');
+            const transferPage = document.getElementById('transferPage');
+            if (transferPage) transferPage.classList.add('active');
+            // set today date
+            const dateInput = document.querySelector('[name="tf_applicationDate"]');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            // set academic year
+            const ayInput = document.getElementById('tf_academicYear');
+            if (ayInput && !ayInput.value) {
+                ayInput.value = new Date().getFullYear() + 543;
+            }
+            // national id formatter
+            const nid = document.getElementById('tf_nationalIdInput');
+            if (nid && !nid._tfFormatted) {
+                nid._tfFormatted = true;
+                nid.addEventListener('input', function() {
+                    let v = this.value.replace(/[^0-9]/g, '').slice(0, 13);
+                    if (v.length > 1)  v = v.slice(0,1)+'-'+v.slice(1);
+                    if (v.length > 6)  v = v.slice(0,6)+'-'+v.slice(6);
+                    if (v.length > 12) v = v.slice(0,12)+'-'+v.slice(12);
+                    if (v.length > 17) v = v.slice(0,17);
+                    this.value = v;
+                });
+            }
+            loadTransferHistory();
+        }
+        window.handleTransferClick = handleTransferClick;
+
+        function backToLandingFromTransfer() {
+            const tp = document.getElementById('transferPage');
+            if (tp) tp.classList.remove('active');
+            document.getElementById('landingPage').classList.remove('hidden');
+            backToStep1();
+        }
+        window.backToLandingFromTransfer = backToLandingFromTransfer;
+
+        async function saveTransferDocument() {
+            await waitForFirebase();
+            const form = document.getElementById('transferForm');
+            if (!form) return;
+            const data = {};
+            new FormData(form).forEach((v, k) => { data[k] = v; });
+            // collect checkboxes
+            const docKeys = ['tf_doc_pp1','tf_doc_housebook_student','tf_doc_idcard_student',
+                             'tf_doc_housebook_parent','tf_doc_idcard_parent','tf_doc_transfer_cert'];
+            const docChecks = {};
+            docKeys.forEach(k => { docChecks[k] = !!form.querySelector(`[name="${k}"]`)?.checked; });
+            // validation
+            const reqFields = ['tf_gradeLevel','tf_academicYear','tf_applicationDate','tf_prefix',
+                'tf_firstName','tf_lastName','tf_nationalId','tf_phone','tf_houseNumber',
+                'tf_subdistrict','tf_district','tf_province','tf_previousSchool','tf_prevProvince',
+                'tf_parentFirstName','tf_parentLastName','tf_parentPhone','tf_reason'];
+            const fieldLabels = { tf_gradeLevel:'ระดับชั้น', tf_academicYear:'ปีการศึกษา',
+                tf_applicationDate:'วันที่ยื่น', tf_prefix:'คำนำหน้า',
+                tf_firstName:'ชื่อ', tf_lastName:'นามสกุล', tf_nationalId:'เลขบัตรประชาชน',
+                tf_phone:'โทรศัพท์', tf_houseNumber:'บ้านเลขที่', tf_subdistrict:'ตำบล',
+                tf_district:'อำเภอ', tf_province:'จังหวัด', tf_previousSchool:'โรงเรียนเดิม',
+                tf_prevProvince:'จังหวัด(โรงเรียนเดิม)', tf_parentFirstName:'ชื่อผู้ปกครอง',
+                tf_parentLastName:'นามสกุลผู้ปกครอง', tf_parentPhone:'โทรศัพท์ผู้ปกครอง',
+                tf_reason:'เหตุผลในการย้าย' };
+            const missing = reqFields.filter(k => !(data[k]||'').trim());
+            if (missing.length) {
+                showToast('กรุณากรอก: ' + missing.slice(0,3).map(k=>fieldLabels[k]).join(', ') + (missing.length>3?'...':''));
+                return;
+            }
+            const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+            const studentName = `${data.tf_prefix||''}${data.tf_firstName||''} ${data.tf_lastName||''}`.trim();
+            const record = {
+                formType: 'ใบคำขอย้ายเข้าเรียน', formCode: 'วก.กทว.207',
+                studentName, gradeLevel: data.tf_gradeLevel,
+                gradeName: gradeMap[data.tf_gradeLevel]||data.tf_gradeLevel,
+                academicYear: data.tf_academicYear, phone: data.tf_phone,
+                previousSchool: data.tf_previousSchool, previousSchoolProvince: data.tf_prevProvince,
+                parentName: `${data.tf_parentPrefix||''}${data.tf_parentFirstName||''} ${data.tf_parentLastName||''}`.trim(),
+                parentPhone: data.tf_parentPhone, reason: data.tf_reason,
+                docChecks, data,
+                createdAt: window.firestore.serverTimestamp(),
+                updatedAt: window.firestore.serverTimestamp(),
+            };
+            try {
+                showLoading(true);
+                await window.firestore.addDoc(
+                    window.firestore.collection(window.db, 'transfers'), record);
+                showToast(`✅ บันทึกใบคำขอย้ายเข้าเรียนของ ${studentName} สำเร็จแล้ว`);
+                form.reset();
+                loadTransferHistory();
+                sendEmailNotify(
+                    `🔄 ใบคำขอย้ายเข้าเรียนใหม่ — ${studentName}`,
+                    `🔄 ใบคำขอย้ายเข้าเรียน (วก.กทว.207)\n👤 ชื่อ: ${studentName}\n` +
+                    `📚 ระดับชั้น: ${gradeMap[data.tf_gradeLevel]||data.tf_gradeLevel}\n` +
+                    `🏫 โรงเรียนเดิม: ${data.tf_previousSchool} จ.${data.tf_prevProvince}\n` +
+                    `📞 โทรศัพท์: ${data.tf_phone}\n📝 เหตุผล: ${data.tf_reason}\n` +
+                    `🕐 ${new Date().toLocaleString('th-TH')}`
+                );
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message);
+                console.error('saveTransferDocument error:', e);
+            } finally {
+                showLoading(false);
+            }
+        }
+        window.saveTransferDocument = saveTransferDocument;
+
+        async function loadTransferHistory() {
+            const listEl = document.getElementById('transferHistoryList');
+            const countEl = document.getElementById('transferHistoryCount');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-light);">⏳ กำลังโหลด...</div>';
+            try {
+                await waitForFirebase();
+                const q = window.firestore.query(
+                    window.firestore.collection(window.db, 'transfers'),
+                    window.firestore.orderBy('createdAt', 'desc'),
+                    window.firestore.limit(30)
+                );
+                const snap = await window.firestore.getDocs(q);
+                const records = [];
+                snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+                if (countEl) countEl.textContent = records.length;
+                if (!records.length) {
+                    listEl.innerHTML = '<div style="text-align:center;padding:2rem 1rem;color:var(--text-light);"><div style="font-size:2.5rem;margin-bottom:.5rem;">🔄</div><p>ยังไม่มีประวัติการยื่นคำขอ</p></div>';
+                    return;
+                }
+                listEl.innerHTML = records.map(rec => {
+                    let dateStr = '';
+                    if (rec.createdAt?.toDate) {
+                        dateStr = rec.createdAt.toDate().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+                    }
+                    return `<div class="history-item" style="border-left:4px solid #0891b2;">
+                        <div style="font-weight:700;font-size:.9rem;color:#0e7490;">${rec.studentName||'ไม่ระบุ'}</div>
+                        <div style="font-size:.78rem;color:var(--text-light);margin-top:2px;">
+                            ${rec.gradeName||''} · ${rec.previousSchool||''} ${rec.previousSchoolProvince?'จ.'+rec.previousSchoolProvince:''}
+                        </div>
+                        ${dateStr?`<div style="font-size:.73rem;color:var(--text-lighter);margin-top:2px;">ยื่น ${dateStr}</div>`:''}
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                listEl.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--danger);">⚠️ โหลดประวัติไม่ได้</div>';
+            }
+        }
+        window.loadTransferHistory = loadTransferHistory;
+
+        // ════════════════════════════════════════════════
+        //  LOCK FUNCTIONS (3 cards)
+        // ════════════════════════════════════════════════
+
+        function toggleAdmissionLock() {
+            const locked = document.getElementById('admissionLockToggle')?.checked || false;
+            localStorage.setItem('admissionLock', locked);
+            applyAllCardLocks();
+            showToast(locked ? '🔒 ล็อกเมนูใบสมัครเข้าเรียนแล้ว' : '🔓 ปลดล็อกเมนูใบสมัครเรียนแล้ว');
+            syncSettingsToFirestore();
+        }
+        window.toggleAdmissionLock = toggleAdmissionLock;
+
+        function toggleTransferLock() {
+            const locked = document.getElementById('transferLockToggle')?.checked || false;
+            localStorage.setItem('transferLock', locked);
+            applyAllCardLocks();
+            showToast(locked ? '🔒 ล็อกเมนูใบคำขอย้ายเข้าเรียนแล้ว' : '🔓 ปลดล็อกแล้ว');
+            syncSettingsToFirestore();
+        }
+        window.toggleTransferLock = toggleTransferLock;
+
+        function applyAllCardLocks() {
+            // Card 1: Admission
+            const admLocked = localStorage.getItem('admissionLock') === 'true';
+            const admCard = document.getElementById('admissionCard');
+            if (admCard) {
+                admCard.classList.toggle('card-locked', admLocked);
+                const arrow = document.getElementById('admissionCardArrow');
+                const msg = document.getElementById('admissionLockedMsg');
+                if (arrow) arrow.style.display = admLocked ? 'none' : 'block';
+                if (msg) msg.style.display = admLocked ? 'block' : 'none';
+            }
+            // Card 2: Mobtua
+            const mtLocked = localStorage.getItem('mobtuaLocked') === 'true';
+            const mtCard = document.getElementById('mobtuaCard');
+            if (mtCard) {
+                mtCard.classList.toggle('card-locked', mtLocked);
+                const arrow = document.getElementById('mobtuaCardArrow');
+                const msg = document.getElementById('mobtuaLockedMsg');
+                if (arrow) arrow.style.display = mtLocked ? 'none' : 'block';
+                if (msg) msg.style.display = mtLocked ? 'block' : 'none';
+            }
+            // Card 3: Transfer
+            const tfLocked = localStorage.getItem('transferLock') === 'true';
+            const tfCard = document.getElementById('transferCard');
+            if (tfCard) {
+                tfCard.classList.toggle('card-locked', tfLocked);
+                const arrow = document.getElementById('transferCardArrow');
+                const msg = document.getElementById('transferLockedMsg');
+                if (arrow) arrow.style.display = tfLocked ? 'none' : 'block';
+                if (msg) msg.style.display = tfLocked ? 'block' : 'none';
+            }
+            // sync toggles in settings panel
+            const admToggle = document.getElementById('admissionLockToggle');
+            const tfToggle = document.getElementById('transferLockToggle');
+            if (admToggle) admToggle.checked = admLocked;
+            if (tfToggle) tfToggle.checked = tfLocked;
+        }
+        window.applyAllCardLocks = applyAllCardLocks;
         // ════════════════════════════════════════════════════
 
         // ⚠️ ต้อง Deploy GAS Web App ใหม่ แล้วเอา URL มาใส่ตรงนี้

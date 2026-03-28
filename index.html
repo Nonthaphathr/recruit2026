@@ -3967,6 +3967,7 @@
                         </div>
                     </div>
 
+                    <!-- ข้อมูลส่วนตัว -->
                     <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
                         📋 ข้อมูลส่วนตัวนักเรียน
                     </h3>
@@ -3992,13 +3993,13 @@
                     </div>
                     <div class="form-row-3">
                         <div class="form-group">
-                            <label>วันเกิด</label>
-                            <input type="number" class="form-control" name="tf_birthDay" min="1" max="31" placeholder="วัน" style="border-color:#a5f3fc;">
+                            <label>วันเกิด <span class="required">*</span></label>
+                            <input type="number" class="form-control" name="tf_birthDay" required min="1" max="31" placeholder="วัน (1-31)" style="border-color:#a5f3fc;">
                         </div>
                         <div class="form-group">
-                            <label>เดือนเกิด</label>
-                            <select class="form-control" name="tf_birthMonth" style="border-color:#a5f3fc;">
-                                <option value="">-- เดือน --</option>
+                            <label>เดือนเกิด <span class="required">*</span></label>
+                            <select class="form-control" name="tf_birthMonth" required style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
                                 <option value="มกราคม">มกราคม</option><option value="กุมภาพันธ์">กุมภาพันธ์</option>
                                 <option value="มีนาคม">มีนาคม</option><option value="เมษายน">เมษายน</option>
                                 <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option>
@@ -4008,8 +4009,36 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>ปีเกิด (พ.ศ.)</label>
-                            <input type="number" class="form-control" name="tf_birthYear" min="2540" max="2560" placeholder="เช่น 2553" style="border-color:#a5f3fc;">
+                            <label>ปีเกิด พ.ศ. <span class="required">*</span></label>
+                            <input type="number" class="form-control" name="tf_birthYear" required min="2500" max="2570" placeholder="พ.ศ. เช่น 2549" id="tf_birthYear" style="border-color:#a5f3fc;" oninput="(function(){var y=parseInt(this.value);var a=document.getElementById('tf_ageField');if(a)a.value=(y>=2500&&y<=2570)?new Date().getFullYear()-(y-543):'';}).call(this)">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>อายุ (ปี)</label>
+                            <input type="number" class="form-control" name="tf_age" placeholder="คำนวณอัตโนมัติ" id="tf_ageField" readonly style="background:#f0f0f0;border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>หมู่เลือด</label>
+                            <select class="form-control" name="tf_bloodType" style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
+                                <option value="A">A</option><option value="B">B</option>
+                                <option value="O">O</option><option value="AB">AB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อเล่น</label>
+                            <input type="text" class="form-control" name="tf_nickname" placeholder="ชื่อเล่น" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ส่วนสูง (ซม.)</label>
+                            <input type="number" class="form-control" name="tf_height" placeholder="เช่น 155" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>น้ำหนัก (กก.)</label>
+                            <input type="number" class="form-control" name="tf_weight" placeholder="เช่น 45" style="border-color:#a5f3fc;">
                         </div>
                     </div>
                     <div class="form-group">
@@ -4018,11 +4047,79 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>โทรศัพท์นักเรียน/ผู้ปกครอง <span class="required">*</span></label>
+                            <label>หมายเลขโทรศัพท์ <span class="required">*</span></label>
                             <input type="tel" class="form-control" name="tf_phone" required placeholder="เช่น 081-234-5678" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>อีเมล</label>
+                            <input type="text" class="form-control" name="tf_email" placeholder='ไม่มีใส่ "-"' style="border-color:#a5f3fc;">
                         </div>
                     </div>
 
+                    <!-- ข้อมูลบิดา-มารดา -->
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        👨‍👩‍👦 ข้อมูลบิดา-มารดา
+                    </h3>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้าบิดา <span class="required">*</span></label>
+                            <select class="form-control" name="tf_fatherPrefix" required style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_fatherFirstName" required placeholder="ชื่อ" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลบิดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_fatherLastName" required placeholder="นามสกุล" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อายุบิดา</label>
+                            <input type="number" class="form-control" name="tf_fatherAge" placeholder="เช่น 45" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>อาชีพบิดา</label>
+                            <input type="text" class="form-control" name="tf_fatherOccupation" placeholder="เช่น เกษตรกร" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row-prefix">
+                        <div class="form-group">
+                            <label>คำนำหน้ามารดา <span class="required">*</span></label>
+                            <select class="form-control" name="tf_motherPrefix" required style="border-color:#a5f3fc;">
+                                <option value="">-- เลือก --</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                                <option value="นาย">นาย</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_motherFirstName" required placeholder="ชื่อ" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>นามสกุลมารดา <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tf_motherLastName" required placeholder="นามสกุล" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>อายุมารดา</label>
+                            <input type="number" class="form-control" name="tf_motherAge" placeholder="เช่น 42" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>อาชีพมารดา</label>
+                            <input type="text" class="form-control" name="tf_motherOccupation" placeholder="เช่น ค้าขาย" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+
+                    <!-- ที่อยู่ปัจจุบัน -->
                     <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
                         🏠 ที่อยู่ปัจจุบัน
                     </h3>
@@ -4038,6 +4135,16 @@
                         <div class="form-group">
                             <label>ถนน</label>
                             <input type="text" class="form-control" name="tf_road" placeholder="ถนน" style="border-color:#a5f3fc;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ซอย</label>
+                            <input type="text" class="form-control" name="tf_soi" placeholder="ซอย" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อหมู่บ้าน</label>
+                            <input type="text" class="form-control" name="tf_village" placeholder="เช่น บ้านหนองดุม" style="border-color:#a5f3fc;">
                         </div>
                     </div>
                     <div class="form-row">
@@ -4061,6 +4168,7 @@
                         </div>
                     </div>
 
+                    <!-- โรงเรียนเดิม -->
                     <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
                         🏫 ข้อมูลโรงเรียนเดิม
                     </h3>
@@ -4068,13 +4176,17 @@
                         <label>ชื่อโรงเรียนเดิม <span class="required">*</span></label>
                         <input type="text" class="form-control" name="tf_previousSchool" required placeholder="ชื่อโรงเรียน" style="border-color:#a5f3fc;">
                     </div>
-                    <div class="form-row">
+                    <div class="form-row-3">
                         <div class="form-group">
-                            <label>อำเภอ/เขต (โรงเรียนเดิม)</label>
+                            <label>ตำบล (โรงเรียนเดิม)</label>
+                            <input type="text" class="form-control" name="tf_schoolSubdistrict" placeholder="ตำบล" style="border-color:#a5f3fc;">
+                        </div>
+                        <div class="form-group">
+                            <label>อำเภอ/เขต</label>
                             <input type="text" class="form-control" name="tf_prevDistrict" placeholder="อำเภอ" style="border-color:#a5f3fc;">
                         </div>
                         <div class="form-group">
-                            <label>จังหวัด (โรงเรียนเดิม) <span class="required">*</span></label>
+                            <label>จังหวัด <span class="required">*</span></label>
                             <input type="text" class="form-control" name="tf_prevProvince" required placeholder="จังหวัด" style="border-color:#a5f3fc;">
                         </div>
                     </div>
@@ -4083,8 +4195,9 @@
                         <input type="text" class="form-control" name="tf_currentGrade" placeholder="เช่น ม.2/3 หรือ ม.5/1" style="border-color:#a5f3fc;">
                     </div>
 
+                    <!-- ผู้ปกครอง -->
                     <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
-                        👨‍👩‍👦 ข้อมูลผู้ปกครอง
+                        🧑‍🤝‍🧑 ผู้ปกครอง (ผู้ยื่นคำขอ)
                     </h3>
                     <div class="form-row-3">
                         <div class="form-group">
@@ -4116,6 +4229,39 @@
                         </div>
                     </div>
 
+                    <!-- ความสามารถพิเศษ -->
+                    <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
+                        ⭐ ความสามารถพิเศษ
+                    </h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="tf_talent" value="sports" onchange="document.getElementById('tf_sportsTypeGroup').style.display=this.checked?'block':'none';">
+                            <span>เป็นนักกีฬา (ระบุประเภท)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="tf_sportsTypeGroup" style="display:none; margin-left:2rem;">
+                        <input type="text" class="form-control" name="tf_sportsType" placeholder="ระบุประเภทกีฬา" style="border-color:#a5f3fc;">
+                    </div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="tf_talent" value="music" onchange="document.getElementById('tf_musicTypeGroup').style.display=this.checked?'block':'none';">
+                            <span>เป็นนักดนตรีหรือศิลปะ (ระบุประเภท)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="tf_musicTypeGroup" style="display:none; margin-left:2rem;">
+                        <input type="text" class="form-control" name="tf_musicType" placeholder="ระบุประเภทดนตรี/ศิลปะ" style="border-color:#a5f3fc;">
+                    </div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="tf_talent" value="other" onchange="document.getElementById('tf_otherTalentGroup').style.display=this.checked?'block':'none';">
+                            <span>อื่นๆ (ระบุ)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="tf_otherTalentGroup" style="display:none; margin-left:2rem;">
+                        <input type="text" class="form-control" name="tf_otherTalent" placeholder="ระบุความสามารถพิเศษอื่นๆ" style="border-color:#a5f3fc;">
+                    </div>
+
+                    <!-- เหตุผลในการย้าย -->
                     <h3 style="color:#0891b2; margin:var(--space-xl) 0 var(--space-lg); padding-bottom:var(--space-sm); border-bottom:2px solid #a5f3fc;">
                         📝 เหตุผลในการย้ายเข้าเรียน
                     </h3>
@@ -6870,11 +7016,15 @@
             } else {
                 btn.classList.add('hidden');
             }
-            // sync ปุ่มใบมอบตัวด้วย
             const mobBtn = document.getElementById('mobtuaTestDataBtn');
             if (mobBtn) {
                 if (show) mobBtn.classList.remove('hidden');
                 else mobBtn.classList.add('hidden');
+            }
+            const tfBtn = document.getElementById('transferTestDataBtn');
+            if (tfBtn) {
+                if (show) tfBtn.classList.remove('hidden');
+                else tfBtn.classList.add('hidden');
             }
         }
 
@@ -9022,6 +9172,15 @@ ${lines}
             }
             setupAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
             promptRestoreAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
+            // re-calc age after restore
+            setTimeout(() => {
+                const byEl = document.getElementById('tf_birthYear');
+                const aeEl = document.getElementById('tf_ageField');
+                if (byEl && aeEl && byEl.value) {
+                    const y = parseInt(byEl.value);
+                    if (y >= 2500 && y <= 2570) aeEl.value = new Date().getFullYear() - (y - 543);
+                }
+            }, 400);
             loadTransferHistory();
         }
         window.handleTransferClick = handleTransferClick;
@@ -9262,13 +9421,13 @@ ${lines}
                             <span class="history-item-date">${dateStr}</span>
                         </div>
                         <div class="history-item-name">${rec.studentName||'-'} ${getTransferDocsStatusBadge(rec.id)}</div>
-                        <div class="history-item-detail">โรงเรียนเดิม: ${rec.previousSchool||'-'}</div>
+                        <div class="history-item-detail">โรงเรียนเดิม: ${rec.previousSchool||'-'} ${rec.previousSchoolProvince?'จ.'+rec.previousSchoolProvince:''}</div>
                         <div style="margin:.25rem 0;font-size:.75rem;color:var(--text-light,#64748b);">
                             หลักฐาน: ${(()=>{const dc=rec.docChecks||{};const its=Object.keys(dc);const chk=its.filter(k=>dc[k]).length;return its.length>0?`${chk}/${its.length} รายการ`:'ยังไม่ระบุ';})()}
                         </div>
                         <div class="history-item-actions">
                             <button class="btn btn-primary btn-sm" onclick="viewTransferHistoryRecord('${rec.id}')">👁️ ดู</button>
-                            <button class="btn btn-edit btn-sm" onclick="openEditTransferRecord('${rec.id}')">✏️ แก้ไข</button>
+                            <button class="btn btn-edit btn-sm" onclick="openEditTransferFormFull('${rec.id}')">✏️ แก้ไข</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteTransferHistoryRecord('${rec.id}')">🗑️ ลบ</button>
                         </div>
                         ${buildTransferChecklistHTML(rec.id)}
@@ -9323,7 +9482,86 @@ ${lines}
         }
         window.printTransferDocument = printTransferDocument;
 
-        async function openEditTransferRecord(id) {
+        async function openEditTransferFormFull(id) {
+            // โหลดข้อมูลและ prefill ฟอร์มใบย้ายทั้งหมดเพื่อแก้ไข
+            try {
+                showLoading(true);
+                await waitForFirebase();
+                const snap = await window.firestore.getDoc(window.firestore.doc(window.db,'transfers',id));
+                if (!snap.exists()) { showToast('ไม่พบข้อมูล','error'); return; }
+                const rec = snap.data();
+                const d   = rec.data || {};
+                // เปิดหน้า transferPage
+                document.getElementById('landingPage').classList.add('hidden');
+                const tp = document.getElementById('transferPage');
+                if (tp) tp.classList.add('active');
+                _editingTransferId = id;
+                window._prefillFromTransferId = null;
+                // prefill ทุก field
+                const f = (name, val) => {
+                    const el = document.querySelector(`#transferForm [name="${name}"]`);
+                    if (el && val !== undefined && val !== null) el.value = val;
+                };
+                const sel = (name, val) => {
+                    const el = document.querySelector(`#transferForm [name="${name}"]`);
+                    if (el) el.value = val || '';
+                };
+                // ข้อมูลการย้าย
+                sel('tf_gradeLevel', rec.gradeLevel || d.tf_gradeLevel);
+                document.getElementById('tf_gradeLevel') && (document.getElementById('tf_gradeLevel').value = rec.gradeLevel || d.tf_gradeLevel || '');
+                f('tf_academicYear', rec.academicYear || d.tf_academicYear);
+                f('tf_applicationDate', d.tf_applicationDate);
+                // นักเรียน
+                sel('tf_prefix', d.tf_prefix);
+                f('tf_firstName', d.tf_firstName); f('tf_lastName', d.tf_lastName);
+                f('tf_birthDay', d.tf_birthDay); sel('tf_birthMonth', d.tf_birthMonth); f('tf_birthYear', d.tf_birthYear);
+                f('tf_age', d.tf_age); sel('tf_bloodType', d.tf_bloodType);
+                f('tf_nickname', d.tf_nickname); f('tf_height', d.tf_height); f('tf_weight', d.tf_weight);
+                document.getElementById('tf_nationalIdInput') && (document.getElementById('tf_nationalIdInput').value = d.tf_nationalId||'');
+                f('tf_phone', d.tf_phone); f('tf_email', d.tf_email);
+                // บิดา
+                sel('tf_fatherPrefix', d.tf_fatherPrefix); f('tf_fatherFirstName', d.tf_fatherFirstName);
+                f('tf_fatherLastName', d.tf_fatherLastName); f('tf_fatherAge', d.tf_fatherAge); f('tf_fatherOccupation', d.tf_fatherOccupation);
+                // มารดา
+                sel('tf_motherPrefix', d.tf_motherPrefix); f('tf_motherFirstName', d.tf_motherFirstName);
+                f('tf_motherLastName', d.tf_motherLastName); f('tf_motherAge', d.tf_motherAge); f('tf_motherOccupation', d.tf_motherOccupation);
+                // ที่อยู่
+                f('tf_houseNumber', d.tf_houseNumber); f('tf_moo', d.tf_moo); f('tf_road', d.tf_road);
+                f('tf_soi', d.tf_soi); f('tf_village', d.tf_village);
+                f('tf_subdistrict', d.tf_subdistrict); f('tf_district', d.tf_district); f('tf_province', d.tf_province); f('tf_postalCode', d.tf_postalCode);
+                // โรงเรียนเดิม
+                f('tf_previousSchool', rec.previousSchool || d.tf_previousSchool);
+                f('tf_schoolSubdistrict', d.tf_schoolSubdistrict); f('tf_prevDistrict', d.tf_prevDistrict);
+                f('tf_prevProvince', rec.previousSchoolProvince || d.tf_prevProvince); f('tf_currentGrade', d.tf_currentGrade);
+                // ผู้ปกครอง
+                sel('tf_parentPrefix', d.tf_parentPrefix); f('tf_parentFirstName', d.tf_parentFirstName);
+                f('tf_parentLastName', d.tf_parentLastName); f('tf_parentRelation', d.tf_parentRelation); f('tf_parentPhone', d.tf_parentPhone);
+                // ความสามารถพิเศษ
+                const talents = Array.isArray(d.tf_talent) ? d.tf_talent : [];
+                document.querySelectorAll('#transferForm [name="tf_talent"]').forEach(cb => {
+                    cb.checked = talents.includes(cb.value);
+                    cb.dispatchEvent(new Event('change'));
+                });
+                if (talents.includes('sports')) f('tf_sportsType', d.tf_sportsType);
+                if (talents.includes('music'))  f('tf_musicType',  d.tf_musicType);
+                if (talents.includes('other'))  f('tf_otherTalent', d.tf_otherTalent);
+                // เหตุผล
+                f('tf_reason', d.tf_reason || rec.reason);
+                // docChecks
+                _transferDocChecks = { ...(rec.docChecks || {}) };
+                renderTransferFormChecklist();
+                // badge
+                const badge = document.getElementById('autosaveBadgeTransfer');
+                if (badge) { badge.style.opacity='1'; badge.textContent = '✏️ กำลังแก้ไข'; }
+                showToast(`✏️ โหลดข้อมูล ${rec.studentName||''} เพื่อแก้ไข`, 'success');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch(e) {
+                showToast('เกิดข้อผิดพลาด: '+e.message,'error');
+            } finally { showLoading(false); }
+        }
+        window.openEditTransferFormFull = openEditTransferFormFull;
+
+                async function openEditTransferRecord(id) {
             const rec = _transferRecords[id];
             if (!rec) { showToast('ไม่พบข้อมูล','error'); return; }
             const d = rec.data || {};
@@ -9449,10 +9687,23 @@ ${lines}
                         <div class="field-line" style="margin-top:8px;">
                             <span class="field-label">1. ชื่อ-สกุล ผู้ขอย้ายเข้าเรียน</span>
                             <span class="field-value">${studentName}</span>
+                            <span class="field-label">ชื่อเล่น</span>
+                            <span class="field-value">${d.tf_nickname||''}</span>
                         </div>
                         <div class="field-line">
                             <span class="field-label">เกิดวันที่</span>
                             <span class="field-value">${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear?parseInt(d.tf_birthYear)+543:''}</span>
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${d.tf_age||''}</span>
+                            <span class="field-label">ปี หมู่เลือด</span>
+                            <span class="field-value">${d.tf_bloodType||''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">ส่วนสูง</span>
+                            <span class="field-value">${d.tf_height||''}</span>
+                            <span class="field-label">ซม. น้ำหนัก</span>
+                            <span class="field-value">${d.tf_weight||''}</span>
+                            <span class="field-label">กก.</span>
                         </div>
                         <div class="field-line">
                             <span class="field-label">เลขประจำตัวประชาชน</span>
@@ -9461,37 +9712,75 @@ ${lines}
                             </div>
                         </div>
                         <div class="field-line" style="margin-top:6px;">
+                            <span class="field-label">ชื่อ-สกุลบิดา</span>
+                            <span class="field-value">${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}</span>
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${d.tf_fatherAge||''}</span>
+                            <span class="field-label">อาชีพ</span>
+                            <span class="field-value">${d.tf_fatherOccupation||''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">ชื่อ-สกุลมารดา</span>
+                            <span class="field-value">${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}</span>
+                            <span class="field-label">อายุ</span>
+                            <span class="field-value">${d.tf_motherAge||''}</span>
+                            <span class="field-label">อาชีพ</span>
+                            <span class="field-value">${d.tf_motherOccupation||''}</span>
+                        </div>
+                        <div class="field-line" style="margin-top:6px;">
                             <span class="field-label">2. ที่อยู่ปัจจุบัน บ้านเลขที่</span>
                             <span class="field-value">${d.tf_houseNumber||''}</span>
                             <span class="field-label">หมู่ที่</span>
                             <span class="field-value">${d.tf_moo||''}</span>
                             <span class="field-label">ถนน</span>
                             <span class="field-value">${d.tf_road||''}</span>
+                            <span class="field-label">ซอย</span>
+                            <span class="field-value">${d.tf_soi||''}</span>
                         </div>
                         <div class="field-line">
+                            <span class="field-label">บ้าน</span>
+                            <span class="field-value">${d.tf_village||''}</span>
                             <span class="field-label">ตำบล</span>
                             <span class="field-value">${d.tf_subdistrict||''}</span>
                             <span class="field-label">อำเภอ</span>
                             <span class="field-value">${d.tf_district||''}</span>
                             <span class="field-label">จังหวัด</span>
                             <span class="field-value">${d.tf_province||''}</span>
+                        </div>
+                        <div class="field-line">
+                            <span class="field-label">รหัสไปรษณีย์</span>
+                            <span class="field-value">${d.tf_postalCode||''}</span>
                             <span class="field-label">โทรศัพท์</span>
                             <span class="field-value">${d.tf_phone||''}</span>
+                            <span class="field-label">E-mail</span>
+                            <span class="field-value">${d.tf_email||''}</span>
                         </div>
                         <div class="field-line" style="margin-top:6px;">
-                            <span class="field-label">3. ปัจจุบันศึกษาอยู่ชั้น</span>
+                            <span class="field-label">3. ปัจจุบันกำลังศึกษาอยู่ชั้น</span>
                             <span class="field-value">${d.tf_currentGrade||''}</span>
                             <span class="field-label">จากโรงเรียน</span>
                             <span class="field-value">${d.tf_previousSchool||''}</span>
                         </div>
                         <div class="field-line">
-                            <span class="field-label">อำเภอ/เขต</span>
+                            <span class="field-label">ตำบล</span>
+                            <span class="field-value">${d.tf_schoolSubdistrict||''}</span>
+                            <span class="field-label">อำเภอ</span>
                             <span class="field-value">${d.tf_prevDistrict||''}</span>
                             <span class="field-label">จังหวัด</span>
                             <span class="field-value">${d.tf_prevProvince||''}</span>
                         </div>
+                        <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
+                        <div class="checkbox-line">
+                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('sports'):false)} เป็นนักกีฬา(ระบุประเภท) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('sports')&&d.tf_sportsType)?d.tf_sportsType:'...............................................................'}</strong>
+                        </div>
+                        <div class="checkbox-line">
+                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('music'):false)} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('music')&&d.tf_musicType)?d.tf_musicType:'...............................................................'}</strong>
+                        </div>
+                        <div class="checkbox-line">
+                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('other'):false)} อื่นๆ(ระบุ) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('other')&&d.tf_otherTalent)?d.tf_otherTalent:'...............................................................'}</strong>
+                        </div>
                         <div class="field-line" style="margin-top:6px;">
-                            <span class="field-label">4. ผู้ปกครอง</span>
+                            <span class="field-label">5. ผู้ปกครอง</span>
                             <span class="field-value">${parentName}</span>
                             <span class="field-label">ความสัมพันธ์</span>
                             <span class="field-value">${d.tf_parentRelation||''}</span>
@@ -9499,7 +9788,7 @@ ${lines}
                             <span class="field-value">${d.tf_parentPhone||''}</span>
                         </div>
                         <div class="field-line" style="margin-top:6px;">
-                            <span class="field-label">5. เหตุผลในการย้ายเข้าเรียน</span>
+                            <span class="field-label">6. เหตุผลในการย้ายเข้าเรียน</span>
                             <span class="field-value">${d.tf_reason||''}</span>
                         </div>
                     </div>

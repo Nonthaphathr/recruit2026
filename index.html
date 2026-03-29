@@ -2315,7 +2315,7 @@
                 <a href="staff.html" target="_blank" class="report-btn" style="text-decoration:none; color:white;">
                     🖥️ ระบบครู
                 </a>
-                <button class="report-btn" onclick="openMobtuaDataModal()" style="background:linear-gradient(135deg,#7b3f9e,#9333ea);" title="ระบบบันทึกข้อมูลวันมอบตัว">
+                <button class="report-btn" onclick="openMobtuaDataModal()" id="mobtuaDataNavBtn" title="ระบบบันทึกข้อมูลวันมอบตัว">
                     📊 บันทึกข้อมูลมอบตัว
                 </button>
                 <button class="report-btn" onclick="openBlankPrintModal()" title="พิมพ์เอกสารกระดาษ (ไม่มีข้อมูล)">
@@ -4674,6 +4674,12 @@
                             <span>เปิดใช้งานปุ่มทดสอบกรอกข้อมูล</span>
                         </label>
                     </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="mobtuaDataBtnToggle" onchange="toggleMobtuaDataBtn()" style="width: 20px; height: 20px;">
+                            <span>แสดงปุ่ม "บันทึกข้อมูลมอบตัว" ใน navbar</span>
+                        </label>
+                    </div>
                 </div>
                 
                 <div style="margin-bottom: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
@@ -4683,6 +4689,9 @@
                     </button>
                     <button class="btn btn-success" onclick="exportMobtuaToExcel()" style="width: 100%; background: linear-gradient(135deg,#7b3f9e,#9c4dcc);">
                         📥 ดาวน์โหลดข้อมูลใบมอบตัว (Excel)
+                    </button>
+                    <button class="btn btn-success" onclick="exportTransfersToExcel()" style="width: 100%; background: linear-gradient(135deg,#0e7490,#0891b2); margin-top:0.75rem;">
+                        📥 ดาวน์โหลดข้อมูลใบคำขอย้าย (Excel)
                     </button>
                     <button class="btn" onclick="exportIncompleteDocsToExcel()" style="width:100%; margin-top:0.75rem; background: linear-gradient(135deg,#d97706,#f59e0b); color:white;">
                         ⚠️ ส่งออกรายการหลักฐานไม่ครบ (Excel)
@@ -4746,9 +4755,13 @@
                             style="width:100%;background:#fff5f5;border:2px solid #fca5a5;color:#dc2626;font-weight:700;">
                             🗑️ ล้างข้อมูลใบมอบตัวทั้งหมด
                         </button>
+                        <button class="btn" onclick="confirmClearData('transfers')"
+                            style="width:100%;background:#ecfeff;border:2px solid #a5f3fc;color:#0e7490;font-weight:700;">
+                            🗑️ ล้างข้อมูลใบคำขอย้ายทั้งหมด
+                        </button>
                         <button class="btn" onclick="confirmClearData('all')"
                             style="width:100%;background:#dc2626;color:#fff;font-weight:800;border:none;padding:.75rem;">
-                            ⚠️ ล้างข้อมูลทั้งหมด (ใบสมัคร + ใบมอบตัว)
+                            ⚠️ ล้างข้อมูลทั้งหมด (ใบสมัคร + ใบมอบตัว + ใบย้าย)
                         </button>
                     </div>
                     <div id="clearDataProgress" style="display:none;margin-top:1rem;">
@@ -6551,6 +6564,7 @@
                 loadAppointmentSettings();
                 loadEmailSettings();
                 applyAllCardLocks();
+            if (typeof applyMobtuaDataBtnVisibility === 'function') applyMobtuaDataBtnVisibility();
                 document.getElementById('adminModal').classList.add('active');
             } else if (password !== null) {
                 showToast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -6567,7 +6581,8 @@
             const labels = {
                 admissions: 'ใบสมัครทั้งหมด',
                 mobtua: 'ใบมอบตัวทั้งหมด',
-                all: 'ใบสมัคร + ใบมอบตัวทั้งหมด'
+                transfers: 'ใบคำขอย้ายเข้าเรียนทั้งหมด',
+                all: 'ใบสมัคร + ใบมอบตัว + ใบคำขอย้ายทั้งหมด'
             };
             document.getElementById('clearDataConfirmText').innerHTML =
                 `คุณกำลังจะ <strong style="color:#dc2626;">ลบ${labels[target]}</strong> ออกจากระบบทั้งหมด<br>
@@ -6627,15 +6642,26 @@
                     console.log(`Deleted ${n} admissions`);
                 }
                 if (target === 'mobtua' || target === 'all') {
-                    progBar.style.width = target === 'all' ? '50%' : '0%';
+                    progBar.style.width = target === 'all' ? '33%' : '0%';
                     progText.textContent = 'กำลังลบใบมอบตัว...';
                     const n = await deleteCollection('mobtua', (d,t,c) => {
-                        const base = target === 'all' ? 50 : 0;
-                        const pct = base + (t > 0 ? Math.round((d/t)*50) : 50);
+                        const base = target === 'all' ? 33 : 0;
+                        const pct = base + (t > 0 ? Math.round((d/t)*34) : 34);
                         progBar.style.width = pct + '%';
                         progText.textContent = `กำลังลบใบมอบตัว... ${d}/${t} รายการ`;
                     });
                     console.log(`Deleted ${n} mobtua`);
+                }
+                if (target === 'transfers' || target === 'all') {
+                    progBar.style.width = target === 'all' ? '67%' : '0%';
+                    progText.textContent = 'กำลังลบใบคำขอย้าย...';
+                    const n = await deleteCollection('transfers', (d,t,c) => {
+                        const base = target === 'all' ? 67 : 0;
+                        const pct = base + (t > 0 ? Math.round((d/t)*33) : 33);
+                        progBar.style.width = pct + '%';
+                        progText.textContent = `กำลังลบใบคำขอย้าย... ${d}/${t} รายการ`;
+                    });
+                    console.log(`Deleted ${n} transfers`);
                 }
                 progBar.style.width = '100%';
                 progText.textContent = '✅ ลบข้อมูลสำเร็จ';
@@ -6654,6 +6680,63 @@
         }
 
         window.confirmClearData  = confirmClearData;
+
+        function toggleMobtuaDataBtn() {
+            const show = document.getElementById('mobtuaDataBtnToggle')?.checked;
+            localStorage.setItem('showMobtuaDataBtn', show ? '1' : '0');
+            applyMobtuaDataBtnVisibility();
+        }
+        function applyMobtuaDataBtnVisibility() {
+            const btn = document.getElementById('mobtuaDataNavBtn');
+            if (!btn) return;
+            const show = localStorage.getItem('showMobtuaDataBtn') !== '0';
+            btn.style.display = show ? '' : 'none';
+        }
+        window.toggleMobtuaDataBtn = toggleMobtuaDataBtn;
+        window.applyMobtuaDataBtnVisibility = applyMobtuaDataBtnVisibility;
+
+        async function exportTransfersToExcel() {
+            if (typeof window.XLSX === 'undefined') { showToast('กรุณารอโหลด XLSX...','warning'); return; }
+            await waitForFirebase();
+            const fs = window.firestore; const db = window.db;
+            const snap = await fs.getDocs(fs.collection(db, 'transfers'));
+            const TGMAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+            const rows = [];
+            snap.forEach(doc => {
+                const rec = doc.data(); const d = rec.data||{};
+                const sv = rec.staffVerified||{}; const dc = rec.docChecks||{};
+                const combined = {...dc,...sv};
+                const docDone = Object.values(combined).filter(v=>v===true).length;
+                rows.push({
+                    'ลำดับ': rows.length+1,
+                    'คำนำหน้า': d.tf_prefix||'', 'ชื่อ': d.tf_firstName||'', 'นามสกุล': d.tf_lastName||'',
+                    'ชื่อเล่น': d.tf_nickname||'', 'ระดับชั้น': TGMAP[rec.gradeLevel]||rec.gradeLevel||'',
+                    'ปีการศึกษา': rec.academicYear||'',
+                    'วันเกิด': `${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear||''}`.trim(),
+                    'หมู่เลือด': d.tf_bloodType||'', 'เลขบัตรประชาชน': d.tf_nationalId||'',
+                    'โทรศัพท์': d.tf_phone||'', 'โรงเรียนเดิม': rec.previousSchool||'',
+                    'จังหวัด(เดิม)': rec.previousSchoolProvince||'',
+                    'บ้านเลขที่': d.tf_houseNumber||'', 'ตำบล': d.tf_subdistrict||'',
+                    'อำเภอ': d.tf_district||'', 'จังหวัด': d.tf_province||'',
+                    'บิดา': `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim(),
+                    'อาชีพบิดา': d.tf_fatherOccupation||'',
+                    'มารดา': `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim(),
+                    'อาชีพมารดา': d.tf_motherOccupation||'',
+                    'ผู้ปกครอง': rec.parentName||'', 'โทรศัพท์ผปค': rec.parentPhone||'',
+                    'เหตุผล': rec.reason||'',
+                    'เอกสาร': `${docDone} รายการ`,
+                    'วันที่ยื่น': rec.createdAt?.toDate ? rec.createdAt.toDate().toLocaleDateString('th-TH') : '',
+                });
+            });
+            if (!rows.length) { showToast('ไม่มีข้อมูลใบคำขอย้าย','warning'); return; }
+            const ws = window.XLSX.utils.json_to_sheet(rows);
+            ws['!cols'] = Array(Object.keys(rows[0]).length).fill({wch:14});
+            const wb = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(wb, ws, 'ใบคำขอย้าย');
+            window.XLSX.writeFile(wb, `ใบคำขอย้ายเข้าเรียน_${new Date().getFullYear()+543}.xlsx`);
+            showToast(`✅ Export แล้ว ${rows.length} รายการ`, 'success');
+        }
+        window.exportTransfersToExcel = exportTransfersToExcel;
         window.closeClearDataModal = closeClearDataModal;
         window.executeClearData  = executeClearData;
 
@@ -6672,6 +6755,8 @@
 
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
             document.getElementById('testModeToggle').checked = testModeEnabled;
+            const mdbChk = document.getElementById('mobtuaDataBtnToggle');
+            if (mdbChk) mdbChk.checked = localStorage.getItem('showMobtuaDataBtn') !== '0';
             toggleTestModeButton(testModeEnabled);
 
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
@@ -7033,17 +7118,21 @@
         }
 
         function fillMobtuaTestData() {
+            // เติมเฉพาะ field ว่าง ไม่ทับข้อมูลที่ดึงมาจากใบสมัคร
             const f = (name, val) => {
                 const el = document.querySelector(`[name="${name}"]`);
-                if (el) el.value = val;
+                if (el && !el.value.trim()) el.value = val;
             };
             const r = (name, val) => {
-                const el = document.querySelector(`[name="${name}"][value="${val}"]`);
-                if (el) el.checked = true;
+                const anyChecked = document.querySelector(`[name="${name}"]:checked`);
+                if (!anyChecked) {
+                    const el = document.querySelector(`[name="${name}"][value="${val}"]`);
+                    if (el) el.checked = true;
+                }
             };
             const cb = (name, val) => {
                 const el = document.querySelector(`[name="${name}"][value="${val}"]`);
-                if (el) el.checked = true;
+                if (el && !el.checked) el.checked = true;
             };
 
             // ข้อมูลการเข้าเรียน

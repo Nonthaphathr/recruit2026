@@ -6685,6 +6685,7 @@
             const show = document.getElementById('mobtuaDataBtnToggle')?.checked;
             localStorage.setItem('showMobtuaDataBtn', show ? '1' : '0');
             applyMobtuaDataBtnVisibility();
+            syncSettingsToFirestore();
         }
         function applyMobtuaDataBtnVisibility() {
             const btn = document.getElementById('mobtuaDataNavBtn');
@@ -6777,7 +6778,8 @@
             'testModeEnabled','historyLocked','mobtuaLocked',
             'admissionLock','transferLock',
             'appointmentDateText','appointmentTimeText','appointmentPlaceText',
-            'checklistItems','lineNotifyEnabled'
+            'checklistItems','lineNotifyEnabled',
+            'showMobtuaDataBtn'
         ];
 
         async function syncSettingsToFirestore() {
@@ -6815,6 +6817,7 @@
                 const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
                 applyMobtuaLock(mobtuaLocked);
                 applyAllCardLocks();
+                if (typeof applyMobtuaDataBtnVisibility === 'function') applyMobtuaDataBtnVisibility();
                 // FIX: แสดง alert เฉพาะกรณียังไม่เคยแสดง
                 if (!window._alertShown) showAlertIfEnabled();
                 console.log('[Settings] loaded from Firestore');

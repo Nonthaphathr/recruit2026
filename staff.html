@@ -1437,6 +1437,45 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
       </div>
     </div>
 
+    <!-- Transfer Settings Bar -->
+    <div id="transferSettingsBar" style="background:#f0fdff;border:2px solid #0891b2;border-radius:var(--r-lg);padding:.9rem 1.2rem;margin-bottom:1rem;display:none;">
+      <div style="font-size:.82rem;font-weight:700;color:#065f75;margin-bottom:.65rem;display:flex;align-items:center;gap:6px;">
+        ⚙️ ตั้งค่าวัน-เวลา นัดหมายมอบตัว (ใบคำขอย้ายเข้าเรียน)
+        <button onclick="document.getElementById('transferSettingsBar').style.display='none'" style="margin-left:auto;background:rgba(8,145,178,.1);border:1px solid #0891b2;color:#065f75;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:.8rem;">✕ ปิด</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.65rem;align-items:end;">
+        <div>
+          <label style="font-size:.75rem;color:var(--text-soft);display:block;margin-bottom:3px;">วันที่นัดหมาย</label>
+          <input class="form-control" id="transferApptDateInput" placeholder="เช่น วันเสาร์ที่ 15 มีนาคม 2569"
+            style="font-size:.82rem;padding:.45rem .75rem;background:#ffffff;border-color:#0891b2;color:#1e293b;font-weight:500;">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-soft);display:block;margin-bottom:3px;">เวลา</label>
+          <input class="form-control" id="transferApptTimeInput" placeholder="เช่น 08.30 – 12.00 น."
+            style="font-size:.82rem;padding:.45rem .75rem;background:#ffffff;border-color:#0891b2;color:#1e293b;font-weight:500;">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-soft);display:block;margin-bottom:3px;">สถานที่</label>
+          <input class="form-control" id="transferApptPlaceInput" placeholder="เช่น หอประชุมโรงเรียน"
+            style="font-size:.82rem;padding:.45rem .75rem;background:#ffffff;border-color:#0891b2;color:#1e293b;font-weight:500;">
+        </div>
+        <button onclick="saveTransferApptSettings()"
+          style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff;border:none;border-radius:8px;padding:.45rem 1.1rem;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+          💾 บันทึก
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick action buttons -->
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.85rem;">
+      <button onclick="toggleTransferSettings()" style="background:#ecfeff;border:1.5px solid #0891b2;color:#065f75;border-radius:8px;padding:.38rem .9rem;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;">
+        ⚙️ ตั้งค่าวันนัด
+      </button>
+      <button onclick="openTransferDocInfoPrint()" style="background:#ecfeff;border:1.5px solid #0891b2;color:#065f75;border-radius:8px;padding:.38rem .9rem;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;">
+        📄 พิมพ์รายการเอกสาร (ประชาสัมพันธ์)
+      </button>
+    </div>
+
     <!-- Tabs -->
     <div class="section-tabs">
       <button class="tab-btn active" onclick="switchTransferTab('tf-admission', this)">
@@ -1469,6 +1508,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <button class="btn-icon btn-refresh" onclick="loadTransfersStaff()">
           <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
           รีเฟรช
+        </button>
+        <button class="btn-icon" onclick="exportTransferStudents()" style="background:#16a34a;color:#fff;border:none;gap:5px;padding:.5rem 1rem;white-space:nowrap;" title="ส่งออกข้อมูลนักเรียนย้ายเข้า Excel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Excel
         </button>
       </div>
       <div class="table-wrap">
@@ -1519,11 +1562,35 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 
     <!-- PANEL: ติดตามเอกสาร -->
     <div class="tab-panel" id="panel-tf-doctrack">
+      <!-- Summary mini-cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.85rem;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:.75rem;text-align:center;">
+          <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:2px;">ใบคำขอย้าย ค้าง</div>
+          <div id="tfDtAdmInc" style="font-size:1.5rem;font-weight:800;color:#dc2626;">—</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:.75rem;text-align:center;">
+          <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:2px;">ใบคำขอย้าย ครบ</div>
+          <div id="tfDtAdmComp" style="font-size:1.5rem;font-weight:800;color:#16a34a;">—</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:.75rem;text-align:center;">
+          <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:2px;">ใบมอบตัวย้าย ค้าง</div>
+          <div id="tfDtMtInc" style="font-size:1.5rem;font-weight:800;color:#dc2626;">—</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:.75rem;text-align:center;">
+          <div style="font-size:.72rem;color:var(--text-soft);margin-bottom:2px;">ใบมอบตัวย้าย ครบ</div>
+          <div id="tfDtMtComp" style="font-size:1.5rem;font-weight:800;color:#16a34a;">—</div>
+        </div>
+      </div>
       <div class="toolbar">
         <div class="search-box">
           <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
           <input class="search-input" type="text" id="searchTransferDoc" placeholder="ค้นหาชื่อนักเรียน…" oninput="renderTransferDocTracker()">
         </div>
+        <select class="filter-select" id="filterTransferDocType" onchange="renderTransferDocTracker()">
+          <option value="all">ทุกประเภท</option>
+          <option value="admission">ใบคำขอย้าย</option>
+          <option value="mobtua">ใบมอบตัวย้าย</option>
+        </select>
         <select class="filter-select" id="filterTransferDocGrade" onchange="renderTransferDocTracker()">
           <option value="">ทุกระดับชั้น</option>
           <option value="m1">ม.1</option><option value="m2">ม.2</option>
@@ -1531,13 +1598,28 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
           <option value="m5">ม.5</option><option value="m6">ม.6</option>
         </select>
         <select class="filter-select" id="filterTransferDocStatus" onchange="renderTransferDocTracker()">
-          <option value="pending">เอกสารค้าง</option>
+          <option value="incomplete">เอกสารค้าง</option>
           <option value="all">ทั้งหมด</option>
-          <option value="done">ครบแล้ว</option>
+          <option value="complete">ครบแล้ว</option>
         </select>
+        <button class="btn-icon" onclick="printTransferDocTrackerTable()" style="background:#0891b2;color:#fff;border:none;gap:5px;padding:.5rem 1rem;white-space:nowrap;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          พิมพ์ตารางรวม
+        </button>
       </div>
-      <div id="transferDocTrackerBody" style="display:flex;flex-direction:column;gap:.65rem;padding:.25rem 0;"></div>
-      <div class="table-footer"><span id="transferDocCount">— รายการ</span></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>#</th><th>ชื่อ-นามสกุล</th><th>ประเภท</th><th>ระดับชั้น</th>
+            <th style="min-width:220px;">เอกสารที่ขาด</th><th>สถานะ</th><th>พิมพ์</th>
+          </tr></thead>
+          <tbody id="transferDocTrackBody"></tbody>
+        </table>
+        <div class="table-footer">
+          <span id="transferDocTrackCount">— รายการ</span>
+          <span id="transferDocTrackLastUpdate" style="margin-left:1rem;font-size:.75rem;color:var(--text-soft);"></span>
+        </div>
+      </div>
     </div>
 
   </div><!-- end main-wrap -->
@@ -2551,12 +2633,12 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <strong>ทดลองพิมพ์</strong> → สั่งพิมพ์โดยไม่เปลี่ยนสถานะ
       </div>
       <div style="display:flex;gap:.65rem;">
-        <button onclick="trialMobtuaPrint()"
+        <button id="mpvcTrialBtn" onclick="trialMobtuaPrint()"
           style="flex:1;padding:.7rem .75rem;border-radius:10px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#475569;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;"
           onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
           🖨️ ทดลองสั่งพิมพ์
         </button>
-        <button onclick="confirmMobtuaPrintAndSave()"
+        <button id="mpvcConfirmBtn" onclick="confirmMobtuaPrintAndSave()"
           style="flex:1.4;padding:.7rem .75rem;border-radius:10px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;font-family:'Sarabun',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .2s;"
           onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
           ✅ ยืนยันพิมพ์ใบมอบตัว
@@ -4508,6 +4590,27 @@ function jumpToPrint(id, col) {
 }
 window.jumpToPrint = jumpToPrint;
 
+// ── Jump to Stepper Step 3 for transfers (ใบคำขอย้าย) ──
+function jumpToPrintTransfer(id) {
+    _stepperRecId  = id;
+    _stepperCol    = 'transfers';
+    _verifyCurrentId         = id;
+    _verifyCurrentCollection = 'transfers';
+
+    const rec = allTransfers.find(r => r.id === id);
+    const name = rec ? (rec.studentName || 'ไม่ระบุ') : '?';
+    document.getElementById('stepperStudentName').textContent = name;
+    const gradeBadge = document.getElementById('stepperGradeBadge');
+    if (gradeBadge && rec) {
+        const gl = rec.gradeLevel || '';
+        gradeBadge.textContent = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'}[gl] || gl;
+        gradeBadge.style.display = '';
+    }
+    goToStep(3);
+    document.getElementById('inspectionStepper').style.display = 'flex';
+}
+window.jumpToPrintTransfer = jumpToPrintTransfer;
+
 function closeInspectionStepper() {
     document.getElementById('inspectionStepper').style.display = 'none';
     _stepperCurrentStep = 1;
@@ -4545,9 +4648,13 @@ async function stepperNav(dir) {
     // Going forward from step 2 → check if checklist is complete
     if (dir > 0 && _stepperCurrentStep === 2) {
         const col = _stepperCol;
-        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const arr = col === 'admissions' ? allAdmissions
+                  : col === 'transfers'  ? allTransfers
+                  : allMobtua;
         const rec = arr.find(r => r.id === _stepperRecId);
-        const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS : getEffectiveMobtuaKeys(rec);
+        const items = col === 'admissions' ? ADMISSION_CHECKLIST_KEYS
+                    : col === 'transfers'  ? TRANSFER_CHECKLIST_KEYS
+                    : getEffectiveMobtuaKeys(rec);
         const missing = items.filter(k => !_verifyDraft[k]);
 
         if (missing.length > 0) {
@@ -4613,7 +4720,9 @@ async function confirmIncompleteDocs() {
     const noteEl = document.getElementById('stepperVerifyNote');
     if (noteEl) {
         const col = _stepperCol;
-        const arr = col === 'admissions' ? allAdmissions : allMobtua;
+        const arr = col === 'admissions' ? allAdmissions
+                  : col === 'transfers'  ? allTransfers
+                  : allMobtua;
         const rec = arr.find(r => r.id === _stepperRecId);
         const savedNote = (rec?.docVerifiedNote || '').trim();
         const existing  = noteEl.value.trim();
@@ -5282,12 +5391,30 @@ function buildStepperStep3() {
     if (col === 'transfers') {
         // ── Transfer: 3 cards เฉพาะ ──
         const linkedMobtuaTf = allTransferMobtua.find(m => m.transferId === id);
-        const card3tf = linkedMobtuaTf
-            ? card('📋','ใบมอบตัวย้ายเข้าเรียน','คลิกดูตัวอย่างและพิมพ์',
-                `<span class="print-card-badge ok">✅ มีใบมอบตัวแล้ว</span>`,
-                `openCardPreview('mobtua','${linkedMobtuaTf.id}','mobtua')`,false,'#15803d')
-            : card('📋','ใบมอบตัวย้ายเข้าเรียน','ยังไม่มีข้อมูลใบมอบตัว',
-                `<span class="print-card-badge na">รอผู้ปกครอง</span>`,'',true,'#94a3b8');
+        let card3tf = '';
+        if (!linkedMobtuaTf) {
+            // ยังไม่มีใบมอบตัวเลย
+            card3tf = card('📋','ใบมอบตัวย้ายเข้าเรียน',
+                'ยังไม่มีข้อมูลใบมอบตัว',
+                `<span class="print-card-badge na">ยังไม่มีข้อมูล</span>`,
+                '', true, '#94a3b8');
+        } else if (linkedMobtuaTf.status === 'pending') {
+            // ผู้ปกครองยังไม่กรอกข้อมูล — ล็อกไว้
+            card3tf = card('📋','ใบมอบตัวย้ายเข้าเรียน',
+                '⏳ ผู้ปกครองยังไม่กรอกข้อมูลให้ครบ',
+                `<span class="print-card-badge na">รอผู้ปกครอง</span>`,
+                '', true, '#94a3b8');
+        } else {
+            // ผู้ปกครองกรอกแล้ว (status === 'done') — พิมพ์ได้
+            const alreadyPrinted = linkedMobtuaTf.staffPrinted;
+            card3tf = card('📋','ใบมอบตัวย้ายเข้าเรียน',
+                alreadyPrinted ? 'ตรวจแล้ว — สามารถพิมพ์ซ้ำได้' : 'คลิกดูตัวอย่างและพิมพ์',
+                alreadyPrinted
+                    ? `<span class="print-card-badge ok">✅ ตรวจแล้ว</span>`
+                    : `<span class="print-card-badge ok">✅ พร้อมพิมพ์</span>`,
+                `openTransferMobtuaPrintConfirm('${id}','${linkedMobtuaTf.id}')`,
+                false, '#15803d');
+        }
         document.getElementById('printCardsGrid').innerHTML =
             card('🔄','ใบคำขอย้ายเข้าเรียน (วก.กทว.207)','คลิกพิมพ์ใบคำขอย้ายเข้าเรียน',
                 verifyBadge,`openCardPreview('transfer','${id}','transfers')`,false,'#0891b2') +
@@ -5346,8 +5473,41 @@ async function openCardPreview(type, id, col) {
             titleEl.textContent = '📄 ใบสมัครเรียน (เชื่อมโยง)';
             if (subtitleEl) subtitleEl.textContent = adm?.studentName || mt?.studentName || '';
         } else if (type === 'mobtua') {
-            const rec = allMobtua.find(r => r.id === id);
-            html = rec ? generateMobtuaDocHTML(rec.data || {}, rec.staffVerified || {}, !!rec.staffVerified) : '<p>ไม่พบข้อมูล</p>';
+            // ค้นหาทั้ง allMobtua (ระบบสมัคร) และ allTransferMobtua (ระบบย้าย)
+            const rec = allMobtua.find(r => r.id === id) || allTransferMobtua.find(r => r.id === id);
+            if (rec) {
+                const d = rec.data || {};
+                const sv = rec.staffVerified || {};
+                // ถ้าเป็น transfer mobtua ให้ map data จาก tf_ fields → mt_ fields
+                const isTransferMt = !!rec.transferId;
+                let displayData = d;
+                if (isTransferMt && !d.mt_studentFirstName && d.tf_firstName) {
+                    displayData = {
+                        mt_studentPrefix: d.tf_prefix||'', mt_studentFirstName: d.tf_firstName||'',
+                        mt_studentLastName: d.tf_lastName||'', mt_studentNickname: d.tf_nickname||'',
+                        mt_birthDay: d.tf_birthDay||'', mt_birthMonth: d.tf_birthMonth||'',
+                        mt_birthYear: d.tf_birthYear||'', mt_studentNationalId: (d.tf_nationalId||'').replace(/-/g,''),
+                        mt_height: d.tf_height||'', mt_weight: d.tf_weight||'',
+                        mt_bloodType: d.tf_bloodType||'',
+                        mt_houseNo: d.tf_houseNumber||'', mt_moo: d.tf_moo||'',
+                        mt_subdistrict: d.tf_subdistrict||'', mt_district: d.tf_district||'',
+                        mt_province: d.tf_province||'', mt_postalCode: d.tf_postalCode||'',
+                        mt_fatherPrefix: d.tf_fatherPrefix||'', mt_fatherFirstName: d.tf_fatherFirstName||'',
+                        mt_fatherLastName: d.tf_fatherLastName||'', mt_fatherOccupation: d.tf_fatherOccupation||'',
+                        mt_motherPrefix: d.tf_motherPrefix||'', mt_motherFirstName: d.tf_motherFirstName||'',
+                        mt_motherLastName: d.tf_motherLastName||'', mt_motherOccupation: d.tf_motherOccupation||'',
+                        mt_guardianPrefix: d.tf_parentPrefix||'', mt_guardianFirstName: d.tf_parentFirstName||'',
+                        mt_guardianLastName: d.tf_parentLastName||'', mt_guardianRelation: d.tf_parentRelation||'ผู้ปกครอง',
+                        mt_guardianPhone: d.tf_parentPhone||'',
+                        mt_academicYear: d.tf_academicYear||'', mt_classRoom: rec.classRoom||'',
+                        mt_nationality: 'ไทย', mt_ethnicity: 'ไทย', mt_religion: 'พุทธ',
+                        previousSchool: rec.previousSchool||d.tf_previousSchool||'',
+                    };
+                }
+                html = generateMobtuaDocHTML(displayData, sv, Object.keys(sv).length > 0);
+            } else {
+                html = '<p style="color:#dc2626;text-align:center;padding:2rem;">ไม่พบข้อมูลใบมอบตัว</p>';
+            }
             titleEl.textContent = '📋 ใบมอบตัวนักเรียน';
             if (subtitleEl) subtitleEl.textContent = rec ? `${rec.studentName || ''} · ${rec.classRoom || ''}` : '';
         } else if (type === 'transfer') {
@@ -5363,7 +5523,10 @@ async function openCardPreview(type, id, col) {
                 const parentName  = `${d.tf_parentPrefix||''}${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim();
                 const fatherFull  = `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim();
                 const motherFull  = `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim();
-                const talents = Array.isArray(d.tf_talent)?d.tf_talent:[];
+                const _rawTalent = d.tf_talent;
+                const talents = Array.isArray(_rawTalent) ? _rawTalent
+                    : (typeof _rawTalent === 'string' && _rawTalent) ? [_rawTalent]
+                    : [];
                 const logoUrl = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
                 const cb = v => `<span class="doc-checkbox${v?' checked':''}"></span>`;
                 const tfId = (idStr) => {
@@ -5386,22 +5549,29 @@ async function openCardPreview(type, id, col) {
                     </div>
                     <div class="doc-content">
                         <div class="field-line" style="margin-top:8px;"><span class="field-label">1. ชื่อ-สกุล ผู้ขอย้าย</span><span class="field-value">${studentName}</span><span class="field-label">ชื่อเล่น</span><span class="field-value">${d.tf_nickname||''}</span></div>
-                        <div class="field-line"><span class="field-label">เกิดวันที่</span><span class="field-value">${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear?parseInt(d.tf_birthYear)+543:''}</span><span class="field-label">อายุ</span><span class="field-value">${d.tf_age||''}</span><span class="field-label">ปี หมู่เลือด</span><span class="field-value">${d.tf_bloodType||''}</span></div>
+                        <div class="field-line"><span class="field-label">เกิดวันที่</span><span class="field-value">${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear||''}</span><span class="field-label">อายุ</span><span class="field-value">${d.tf_age||''}</span><span class="field-label">ปี หมู่เลือด</span><span class="field-value">${d.tf_bloodType||''}</span></div>
                         <div class="field-line"><span class="field-label">เลขประจำตัวประชาชน</span><div class="id-boxes" style="display:inline-flex;gap:2px;align-items:center;">${tfId(d.tf_nationalId)}</div></div>
                         <div class="field-line" style="margin-top:6px;"><span class="field-label">ชื่อ-สกุลบิดา</span><span class="field-value">${fatherFull}</span><span class="field-label">อาชีพ</span><span class="field-value">${d.tf_fatherOccupation||''}</span></div>
                         <div class="field-line"><span class="field-label">ชื่อ-สกุลมารดา</span><span class="field-value">${motherFull}</span><span class="field-label">อาชีพ</span><span class="field-value">${d.tf_motherOccupation||''}</span></div>
                         <div class="field-line" style="margin-top:6px;"><span class="field-label">2. ที่อยู่ บ้านเลขที่</span><span class="field-value">${d.tf_houseNumber||''}</span><span class="field-label">หมู่</span><span class="field-value">${d.tf_moo||''}</span><span class="field-label">ตำบล</span><span class="field-value">${d.tf_subdistrict||''}</span><span class="field-label">อำเภอ</span><span class="field-value">${d.tf_district||''}</span><span class="field-label">จังหวัด</span><span class="field-value">${d.tf_province||''}</span></div>
                         <div class="field-line" style="margin-top:6px;"><span class="field-label">3. ปัจจุบันศึกษาอยู่ชั้น</span><span class="field-value">${d.tf_currentGrade||''}</span><span class="field-label">จากโรงเรียน</span><span class="field-value">${d.tf_previousSchool||''}</span><span class="field-label">จ.</span><span class="field-value">${d.tf_prevProvince||''}</span></div>
                         <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
-                        <div class="checkbox-line">${cb(talents.includes('sports'))} กีฬา ${talents.includes('sports')&&d.tf_sportsType?'('+d.tf_sportsType+')':''}</div>
-                        <div class="checkbox-line">${cb(talents.includes('music'))} ดนตรี/ศิลปะ ${talents.includes('music')&&d.tf_musicType?'('+d.tf_musicType+')':''}</div>
+                        <div class="checkbox-line">${cb(talents.includes('sports'))} กีฬา ${talents.includes('sports')&&d.tf_sportsType?'<strong>('+d.tf_sportsType+')</strong>':'......................................................'}</div>
+                        <div class="checkbox-line">${cb(talents.includes('music'))} ดนตรี/ศิลปะ ${talents.includes('music')&&d.tf_musicType?'<strong>('+d.tf_musicType+')</strong>':'......................................................'}</div>
+                        <div class="checkbox-line">${cb(talents.includes('other'))} อื่นๆ ${talents.includes('other')&&d.tf_otherTalent?'<strong>('+d.tf_otherTalent+')</strong>':'......................................................'}</div>
                         <div class="field-line" style="margin-top:6px;"><span class="field-label">5. ผู้ปกครอง</span><span class="field-value">${parentName}</span><span class="field-label">โทรศัพท์</span><span class="field-value">${d.tf_parentPhone||''}</span></div>
                         <div class="field-line" style="margin-top:6px;"><span class="field-label">6. เหตุผล</span><span class="field-value">${d.tf_reason||''}</span></div>
                     </div>
-                    <div class="signature-section" style="text-align:right;margin-top:12px;">
-                        <p>ลงชื่อ.................................................ผู้ขอย้าย/ผู้ปกครอง</p>
-                        <p style="margin-right:1cm;">( ${parentName||'...................................'} )</p>
-                        <p>วันที่.............เดือน....................พ.ศ............</p>
+                    <div style="margin-top:12px;">
+                        <div style="text-align:right;">
+                            <p style="margin:2px 0;">ลงชื่อ.................................................ผู้ขอย้าย/ผู้ปกครอง</p>
+                        </div>
+                        <div style="text-align:right;margin-top:2px;padding-right:3cm;">
+                            <p style="margin:2px 0;">( ${studentName||'...................................'} )</p>
+                        </div>
+                        <div style="text-align:right;padding-right:2.5cm;margin-top:2px;">
+                            <p style="margin:2px 0;">วันที่.............เดือน....................พ.ศ............</p>
+                        </div>
                     </div>
                     <div class="approval-section">
                         <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการย้ายเข้าเรียน</p>
@@ -5414,26 +5584,8 @@ async function openCardPreview(type, id, col) {
         } else if (type === 'appointment-transfer') {
             const rec = allTransfers.find(r => r.id === id);
             if (rec) {
-                const sv = rec.staffVerified || {};
-                const missingItems = TRANSFER_CHECKLIST_KEYS.filter(k => sv[k] !== true);
-                const allOk = missingItems.length === 0;
-                html = `<div style="font-family:'Sarabun',sans-serif;padding:20px;max-width:500px;margin:0 auto;text-align:center;">
-                    <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" style="width:70px;margin-bottom:10px;">
-                    <h2 style="font-size:16px;margin-bottom:4px;">ใบนัดหมายมอบตัว</h2>
-                    <div style="font-size:13px;margin-bottom:16px;">โรงเรียนกระดุมทองวิทยา</div>
-                    <div style="border:2px solid #0891b2;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;">
-                        <p><strong>นักเรียน:</strong> ${rec.studentName||'—'}</p>
-                        <p><strong>ระดับชั้น:</strong> ${{m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'}[rec.gradeLevel]||'-'}</p>
-                        <p><strong>โรงเรียนเดิม:</strong> ${rec.previousSchool||'—'}</p>
-                    </div>
-                    ${allOk ? '<div style="background:#dcfce7;border-radius:8px;padding:12px;color:#15803d;font-weight:700;">✅ เอกสารครบถ้วน — พร้อมดำเนินการ</div>'
-                    : `<div style="background:#fef9c3;border-radius:8px;padding:12px;text-align:left;">
-                        <p style="font-weight:700;color:#854d0e;margin-bottom:8px;">⚠️ กรุณานำเอกสารที่ขาดมาด้วย</p>
-                        ${missingItems.map(k=>`<div style="font-size:13px;color:#92400e;padding:2px 0;">• ${k}</div>`).join('')}
-                        </div>`}
-                    <div style="margin-top:16px;font-size:12px;color:#64748b;">กรุณาติดต่องานทะเบียนนักเรียน โรงเรียนกระดุมทองวิทยา</div>
-                </div>`;
-                titleEl.textContent = '📅 ใบนัดหมายย้ายเข้าเรียน';
+                html = generateTransferAppointmentHTML(rec);
+                titleEl.textContent = '📅 ใบนัดหมายมอบตัวย้ายเข้าเรียน';
                 if (subtitleEl) subtitleEl.textContent = rec.studentName || '';
             } else { html = '<p>ไม่พบข้อมูล</p>'; }
         } else if (type === 'appointment') {
@@ -5785,7 +5937,6 @@ function generateAppointmentHTML(rec, col) {
     const missingDocs = DOC_KEYS.filter(k => sv[k] !== true);
     const doneDocs    = DOC_KEYS.filter(k => sv[k] === true);
 
-    // Student name
     let studentFullName = rec.studentName || '';
     if (!studentFullName) {
         if (col === 'admissions') {
@@ -5795,7 +5946,6 @@ function generateAppointmentHTML(rec, col) {
         }
     }
 
-    // Guardian name
     let guardianName = '';
     if (col === 'admissions') {
         guardianName = d.parentName || d.fatherName || '';
@@ -5803,16 +5953,13 @@ function generateAppointmentHTML(rec, col) {
         guardianName = `${d.mt_guardianPrefix||''} ${d.mt_guardianFirstName||''} ${d.mt_guardianLastName||''}`.trim();
     }
 
-    // Appointment data from localStorage
     const apptDate  = localStorage.getItem('appointmentDateText')  || 'วันที่ยังไม่ได้กำหนด';
     const apptTime  = localStorage.getItem('appointmentTimeText')  || '—';
     const apptPlace = localStorage.getItem('appointmentPlaceText') || 'โรงเรียนกระดุมทองวิทยา';
 
-    // QR Code URL pointing to mobtua form
     const baseUrl = window.location.href.replace('staff.html', 'index.html');
     const qrUrl   = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&qzone=1&color=1a1a2e&bgcolor=ffffff&data=${encodeURIComponent(baseUrl)}`;
 
-    // Missing docs list rows
     const missingRows = missingDocs.length > 0
         ? missingDocs.map((doc, i) =>
             `<tr><td style="padding:5px 8px;font-size:12.5px;border-bottom:1px solid #ffe4e4;">
@@ -5833,16 +5980,12 @@ function generateAppointmentHTML(rec, col) {
 
     return `
 <div style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;max-width:600px;margin:0 auto;padding:24px;">
-
-  <!-- Header -->
   <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #1e3a5f;">
     <div style="font-size:13px;font-weight:700;color:#1e3a5f;letter-spacing:.04em;">โรงเรียนกระดุมทองวิทยา</div>
     <div style="font-size:11px;color:#64748b;margin-bottom:6px;">อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
     <div style="font-size:20px;font-weight:900;color:#1e3a5f;letter-spacing:.04em;">ใบนัดหมายมอบตัว</div>
     <div style="font-size:12px;color:#64748b;">ระดับชั้น ${gradeLabel} ปีการศึกษา ${d.academicYear || d.mt_academicYear || new Date().getFullYear() + 543}</div>
   </div>
-
-  <!-- Student Info -->
   <div style="background:#f8fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
     <div style="flex:1;">
       <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">ชื่อ-นามสกุลนักเรียน</div>
@@ -5851,19 +5994,13 @@ function generateAppointmentHTML(rec, col) {
     </div>
     <div style="background:#1e3a5f;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;align-self:center;">${gradeLabel}</div>
   </div>
-
-  <!-- Missing docs -->
   ${missingSection}
-
-  <!-- Appointment date — BLUE BORDER -->
   <div style="background:#fff;border:2.5px solid #1e3a8a;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
     <div style="font-size:11px;font-weight:700;color:#1e3a8a;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">📅 วันนัดหมายมอบตัว</div>
     <div style="font-size:22px;font-weight:900;line-height:1.2;color:#b91c1c;">${apptDate}</div>
     <div style="font-size:13px;font-weight:700;margin-top:5px;color:#b91c1c;">⏰ ${apptTime}</div>
     <div style="font-size:11.5px;margin-top:4px;color:#1e3a8a;font-weight:600;">📍 ${apptPlace}</div>
   </div>
-
-  <!-- Instructions + QR -->
   <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div style="flex:1;">
       <div style="font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:8px;">📋 ขั้นตอนการกรอกใบมอบตัวออนไลน์</div>
@@ -5880,15 +6017,11 @@ function generateAppointmentHTML(rec, col) {
       <div style="font-size:10px;color:#64748b;margin-top:4px;max-width:110px;">แสกนเพื่อกรอก<br>ใบมอบตัวออนไลน์</div>
     </div>
   </div>
-
-  <!-- Footer note -->
   <div style="border-top:1.5px solid #e5e7eb;padding-top:12px;font-size:11px;color:#94a3b8;text-align:center;">
     * กรุณานำเอกสารที่ขาดมายื่นในวันมอบตัว · พิมพ์หรือบันทึกใบนัดหมายนี้ไว้เป็นหลักฐาน<br>
     ฝ่ายทะเบียน โรงเรียนกระดุมทองวิทยา · ออกใบนัดหมาย ณ วันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}
   </div>
 </div>
-
-<!-- หน้า 2: คู่มือ/แนวทาง — แสดงเต็ม A4 -->
 <div class="appt-page2" style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;width:100%;page-break-before:always;break-before:always;margin:0;padding:0;box-sizing:border-box;">
   <img src="https://nonthaphathr.github.io/uploadimg/guiderecruit.png"
        alt="คู่มือการรับสมัครและมอบตัว"
@@ -5897,10 +6030,103 @@ function generateAppointmentHTML(rec, col) {
   <div style="display:none;align-items:center;justify-content:center;min-height:400px;color:#94a3b8;font-size:14px;flex-direction:column;gap:8px;">
     <div style="font-size:2.5rem;">🖼️</div>
     <div>ไม่สามารถโหลดรูปภาพได้</div>
-    <div style="font-size:12px;">https://nonthaphathr.github.io/uploadimg/guiderecruit.png</div>
   </div>
 </div>`;
 }
+
+// ── Transfer appointment HTML (เหมือนระบบหลัก) ──
+function generateTransferAppointmentHTML(rec) {
+    const d = rec.data || {};
+    const sv = rec.staffVerified || {};
+    const TGMAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+    const gradeLabel = TGMAP[rec.gradeLevel] || rec.gradeLevel || '—';
+
+    const studentFullName = rec.studentName || `${d.tf_prefix||''}${d.tf_firstName||''} ${d.tf_lastName||''}`.trim();
+    const guardianName    = `${d.tf_parentPrefix||''}${d.tf_parentFirstName||''} ${d.tf_parentLastName||''}`.trim() || rec.parentName || '';
+
+    const missingDocs = TRANSFER_CHECKLIST_KEYS.filter(k => sv[k] !== true);
+    const doneDocs    = TRANSFER_CHECKLIST_KEYS.filter(k => sv[k] === true);
+
+    // Appointment settings — use transfer-specific or fall back to main
+    const apptDate  = localStorage.getItem('transferApptDate')  || localStorage.getItem('appointmentDateText')  || 'วันที่ยังไม่ได้กำหนด';
+    const apptTime  = localStorage.getItem('transferApptTime')  || localStorage.getItem('appointmentTimeText')  || '—';
+    const apptPlace = localStorage.getItem('transferApptPlace') || localStorage.getItem('appointmentPlaceText') || 'โรงเรียนกระดุมทองวิทยา';
+
+    // QR Code pointing to transfer mobtua flow in index.html
+    const baseUrl = window.location.href.replace('staff.html', 'index.html');
+    const qrUrl   = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&qzone=1&color=0e7490&bgcolor=ffffff&data=${encodeURIComponent(baseUrl)}`;
+
+    const missingRows = missingDocs.length > 0
+        ? missingDocs.map((doc, i) =>
+            `<tr><td style="padding:5px 8px;font-size:12.5px;border-bottom:1px solid #ffe4e4;">
+              <span style="background:#dc2626;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:6px;">${i+1}</span>
+              ${doc}
+            </td></tr>`).join('')
+        : `<tr><td style="padding:8px;color:#15803d;font-weight:600;font-size:13px;text-align:center;">✅ เอกสารครบถ้วนแล้ว</td></tr>`;
+
+    const missingSection = missingDocs.length > 0 ? `
+      <div style="background:#fff5f5;border:2px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:16px;">
+        <div style="font-weight:700;color:#dc2626;font-size:13px;margin-bottom:8px;">📌 เอกสารที่ยังขาด (${missingDocs.length} รายการ)</div>
+        <table style="width:100%;border-collapse:collapse;">${missingRows}</table>
+      </div>` : `
+      <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px;margin-bottom:16px;text-align:center;">
+        <div style="font-weight:700;color:#15803d;font-size:13px;">✅ เอกสารครบถ้วนทุกรายการ</div>
+        <div style="font-size:12px;color:#166534;margin-top:4px;">นักเรียนพร้อมมอบตัวในวันที่นัดหมาย</div>
+      </div>`;
+
+    return `
+<div style="font-family:'Sarabun','Kanit',sans-serif;background:#fff;max-width:600px;margin:0 auto;padding:24px;">
+  <!-- Header -->
+  <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #0891b2;">
+    <div style="font-size:13px;font-weight:700;color:#0e7490;letter-spacing:.04em;">โรงเรียนกระดุมทองวิทยา</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px;">อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+    <div style="font-size:20px;font-weight:900;color:#0e7490;letter-spacing:.04em;">ใบนัดหมายมอบตัวย้ายเข้าเรียน</div>
+    <div style="font-size:12px;color:#64748b;">ระดับชั้น ${gradeLabel} ปีการศึกษา ${rec.academicYear||d.tf_academicYear||new Date().getFullYear()+543}</div>
+  </div>
+  <!-- Student Info -->
+  <div style="background:#ecfeff;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div style="flex:1;">
+      <div style="font-size:11px;color:#0891b2;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">ชื่อ-นามสกุลนักเรียน</div>
+      <div style="font-size:16px;font-weight:800;color:#0e7490;">${studentFullName}</div>
+      <div style="font-size:11.5px;color:#475569;margin-top:4px;">โรงเรียนเดิม: <strong>${rec.previousSchool||'—'}</strong></div>
+      <div style="font-size:11.5px;color:#475569;">ผู้ปกครอง: <strong>${guardianName||'—'}</strong></div>
+    </div>
+    <div style="background:#0891b2;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;align-self:center;">${gradeLabel}</div>
+  </div>
+  <!-- Missing docs -->
+  ${missingSection}
+  <!-- Appointment date -->
+  <div style="background:#fff;border:2.5px solid #0891b2;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
+    <div style="font-size:11px;font-weight:700;color:#0e7490;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">📅 วันนัดหมายมอบตัว</div>
+    <div style="font-size:22px;font-weight:900;line-height:1.2;color:#b91c1c;">${apptDate}</div>
+    <div style="font-size:13px;font-weight:700;margin-top:5px;color:#b91c1c;">⏰ ${apptTime}</div>
+    <div style="font-size:11.5px;margin-top:4px;color:#0891b2;font-weight:600;">📍 ${apptPlace}</div>
+  </div>
+  <!-- Instructions + QR -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;">
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:8px;">📋 ขั้นตอนกรอกใบมอบตัวย้ายเข้าเรียน</div>
+      <div style="font-size:11.5px;color:#374151;line-height:1.8;">
+        <div>① แสกน QR Code ด้านขวา หรือเปิดลิงก์ระบบ</div>
+        <div>② เลือก <strong>ใบมอบตัว</strong> → <strong>ย้ายเข้าเรียน</strong></div>
+        <div>③ เลือกระดับชั้น และค้นหาชื่อนักเรียน</div>
+        <div>④ กรอกข้อมูลให้ครบและกด <strong>บันทึก</strong></div>
+        <div>⑤ สามารถทำจากบ้านได้เลย ก่อนวันมอบตัว</div>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <img src="${qrUrl}" width="110" height="110" alt="QR Code" style="border-radius:8px;border:2px solid #a5f3fc;display:block;">
+      <div style="font-size:10px;color:#64748b;margin-top:4px;max-width:110px;">แสกนเพื่อกรอก<br>ใบมอบตัวออนไลน์</div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div style="border-top:1.5px solid #a5f3fc;padding-top:12px;font-size:11px;color:#94a3b8;text-align:center;">
+    * กรุณานำเอกสารที่ขาดมายื่นในวันมอบตัว · พิมพ์หรือบันทึกใบนัดหมายนี้ไว้เป็นหลักฐาน<br>
+    งานทะเบียน โรงเรียนกระดุมทองวิทยา · ออกใบนัดหมาย ณ วันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}
+  </div>
+</div>`;
+}
+window.generateTransferAppointmentHTML = generateTransferAppointmentHTML;
 
 
 /* ═══════════════════════════════════════════════════════════════
@@ -7321,7 +7547,194 @@ function loadTransfersStaff() {
   subscribeTransfers(); subscribeTransferMobtua();
   showToast('รีเฟรชข้อมูลย้ายเข้า...','info');
 }
+
 window.loadTransfersStaff = loadTransfersStaff;
+
+function toggleTransferSettings() {
+    const bar = document.getElementById('transferSettingsBar');
+    if (!bar) return;
+    const visible = bar.style.display !== 'none';
+    bar.style.display = visible ? 'none' : 'block';
+    if (!visible) {
+        // Pre-fill current values
+        document.getElementById('transferApptDateInput').value  = localStorage.getItem('transferApptDate')  || '';
+        document.getElementById('transferApptTimeInput').value  = localStorage.getItem('transferApptTime')  || '';
+        document.getElementById('transferApptPlaceInput').value = localStorage.getItem('transferApptPlace') || '';
+    }
+}
+window.toggleTransferSettings = toggleTransferSettings;
+
+function saveTransferApptSettings() {
+    const d = document.getElementById('transferApptDateInput').value.trim();
+    const t = document.getElementById('transferApptTimeInput').value.trim();
+    const p = document.getElementById('transferApptPlaceInput').value.trim();
+    localStorage.setItem('transferApptDate',  d);
+    localStorage.setItem('transferApptTime',  t);
+    localStorage.setItem('transferApptPlace', p);
+    showToast('✅ บันทึกวันนัดหมายย้ายเข้าเรียนแล้ว', 'success');
+    document.getElementById('transferSettingsBar').style.display = 'none';
+}
+window.saveTransferApptSettings = saveTransferApptSettings;
+
+function openTransferDocInfoPrint() {
+    const apptDate  = localStorage.getItem('transferApptDate')  || 'วันที่ยังไม่ได้กำหนด';
+    const apptTime  = localStorage.getItem('transferApptTime')  || '—';
+    const apptPlace = localStorage.getItem('transferApptPlace') || 'โรงเรียนกระดุมทองวิทยา';
+    const baseUrl = window.location.href.replace('staff.html', 'index.html');
+    const qrUrl   = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&qzone=1&color=0e7490&bgcolor=ffffff&data=${encodeURIComponent(baseUrl)}`;
+    const allDocs = TRANSFER_CHECKLIST_KEYS;
+    const docsHtml = allDocs.map((k,i) => `
+        <tr>
+          <td style="padding:7px 10px;font-size:13px;border-bottom:1px solid #e2e8f0;vertical-align:middle;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#0891b2;color:#fff;border-radius:50%;font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0;">${i+1}</span>
+            ${k}
+          </td>
+          <td style="padding:7px 10px;text-align:center;border-bottom:1px solid #e2e8f0;width:80px;">
+            <span style="display:inline-block;width:20px;height:20px;border:1.5px solid #0891b2;border-radius:3px;"></span>
+          </td>
+        </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html lang="th"><head>
+    <meta charset="UTF-8">
+    <title>รายการเอกสารย้ายเข้าเรียน — โรงเรียนกระดุมทองวิทยา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Kanit:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Sarabun', sans-serif; background: #fff; color: #1e293b; padding: 12mm 14mm; font-size: 14px; }
+      @page{size:A4 portrait;margin:10mm 12mm;}
+    </style>
+    </head><body>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:3px solid #0891b2;">
+      <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" style="width:60px;height:60px;object-fit:contain;" alt="โลโก้">
+      <div style="flex:1;">
+        <div style="font-family:'Kanit',sans-serif;font-size:18px;font-weight:800;color:#0e7490;line-height:1.2;">รายการเอกสารที่ต้องใช้ประกอบการย้ายเข้าเรียน</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+      </div>
+      <img src="${qrUrl}" width="75" height="75" alt="QR" style="border-radius:6px;border:2px solid #a5f3fc;">
+    </div>
+
+    <div style="background:#ecfeff;border:2px solid #0891b2;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;gap:20px;align-items:center;">
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:3px;">📅 วันนัดหมายมอบตัว</div>
+        <div style="font-size:17px;font-weight:900;color:#b91c1c;">${apptDate}</div>
+        <div style="font-size:12px;font-weight:700;color:#b91c1c;margin-top:2px;">⏰ ${apptTime}</div>
+        <div style="font-size:11.5px;color:#0891b2;margin-top:2px;">📍 ${apptPlace}</div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#64748b;">
+        <div style="margin-bottom:4px;font-weight:600;color:#0e7490;">กรอกใบมอบตัวออนไลน์</div>
+        <img src="${qrUrl}" width="80" height="80" alt="QR" style="border-radius:6px;border:2px solid #a5f3fc;display:block;margin:0 auto;">
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-weight:700;color:#0e7490;font-size:14px;margin-bottom:6px;">📎 เอกสารที่ต้องนำมายื่น (จำนวน ${allDocs.length} รายการ)</div>
+      <table style="width:100%;border-collapse:collapse;border:1.5px solid #0891b2;border-radius:8px;overflow:hidden;">
+        <thead>
+          <tr style="background:#0891b2;color:#fff;">
+            <th style="padding:8px 10px;text-align:left;font-size:13px;">รายการเอกสาร</th>
+            <th style="padding:8px 10px;width:80px;font-size:13px;">ติ๊กถูก</th>
+          </tr>
+        </thead>
+        <tbody>${docsHtml}</tbody>
+      </table>
+    </div>
+
+    <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:10px;">
+      <div style="font-weight:700;color:#854d0e;font-size:13px;margin-bottom:4px;">⚠️ หมายเหตุสำคัญ</div>
+      <div style="font-size:12px;color:#78350f;line-height:1.7;">
+        • เอกสารสำเนาทุกฉบับให้ถ่ายขนาด A4 และลงลายมือชื่อรับรองสำเนาถูกต้อง<br>
+        • นำเอกสารตัวจริงมาด้วยในวันมอบตัวเพื่อให้เจ้าหน้าที่ตรวจสอบ<br>
+        • หากเอกสารไม่ครบอาจทำให้ไม่สามารถดำเนินการย้ายได้ในวันดังกล่าว<br>
+        • สอบถามข้อมูลเพิ่มเติมได้ที่งานทะเบียน โรงเรียนกระดุมทองวิทยา
+      </div>
+    </div>
+
+    <div style="text-align:right;font-size:11px;color:#94a3b8;margin-top:8px;">
+      พิมพ์เมื่อวันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})} · ระบบรับสมัครนักเรียนออนไลน์ โรงเรียนกระดุมทองวิทยา
+    </div>
+    <script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script>
+    </body></html>`;
+
+    const win = window.open('', '_blank', 'width=800,height=700');
+    if (win) { win.document.write(html); win.document.close(); }
+}
+window.openTransferDocInfoPrint = openTransferDocInfoPrint;
+window.openTransferDocInfoPrint = openTransferDocInfoPrint;
+
+let _pendingTransferPrintId  = null;
+let _pendingTransferMobtuaId = null;
+
+function openTransferMobtuaPrintConfirm(transferId, mobtuaId) {
+    if (transferId && !mobtuaId) {
+        const mob = allTransferMobtua.find(m => m.transferId === transferId);
+        if (!mob) { showToast('ยังไม่มีใบมอบตัวที่เชื่อมโยง','error'); return; }
+        mobtuaId = mob.id;
+    }
+    if (!mobtuaId) return;
+    _pendingTransferPrintId  = transferId;
+    _pendingTransferMobtuaId = mobtuaId;
+    const rec = allTransferMobtua.find(r => r.id === mobtuaId);
+    if (!rec) return;
+    const nameEl = document.getElementById('mpvcStudentName');
+    if (nameEl) nameEl.textContent = (rec.studentName||'ใบมอบตัวย้ายเข้าเรียน') + ' (ใบมอบตัวย้าย)';
+    const sv = rec.staffVerified || {};
+    const checked = TRANSFER_CHECKLIST_KEYS.filter(k => sv[k]===true).length;
+    const missing  = TRANSFER_CHECKLIST_KEYS.filter(k => !sv[k]);
+    const statusEl = document.getElementById('mpvcDocStatus');
+    if (statusEl) {
+        if (!missing.length) {
+            statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:#15803d;font-weight:700;font-size:.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>เอกสารครบทุกรายการ (${checked}/${TRANSFER_CHECKLIST_KEYS.length} รายการ)</div>`;
+        } else {
+            statusEl.innerHTML = `<div style="font-weight:700;color:#b45309;margin-bottom:7px;font-size:.88rem;">⚠️ ได้รับเอกสาร ${checked}/${TRANSFER_CHECKLIST_KEYS.length} — ขาดอีก ${missing.length} รายการ</div><div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:7px 10px;">${missing.map((m,i)=>`<div style="font-size:.82rem;color:#b91c1c;padding:2px 0;">${i+1}. ${m}</div>`).join('')}</div>`;
+        }
+    }
+    const confirmBtn = document.getElementById('mpvcConfirmBtn');
+    const trialBtn   = document.getElementById('mpvcTrialBtn');
+    if (confirmBtn) confirmBtn.onclick = confirmTransferMobtuaPrint;
+    if (trialBtn)   trialBtn.onclick   = trialTransferMobtuaPrint;
+    const modal = document.getElementById('mobtuaPrintConfirmModal');
+    if (modal) modal.style.display = 'flex';
+}
+window.openTransferMobtuaPrintConfirm = openTransferMobtuaPrintConfirm;
+
+async function confirmTransferMobtuaPrint() {
+    const mobtuaId = _pendingTransferMobtuaId;
+    const transferId = _pendingTransferPrintId;
+    if (!mobtuaId) return;
+    closeMobtuaPrintConfirmModal();
+    try {
+        await window._fs.updateDoc(window._fs.doc(window._db,'mobtua',mobtuaId),
+            { staffPrinted: true, staffPrintedAt: window._fs.serverTimestamp(), updatedAt: window._fs.serverTimestamp() });
+        const mob = allTransferMobtua.find(r => r.id === mobtuaId);
+        if (mob) mob.staffPrinted = true;
+        if (transferId) {
+            await window._fs.updateDoc(window._fs.doc(window._db,'transfers',transferId),
+                { staffPrinted: true, updatedAt: window._fs.serverTimestamp() });
+            const tf = allTransfers.find(r => r.id === transferId);
+            if (tf) tf.staffPrinted = true;
+        }
+        renderTransfers(); renderTransferMobtuaTab(); renderTransferDocTracker();
+        showToast('บันทึกสถานะ "ตรวจแล้ว" ✅','success');
+    } catch(e) { showToast('เกิดข้อผิดพลาด: '+e.message,'error'); }
+    openCardPreview('mobtua', mobtuaId, 'mobtua');
+    const confirmBtn=document.getElementById('mpvcConfirmBtn');
+    const trialBtn=document.getElementById('mpvcTrialBtn');
+    if (confirmBtn) confirmBtn.onclick = confirmMobtuaPrintAndSave;
+    if (trialBtn)   trialBtn.onclick   = trialMobtuaPrint;
+}
+window.confirmTransferMobtuaPrint = confirmTransferMobtuaPrint;
+
+function trialTransferMobtuaPrint() {
+    const mobtuaId = _pendingTransferMobtuaId;
+    if (!mobtuaId) return;
+    closeMobtuaPrintConfirmModal();
+    openCardPreview('mobtua', mobtuaId, 'mobtua');
+    const confirmBtn=document.getElementById('mpvcConfirmBtn');
+    const trialBtn=document.getElementById('mpvcTrialBtn');
+    if (confirmBtn) confirmBtn.onclick = confirmMobtuaPrintAndSave;
+    if (trialBtn)   trialBtn.onclick   = trialMobtuaPrint;
+}
+window.trialTransferMobtuaPrint = trialTransferMobtuaPrint;
 
 // ── Tab switching ──
 function switchTransferTab(name, btn) {
@@ -7385,24 +7798,41 @@ function renderTransfers() {
     const docBadge = `<span style="font-size:.65rem;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:4px;background:${allDone?'#dcfce7':docCnt>0?'#fef9c3':'#f1f5f9'};color:${allDone?'#15803d':docCnt>0?'#854d0e':'#94a3b8'};">${allDone?'✅ ครบ':docCnt>0?'📎 '+docCnt+'/'+TRANSFER_CHECKLIST_KEYS.length:'📎 ยังไม่ตรวจ'}</span>`;
     const isNew = r.createdAt?.toDate ? (() => { const d=r.createdAt.toDate(),n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); })() : false;
     const newBadge = isNew ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
-    const hasMobtua = allTransferMobtua.some(m => m.transferId === r.id);
-    const mobtBadge = hasMobtua ? `<span class="badge" style="background:#dbeafe;color:#1d4ed8;font-size:.65rem;margin-left:4px;">มอบตัวแล้ว</span>` : '';
+    const linkedMob = allTransferMobtua.find(m => m.transferId === r.id);
+    let tfStatusBadge = '';
+    if (!linkedMob) { tfStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;white-space:nowrap;margin-left:4px;">⏳ รอมอบตัว</span>`; }
+    else if (r.staffPrinted) { tfStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;white-space:nowrap;margin-left:4px;">✅ ตรวจแล้ว</span>`; }
+    else if (linkedMob.status === 'done') { tfStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;white-space:nowrap;margin-left:4px;">🔵 พร้อมตรวจ</span>`; }
+    else { tfStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdff;color:#0891b2;border:1px solid #a5f3fc;white-space:nowrap;margin-left:4px;">📋 มอบตัวแล้ว</span>`; }
+    const canPrint = !!linkedMob;
+    const printStyle = canPrint ? 'background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;cursor:pointer;' : 'background:#f1f5f9;border:1.5px solid #e2e8f0;color:#cbd5e1;cursor:not-allowed;opacity:.5;';
     return `<tr id="row-transfer-${r.id}" class="${isNew?'new-row':''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName||'—'}${newBadge}${mobtBadge} ${docBadge}</td>
+      <td class="td-name">${r.studentName||'—'}${newBadge}${tfStatusBadge} ${docBadge} ${noteIcon(r.docVerifiedNote)}</td>
       <td>${gradeBadge}</td>
       <td class="td-muted">${r.previousSchool||'—'}${r.previousSchoolProvince?' <span style="font-size:.75rem;color:#0891b2;">จ.'+r.previousSchoolProvince+'</span>':''}</td>
       <td class="td-muted">${r.parentName||'—'}</td>
       <td class="td-muted">${dateStr}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-view" onclick="viewTransfer('${r.id}')">👁 ดูข้อมูล</button>
           <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','transfers')" style="padding:.45rem 1.1rem;font-size:.85rem;">🔍 ตรวจเอกสาร</button>
+          <button class="btn-sm tf-stepper3-btn" data-tfid="${r.id}" title="เปิดสู่การสั่งพิมพ์เอกสาร (Stepper 3)"
+            style="padding:.45rem .65rem;font-size:.85rem;border-radius:8px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;cursor:pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button></button>
           <button class="btn-sm btn-delete" onclick="confirmDeleteTransfer('${r.id}','${(r.studentName||'').replace(/'/g,"\'")}')">🗑️</button>
         </div>
       </td>
     </tr>`;
   }).join('');
+  // event delegation — printer icon → jump to stepper step 3
+  tbody.querySelectorAll('.tf-stepper3-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tfid = btn.dataset.tfid;
+      if (!tfid) return;
+      jumpToPrintTransfer(tfid);
+    });
+  });
 }
 window.renderTransfers = renderTransfers;
 
@@ -7415,8 +7845,20 @@ function renderTransferMobtuaTab() {
   if (!tbody) return;
   const keyword = (document.getElementById('searchTransferMobtua')?.value||'').toLowerCase().trim();
   const gradeFilter = document.getElementById('filterTransferMobtuaGrade')?.value||'';
-  let rows = allTransferMobtua.filter(r => {
-    const gl = r.gradeLevel || (r.data?.mt_classRoom||'').startsWith('ม.4')?'m4':'m1';
+  // Build combined list: real mobtua + virtual "pending" rows for transfers without mobtua
+  const hasMobtuaFor = new Set(allTransferMobtua.map(m => m.transferId).filter(Boolean));
+  const virtualPending = allTransfers
+    .filter(tf => !hasMobtuaFor.has(tf.id))
+    .map(tf => ({
+      id: '__pending__' + tf.id, transferId: tf.id,
+      studentName: tf.studentName, gradeLevel: tf.gradeLevel,
+      parentName: tf.parentName, status: 'pending',
+      createdAt: tf.createdAt, staffVerified: {},
+      data: tf.data || {}
+    }));
+  const combined = [...allTransferMobtua, ...virtualPending];
+  let rows = combined.filter(r => {
+    const gl = r.gradeLevel || '';
     if (gradeFilter && gl !== gradeFilter) return false;
     if (keyword && !(r.studentName||'').toLowerCase().includes(keyword)) return false;
     return true;
@@ -7433,16 +7875,43 @@ function renderTransferMobtuaTab() {
     const newBadge = isNew ? `<span class="badge badge-new" style="margin-left:.4rem">ใหม่</span>` : '';
     const gl = r.gradeLevel||'';
     const gradeBadge = gl ? `<span class="badge" style="background:#cffafe;color:#0e7490;font-size:.75rem;padding:2px 9px;">${TRANSFER_GRADE_MAP[gl]||gl}</span>` : '—';
+    const isPending = r.status === 'pending' || !r.status || r.id.startsWith('__pending__');
+    const isDone    = r.status === 'done';
+    const realMobId = r.id.startsWith('__pending__') ? null : r.id;
+    const realTfId  = r.transferId || null;
+    let tfMobStatusBadge = '';
+    if (isPending) {
+      tfMobStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;white-space:nowrap;margin-left:4px;">⏳ รอผู้ปกครองกรอกข้อมูล</span>`;
+    } else if (r.staffPrinted) {
+      tfMobStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;white-space:nowrap;margin-left:4px;">✅ ตรวจแล้ว</span>`;
+    } else if (isDone) {
+      tfMobStatusBadge = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;white-space:nowrap;margin-left:4px;">🔵 พร้อมตรวจ</span>`;
+    }
+    const canPrint = !isPending && !!realMobId;
+    const printBtnStyle = canPrint
+      ? 'background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;cursor:pointer;'
+      : 'background:#f1f5f9;border:1.5px solid #e2e8f0;color:#cbd5e1;cursor:not-allowed;opacity:.5;';
+    const printDisabled = canPrint ? '' : 'disabled';
+    const verifyAttr = isPending
+      ? 'disabled style="padding:.45rem 1.1rem;font-size:.85rem;gap:5px;opacity:.45;cursor:not-allowed;" title="รอผู้ปกครองกรอกข้อมูลก่อน"'
+      : `onclick="openTransferInspectionStepper('${realMobId}','mobtua')" style="padding:.45rem 1.1rem;font-size:.85rem;"`;
     return `<tr id="row-transfer-mobtua-${r.id}" class="${isNew?'new-row':''}">
       <td class="td-muted">${i+1}</td>
-      <td class="td-name">${r.studentName||'—'}${newBadge}</td>
+      <td class="td-name">${r.studentName||'—'}${newBadge}${tfMobStatusBadge} ${noteIcon(r.docVerifiedNote)}</td>
       <td>${gradeBadge}</td>
       <td class="td-muted">${r.classRoom||r.data?.mt_classRoom||'—'}</td>
       <td class="td-muted">${r.guardianName||r.data?.mt_guardianName||r.parentName||'—'}</td>
       <td class="td-muted">${dateStr}</td>
       <td>
         <div class="action-group">
-          <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','mobtua')" style="padding:.45rem 1.1rem;font-size:.85rem;">🔍 ตรวจเอกสาร</button>
+          <button class="btn-sm btn-verify" ${verifyAttr}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            ตรวจเอกสาร
+          </button>
+          <button class="btn-sm" ${printDisabled} onclick="${canPrint ? `openTransferMobtuaPrintConfirm('${realTfId}','${realMobId}')` : ''}" title="${canPrint?'พิมพ์ใบมอบตัว':'รอผู้ปกครองกรอกก่อน'}"
+            style="padding:.45rem .65rem;font-size:.85rem;border-radius:8px;${printBtnStyle}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button>
         </div>
       </td>
     </tr>`;
@@ -7455,59 +7924,304 @@ window.filterTransferMobtuaTab = filterTransferMobtuaTab;
 
 // ── Render Doc Tracker tab ──
 function renderTransferDocTracker() {
-  const body = document.getElementById('transferDocTrackerBody');
-  if (!body) return;
-  const keyword = (document.getElementById('searchTransferDoc')?.value||'').toLowerCase().trim();
-  const gradeFilter = document.getElementById('filterTransferDocGrade')?.value||'';
-  const statusFilter = document.getElementById('filterTransferDocStatus')?.value||'pending';
-  let rows = allTransfers.filter(r => {
-    if (gradeFilter && r.gradeLevel !== gradeFilter) return false;
-    if (keyword && !(r.studentName||'').toLowerCase().includes(keyword)) return false;
-    const sv = r.staffVerified||{};
-    const allDone = TRANSFER_CHECKLIST_KEYS.every(k => sv[k] === true);
-    if (statusFilter === 'pending' && allDone) return false;
-    if (statusFilter === 'done' && !allDone) return false;
-    return true;
-  });
-  const countEl = document.getElementById('transferDocCount');
-  if (countEl) countEl.textContent = `${rows.length} รายการ`;
-  if (!rows.length) {
-    body.innerHTML = `<div class="empty-state" style="padding:2rem;"><div class="icon">✅</div><p>${statusFilter==='pending'?'เอกสารทุกรายการครบแล้ว':'ยังไม่มีข้อมูล'}</p></div>`;
-    return;
-  }
-  body.innerHTML = rows.map(r => {
-    const sv = r.staffVerified||{};
-    const dc = r.docChecks||{};
-    const combined = {...dc,...sv};
-    const checkedCnt = TRANSFER_CHECKLIST_KEYS.filter(k => combined[k]===true).length;
-    const allDone = checkedCnt === TRANSFER_CHECKLIST_KEYS.length;
-    const gl = TRANSFER_GRADE_MAP[r.gradeLevel]||r.gradeLevel||'';
-    const docsHtml = TRANSFER_CHECKLIST_KEYS.map(k => {
-      const checked = combined[k] === true;
-      return `<div style="display:flex;align-items:center;gap:5px;font-size:.76rem;padding:3px 0;">
-        <span style="color:${checked?'#16a34a':'#dc2626'};font-size:.85rem;">${checked?'✅':'❌'}</span>
-        <span style="color:${checked?'var(--text)':'var(--text-soft)'};">${k}</span>
-      </div>`;
+    const keyword = (document.getElementById('searchTransferDoc')?.value || '').trim().toLowerCase();
+    const typeF   = document.getElementById('filterTransferDocType')?.value || 'all';
+    const gradeF  = document.getElementById('filterTransferDocGrade')?.value || '';
+    const statusF = document.getElementById('filterTransferDocStatus')?.value || 'incomplete';
+
+    let rows = [];
+
+    // Transfers (ใบคำขอย้าย)
+    if (typeF === 'all' || typeF === 'admission') {
+        allTransfers.forEach(r => {
+            const sv = r.staffVerified || {};
+            const dc = r.docChecks || {};
+            const combined = { ...dc, ...sv };
+            const items = TRANSFER_CHECKLIST_KEYS;
+            const checked = items.filter(k => combined[k] === true).length;
+            const missing = items.filter(k => !combined[k]);
+            rows.push({
+                id: r.id, collection: 'transfers',
+                type: 'ใบคำขอย้าย', typeIcon: '🔄',
+                studentName: r.studentName || '',
+                gradeLevel: r.gradeLevel || '',
+                previousSchool: r.previousSchool || '',
+                items, checked, missing,
+                isComplete: checked === items.length
+            });
+        });
+    }
+
+    // Transfer mobtua (ใบมอบตัวย้าย)
+    if (typeF === 'all' || typeF === 'mobtua') {
+        allTransferMobtua.filter(r => r.status === 'done').forEach(r => {
+            const sv = r.staffVerified || {};
+            const items = TRANSFER_CHECKLIST_KEYS;
+            const checked = items.filter(k => sv[k] === true).length;
+            const missing = items.filter(k => !sv[k]);
+            rows.push({
+                id: r.id, collection: 'mobtua',
+                type: 'ใบมอบตัวย้าย', typeIcon: '📋',
+                studentName: r.studentName || '',
+                gradeLevel: r.gradeLevel || '',
+                previousSchool: '',
+                items, checked, missing,
+                isComplete: checked === items.length
+            });
+        });
+    }
+
+    // Filters
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'incomplete') rows = rows.filter(r => !r.isComplete);
+    else if (statusF === 'complete') rows = rows.filter(r => r.isComplete);
+    if (keyword) rows = rows.filter(r => r.studentName.toLowerCase().includes(keyword));
+
+    // Summary cards
+    const tfAll = allTransfers.map(r => {
+        const sv = r.staffVerified||{}; const dc = r.docChecks||{};
+        return TRANSFER_CHECKLIST_KEYS.every(k => ({...dc,...sv})[k]===true);
+    });
+    const mtAll = allTransferMobtua.filter(r=>r.status==='done').map(r => {
+        const sv = r.staffVerified||{};
+        return TRANSFER_CHECKLIST_KEYS.every(k => sv[k]===true);
+    });
+    const tfInc = tfAll.filter(c=>!c).length, tfComp = tfAll.filter(c=>c).length;
+    const mtInc = mtAll.filter(c=>!c).length, mtComp = mtAll.filter(c=>c).length;
+    const upd = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+    upd('tfDtAdmInc', tfInc); upd('tfDtAdmComp', tfComp);
+    upd('tfDtMtInc', mtInc);  upd('tfDtMtComp', mtComp);
+
+    // Tab badge
+    const tabBadge = document.getElementById('tabCountTransferDoc');
+    if (tabBadge) {
+        tabBadge.textContent = tfInc + mtInc;
+        tabBadge.style.background = (tfInc+mtInc) > 0 ? '#d97706' : '#16a34a';
+    }
+
+    // Render
+    const tbody = document.getElementById('transferDocTrackBody');
+    if (!tbody) return;
+    upd('transferDocTrackCount', `${rows.length} รายการ`);
+    upd('transferDocTrackLastUpdate', 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH'));
+
+    if (!rows.length) {
+        const msg = statusF==='incomplete' ? '🎉 ทุกรายการเอกสารครบถ้วนแล้ว!' : statusF==='complete' ? 'ไม่มีรายการที่เอกสารครบ' : 'ไม่พบข้อมูล';
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">${statusF==='incomplete'?'🎉':'🔍'}</div><p>${msg}</p></div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map((r, i) => {
+        const gl = TRANSFER_GRADE_MAP[r.gradeLevel] || r.gradeLevel || '—';
+        const typeBadge = r.collection === 'transfers'
+            ? '<span style="background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px;">🔄 ใบคำขอย้าย</span>'
+            : '<span style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px;">📋 ใบมอบตัวย้าย</span>';
+
+        let missingHtml = '';
+        if (r.isComplete) {
+            missingHtml = `<span style="display:flex;align-items:center;gap:5px;color:#16a34a;font-weight:700;font-size:.85rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>ครบทุกรายการแล้ว</span>`;
+        } else {
+            const lines = r.missing.map((m, mi) =>
+                `<div style="display:flex;align-items:flex-start;gap:7px;padding:3px 0;border-bottom:1px dashed rgba(220,38,38,.12);font-size:.83rem;color:#b91c1c;line-height:1.4;">
+                    <span style="width:18px;height:18px;border-radius:50%;background:#fef2f2;border:1.5px solid #fca5a5;color:#dc2626;font-size:.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${mi+1}</span>
+                    <span style="flex:1;">${m}</span></div>`).join('');
+            missingHtml = `<div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:8px;padding:6px 10px;min-width:220px;">${lines}</div>`;
+        }
+
+        const statusBadge = r.isComplete
+            ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;">✅ ครบ</span>'
+            : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">❌ ${r.checked}/${r.items.length}</span>`;
+
+        const verifyOnclick = r.collection === 'transfers'
+            ? `openTransferInspectionStepper('${r.id}','transfers')`
+            : `openTransferInspectionStepper('${r.id}','mobtua')`;
+
+        const printBtn = `<button onclick="printTransferDocTrackRow('${r.id}','${r.collection}')" title="พิมพ์รายการเอกสาร"
+            style="background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;border-radius:8px;padding:5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        </button>`;
+
+        return `<tr id="dt-transfer-${r.id}">
+            <td class="td-muted">${i+1}</td>
+            <td class="td-name"><div>${r.studentName||'—'}</div>${r.previousSchool?`<div style="font-size:.75rem;color:var(--text-soft);">โรงเรียนเดิม: ${r.previousSchool}</div>`:''}</td>
+            <td>${typeBadge}</td>
+            <td><span class="badge" style="background:#cffafe;color:#0e7490;">${gl}</span></td>
+            <td style="min-width:220px;">${missingHtml}</td>
+            <td style="text-align:center;">
+              ${statusBadge}
+              <div style="margin-top:4px;"><button onclick="${verifyOnclick}" title="ตรวจเอกสาร"
+                style="background:#ecfeff;border:1px solid #a5f3fc;color:#0891b2;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.72rem;font-weight:600;">🔍 ตรวจ</button></div>
+            </td>
+            <td style="text-align:center;">${printBtn}</td>
+        </tr>`;
     }).join('');
-    return `<div style="background:var(--card);border:1.5px solid ${allDone?'#86efac':'#fca5a5'};border-left:5px solid ${allDone?'#16a34a':'#dc2626'};border-radius:var(--r-lg);padding:1rem 1.25rem;transition:box-shadow .2s;" id="dt-transfer-${r.id}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.6rem;">
-        <div>
-          <div style="font-weight:700;font-size:.95rem;color:var(--text);">${r.studentName||'ไม่ระบุ'}</div>
-          <div style="font-size:.77rem;color:var(--text-soft);margin-top:2px;">${gl} · โรงเรียนเดิม: ${r.previousSchool||'ไม่ระบุ'}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-          <span style="font-size:.75rem;padding:2px 10px;border-radius:99px;font-weight:700;background:${allDone?'#dcfce7':'#fef2f2'};color:${allDone?'#15803d':'#dc2626'};">${allDone?'✅ ครบ':'❌ ค้าง '+checkedCnt+'/'+TRANSFER_CHECKLIST_KEYS.length}</span>
-          <button class="btn-sm btn-verify" onclick="openTransferInspectionStepper('${r.id}','transfers')" style="font-size:.75rem;">🔍 ตรวจ</button>
-        </div>
-      </div>
-      <details ${allDone?'':'open'}>
-        <summary style="cursor:pointer;font-size:.78rem;color:#0891b2;font-weight:600;margin-bottom:.4rem;">แสดงรายการหลักฐาน</summary>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;padding:.4rem 0;">${docsHtml}</div>
-      </details>
-    </div>`;
-  }).join('');
 }
+
 window.renderTransferDocTracker = renderTransferDocTracker;
+
+function exportTransferStudents() {
+    if (typeof window.XLSX === 'undefined') { showToast('กรุณารอโหลด XLSX...','error'); return; }
+    if (!allTransfers.length) { showToast('ไม่มีข้อมูลนักเรียนย้ายเข้า','error'); return; }
+    const TGMAP = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+    // Sort: female first (เด็กหญิง/นางสาว), then alpha
+    const sorted = [...allTransfers].sort((a, b) => {
+        const pfx = ['เด็กชาย','นาย','เด็กหญิง','นางสาว'];
+        const pa = (a.data?.tf_prefix||''), pb = (b.data?.tf_prefix||'');
+        const ia = pfx.indexOf(pa), ib = pfx.indexOf(pb);
+        if (ia !== ib) return ia - ib;
+        return (a.studentName||'').localeCompare(b.studentName||'th');
+    });
+    const rows = sorted.map((r, i) => {
+        const d = r.data || {};
+        const sv = r.staffVerified || {};
+        const docDone = TRANSFER_CHECKLIST_KEYS.filter(k=>sv[k]===true).length;
+        return {
+            'ลำดับ': i+1,
+            'คำนำหน้า': d.tf_prefix||'',
+            'ชื่อ': d.tf_firstName||'',
+            'นามสกุล': d.tf_lastName||'',
+            'ชื่อเล่น': d.tf_nickname||'',
+            'ระดับชั้น': TGMAP[r.gradeLevel]||r.gradeLevel||'',
+            'ปีการศึกษา': r.academicYear||'',
+            'วันเกิด': `${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear||''}`.trim(),
+            'หมู่เลือด': d.tf_bloodType||'',
+            'เลขบัตรประชาชน': d.tf_nationalId||'',
+            'โทรศัพท์': d.tf_phone||'',
+            'บ้านเลขที่': d.tf_houseNumber||'',
+            'หมู่': d.tf_moo||'',
+            'ตำบล': d.tf_subdistrict||'',
+            'อำเภอ': d.tf_district||'',
+            'จังหวัด': d.tf_province||'',
+            'โรงเรียนเดิม': r.previousSchool||'',
+            'จังหวัดโรงเรียนเดิม': r.previousSchoolProvince||'',
+            'ชั้นที่กำลังเรียน (ก่อนย้าย)': d.tf_currentGrade||'',
+            'ชื่อบิดา': `${d.tf_fatherPrefix||''}${d.tf_fatherFirstName||''} ${d.tf_fatherLastName||''}`.trim(),
+            'อาชีพบิดา': d.tf_fatherOccupation||'',
+            'ชื่อมารดา': `${d.tf_motherPrefix||''}${d.tf_motherFirstName||''} ${d.tf_motherLastName||''}`.trim(),
+            'อาชีพมารดา': d.tf_motherOccupation||'',
+            'ผู้ปกครอง': r.parentName||'',
+            'โทรศัพท์ผู้ปกครอง': r.parentPhone||'',
+            'เหตุผลในการย้าย': r.reason||'',
+            'เอกสารครบ': `${docDone}/${TRANSFER_CHECKLIST_KEYS.length}`,
+            'วันที่ยื่น': r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('th-TH') : '',
+        };
+    });
+    const ws = window.XLSX.utils.json_to_sheet(rows);
+    const wb = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(wb, ws, 'นักเรียนย้ายเข้า');
+    // Set column widths
+    ws['!cols'] = [{wch:5},{wch:10},{wch:15},{wch:18},{wch:8},{wch:8},{wch:8},{wch:18},
+        {wch:6},{wch:16},{wch:14},{wch:8},{wch:5},{wch:12},{wch:12},{wch:12},{wch:25},
+        {wch:12},{wch:15},{wch:22},{wch:12},{wch:22},{wch:12},{wch:20},{wch:14},{wch:30},{wch:10},{wch:14}];
+    const year = allTransfers[0]?.academicYear || (new Date().getFullYear()+543);
+    window.XLSX.writeFile(wb, `นักเรียนย้ายเข้า_${year}.xlsx`);
+    showToast(`✅ Export แล้ว ${sorted.length} รายการ`,'success');
+}
+
+window.exportTransferStudents = exportTransferStudents;
+
+function printTransferDocTrackerTable() {
+    const typeF   = document.getElementById('filterTransferDocType')?.value || 'all';
+    const gradeF  = document.getElementById('filterTransferDocGrade')?.value || '';
+    const statusF = document.getElementById('filterTransferDocStatus')?.value || 'incomplete';
+    const keyword = (document.getElementById('searchTransferDoc')?.value || '').trim().toLowerCase();
+
+    let rows = [];
+    if (typeF === 'all' || typeF === 'admission') {
+        allTransfers.forEach(r => {
+            const sv = r.staffVerified || {}, dc = r.docChecks || {};
+            const combined = { ...dc, ...sv };
+            const items = TRANSFER_CHECKLIST_KEYS;
+            const checked = items.filter(k => combined[k] === true).length;
+            const missing = items.filter(k => !combined[k]);
+            rows.push({ name: r.studentName||'', grade: TRANSFER_GRADE_MAP[r.gradeLevel]||r.gradeLevel||'',
+                type: 'ใบคำขอย้าย', items, checked, missing, isComplete: checked === items.length });
+        });
+    }
+    if (typeF === 'all' || typeF === 'mobtua') {
+        allTransferMobtua.filter(r => r.status === 'done').forEach(r => {
+            const sv = r.staffVerified || {};
+            const items = TRANSFER_CHECKLIST_KEYS;
+            const checked = items.filter(k => sv[k] === true).length;
+            const missing = items.filter(k => !sv[k]);
+            rows.push({ name: r.studentName||'', grade: TRANSFER_GRADE_MAP[r.gradeLevel]||r.gradeLevel||'',
+                type: 'ใบมอบตัวย้าย', items, checked, missing, isComplete: checked === items.length });
+        });
+    }
+    if (gradeF) rows = rows.filter(r => r.gradeLevel === gradeF);
+    if (statusF === 'incomplete') rows = rows.filter(r => !r.isComplete);
+    else if (statusF === 'complete') rows = rows.filter(r => r.isComplete);
+    if (keyword) rows = rows.filter(r => r.name.toLowerCase().includes(keyword));
+
+    if (!rows.length) { showToast('ไม่มีข้อมูลในตาราง','error'); return; }
+
+    const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+    const rowsHtml = rows.map((r, i) => `<tr>
+        <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${i+1}</td>
+        <td style="padding:5px 8px;border:1px solid #ccc;font-weight:600;">${r.name}</td>
+        <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${r.type}</td>
+        <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${r.grade}</td>
+        <td style="padding:5px 8px;border:1px solid #ccc;font-size:11px;">${r.missing.map(m => '• '+m).join('<br>')}</td>
+        <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;font-weight:700;color:${r.isComplete?'#16a34a':'#dc2626'};">${r.isComplete ? '✅ ครบ' : '❌ '+r.checked+'/'+r.items.length}</td>
+    </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+        <title>ติดตามเอกสารย้ายเข้าเรียน</title>
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Kanit:wght@700;800&display=swap" rel="stylesheet">
+        <style>
+            @page{size:A4 landscape;margin:10mm 12mm;}
+            body{font-family:'Sarabun',sans-serif;color:#000;font-size:12px;}
+            table{width:100%;border-collapse:collapse;}
+            th{background:#0891b2;color:#fff;padding:6px 8px;border:1px solid #0891b2;font-size:11px;}
+        </style></head><body>
+        <div style="text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #0891b2;">
+            <div style="font-family:'Kanit',sans-serif;font-size:15px;font-weight:800;color:#0e7490;">ติดตามเอกสารประกอบการย้ายเข้าเรียน</div>
+            <div style="font-size:10px;color:#555;">โรงเรียนกระดุมทองวิทยา · พิมพ์วันที่ ${today} · ${rows.length} รายการ</div>
+        </div>
+        <table>
+            <thead><tr>
+                <th>#</th><th>ชื่อ-นามสกุล</th><th>ประเภท</th><th>ระดับชั้น</th><th>เอกสารที่ขาด</th><th>สถานะ</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+        </table>
+        <script>window.onload=()=>window.print();<\/script></body></html>`;
+
+    const win = window.open('', '_blank', 'width=1000,height=750');
+    if (win) { win.document.write(html); win.document.close(); }
+    else showToast('กรุณาอนุญาต popup เพื่อพิมพ์','error');
+}
+window.printTransferDocTrackerTable = printTransferDocTrackerTable;
+
+const A4_PRINT_CSS = `@page{size:A4 portrait;margin:15mm 12mm;}@media print{body{margin:0!important;padding:0!important;}}`;
+
+function printTransferDocTrackRow(id, col) {
+    const arr = col === 'transfers' ? allTransfers : allTransferMobtua;
+    const rec = arr.find(r => r.id === id);
+    if (!rec) return;
+    const sv = rec.staffVerified || {};
+    const dc = rec.docChecks || {};
+    const combined = { ...dc, ...sv };
+    const items = TRANSFER_CHECKLIST_KEYS;
+    const missing = items.filter(k => !combined[k]);
+    const done    = items.filter(k => combined[k] === true);
+    const typeLabel = col === 'transfers' ? 'ใบคำขอย้ายเข้าเรียน' : 'ใบมอบตัวย้ายเข้าเรียน';
+    const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+    const html = `<html><head><meta charset="UTF-8"><title>รายการเอกสาร</title>
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>${A4_PRINT_CSS}body{font-family:'Sarabun',sans-serif;padding:15mm 12mm;color:#000;}</style></head><body>
+        <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #0891b2;">
+            <div style="font-size:14px;font-weight:700;">โรงเรียนกระดุมทองวิทยา</div>
+            <div style="font-size:20px;font-weight:900;margin:4px 0;">รายการเอกสาร — ${typeLabel}</div>
+            <div style="font-size:12px;color:#555;">นักเรียน: ${rec.studentName||'—'} · วันที่: ${today}</div>
+        </div>
+        ${missing.length > 0 ? `<div style="margin-bottom:12px;"><div style="font-weight:700;color:#dc2626;margin-bottom:6px;">❌ เอกสารที่ขาด (${missing.length} รายการ)</div>${missing.map((m,i)=>`<div style="padding:4px 0;border-bottom:1px solid #fee2e2;font-size:13px;">${i+1}. ${m}</div>`).join('')}</div>` : ''}
+        ${done.length > 0 ? `<div><div style="font-weight:700;color:#16a34a;margin-bottom:6px;">✅ เอกสารที่ครบแล้ว (${done.length} รายการ)</div>${done.map((m,i)=>`<div style="padding:4px 0;border-bottom:1px solid #dcfce7;font-size:13px;">${i+1}. ${m}</div>`).join('')}</div>` : ''}
+        <script>window.onload=()=>window.print();<\/script></body></html>`;
+    const win = window.open('','_blank','width=800,height=700');
+    if (win) { win.document.write(html); win.document.close(); }
+}
+window.printTransferDocTrackRow = printTransferDocTrackRow;
 
 // ── Transfer Inspection Stepper (reuses main stepper infrastructure) ──
 function openTransferInspectionStepper(id, col) {
@@ -7641,7 +8355,7 @@ window.editTransferFromStaff = editTransferFromStaff;
 
 async function saveEditTransfer() {
   const modal = document.getElementById('modalEditTransfer');
-  const id = modal.dataset.editId;
+  const id = modal?.dataset?.editId || _stepperRecId;
   if (!id) return;
   const firstName = document.getElementById('etFirstName').value.trim();
   const lastName  = document.getElementById('etLastName').value.trim();
@@ -7666,8 +8380,9 @@ async function saveEditTransfer() {
     tf_parentPhone:     document.getElementById('etParentPhone').value,
     tf_reason:          document.getElementById('etReason').value,
   };
+  const saveBtn = document.querySelector('#modalEditTransfer .btn-gold');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ กำลังบันทึก...'; }
   try {
-    showLoading(true);
     await window._fs.updateDoc(window._fs.doc(window._db,'transfers',id), {
       studentName, gradeLevel, gradeName: TGMAP[gradeLevel]||gradeLevel,
       academicYear:            document.getElementById('etAcademicYear').value,
@@ -7681,13 +8396,132 @@ async function saveEditTransfer() {
       updatedAt:               window._fs.serverTimestamp(),
     });
     if (rec) { Object.assign(rec, { studentName, gradeLevel, gradeName: TGMAP[gradeLevel]||gradeLevel, data: newD }); }
+    // Sync ไปยัง linked mobtua (ถ้ามี) — 2-way sync
+    const linkedMob = allTransferMobtua.find(m => m.transferId === id);
+    if (linkedMob) {
+        const mobDataMapped = transferDataToMobtuaData(newD, rec||{gradeLevel});
+        await window._fs.updateDoc(window._fs.doc(window._db, 'mobtua', linkedMob.id), {
+            studentName, gradeLevel, data: { ...linkedMob.data, ...mobDataMapped },
+            updatedAt: window._fs.serverTimestamp()
+        }).catch(e => console.warn('sync mobtua error:', e.message));
+        Object.assign(linkedMob, { studentName, gradeLevel, data: { ...linkedMob.data, ...mobDataMapped } });
+    }
     showToast(`✅ แก้ไขข้อมูล ${studentName} สำเร็จ`,'success');
     closeModal('modalEditTransfer');
-    renderTransfers(); renderTransferDocTracker();
-  } catch(e) { showToast('แก้ไขไม่สำเร็จ: '+e.message,'error');
-  } finally { showLoading(false); }
+    if (modal?.style) modal.style.zIndex = '';
+    renderTransfers(); renderTransferMobtuaTab(); renderTransferDocTracker();
+    if (_stepperCol === 'transfers' && _stepperRecId === id) {
+        setTimeout(() => buildStepperStep1(), 100);
+    }
+  } catch(e) {
+    showToast('แก้ไขไม่สำเร็จ: '+e.message,'error');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 บันทึกการแก้ไข'; }
+  }
 }
+
 window.saveEditTransfer = saveEditTransfer;
+
+// ── Map transfer (tf_*) fields → mobtua (mt_*) fields ──
+function transferDataToMobtuaData(d, rec) {
+    const gl = rec.gradeLevel || d.tf_gradeLevel || '';
+    return {
+        mt_studentPrefix:     d.tf_prefix||'',
+        mt_studentFirstName:  d.tf_firstName||'',
+        mt_studentLastName:   d.tf_lastName||'',
+        mt_studentNickname:   d.tf_nickname||'',
+        mt_birthDay:          d.tf_birthDay||'',
+        mt_birthMonth:        d.tf_birthMonth||'',
+        mt_birthYear:         d.tf_birthYear||'',
+        mt_studentNationalId: (d.tf_nationalId||'').replace(/-/g,''),
+        mt_height:            d.tf_height||'',
+        mt_weight:            d.tf_weight||'',
+        mt_bloodType:         d.tf_bloodType||'',
+        mt_houseNo:           d.tf_houseNumber||'',
+        mt_moo:               d.tf_moo||'',
+        mt_subdistrict:       d.tf_subdistrict||'',
+        mt_district:          d.tf_district||'',
+        mt_province:          d.tf_province||'',
+        mt_postalCode:        d.tf_postalCode||'',
+        mt_fatherPrefix:      d.tf_fatherPrefix||'',
+        mt_fatherFirstName:   d.tf_fatherFirstName||'',
+        mt_fatherLastName:    d.tf_fatherLastName||'',
+        mt_fatherOccupation:  d.tf_fatherOccupation||'',
+        mt_motherPrefix:      d.tf_motherPrefix||'',
+        mt_motherFirstName:   d.tf_motherFirstName||'',
+        mt_motherLastName:    d.tf_motherLastName||'',
+        mt_motherOccupation:  d.tf_motherOccupation||'',
+        mt_guardianPrefix:    d.tf_parentPrefix||'',
+        mt_guardianFirstName: d.tf_parentFirstName||'',
+        mt_guardianLastName:  d.tf_parentLastName||'',
+        mt_guardianRelation:  d.tf_parentRelation||'ผู้ปกครอง',
+        mt_guardianPhone:     d.tf_parentPhone||'',
+        mt_academicYear:      d.tf_academicYear||'',
+        mt_classRoom:         gl === 'm4' ? 'ม.4/' : gl === 'm1' ? 'ม.1/' : (gl ? gl+'/' : ''),
+        mt_nationality: 'ไทย', mt_ethnicity: 'ไทย', mt_religion: 'พุทธ',
+        previousSchool:       d.tf_previousSchool||'',
+    };
+}
+window.transferDataToMobtuaData = transferDataToMobtuaData;
+
+// ── Sync mobtua edit → transfer record (reverse direction) ──
+async function syncTransferMobtuaToTransfer(mobtuaId, mtData, newStudentName) {
+    try {
+        const mobSnap = await window._fs.getDoc(window._fs.doc(window._db, 'mobtua', mobtuaId));
+        if (!mobSnap.exists()) return;
+        const transferId = mobSnap.data().transferId;
+        if (!transferId) return;
+        // Build updated data fields from mobtua → back to transfer data
+        const d = mtData;
+        const syncFields = {
+            studentName:  newStudentName,
+            updatedAt:    window._fs.serverTimestamp(),
+        };
+        // Sync key identity fields into transfer.data
+        const tfRec = allTransfers.find(r => r.id === transferId);
+        if (tfRec) {
+            const newTfData = { ...(tfRec.data||{}),
+                tf_prefix:          d.mt_studentPrefix||'',
+                tf_firstName:       d.mt_studentFirstName||'',
+                tf_lastName:        d.mt_studentLastName||'',
+                tf_nickname:        d.mt_studentNickname||'',
+                tf_birthDay:        d.mt_birthDay||'',
+                tf_birthMonth:      d.mt_birthMonth||'',
+                tf_birthYear:       d.mt_birthYear||'',
+                tf_nationalId:      d.mt_studentNationalId||'',
+                tf_height:          d.mt_height||'',
+                tf_weight:          d.mt_weight||'',
+                tf_bloodType:       d.mt_bloodType||'',
+                tf_houseNumber:     d.mt_houseNo||'',
+                tf_moo:             d.mt_moo||'',
+                tf_subdistrict:     d.mt_subdistrict||'',
+                tf_district:        d.mt_district||'',
+                tf_province:        d.mt_province||'',
+                tf_fatherPrefix:    d.mt_fatherPrefix||'',
+                tf_fatherFirstName: d.mt_fatherFirstName||'',
+                tf_fatherLastName:  d.mt_fatherLastName||'',
+                tf_fatherOccupation:d.mt_fatherOccupation||'',
+                tf_motherPrefix:    d.mt_motherPrefix||'',
+                tf_motherFirstName: d.mt_motherFirstName||'',
+                tf_motherLastName:  d.mt_motherLastName||'',
+                tf_motherOccupation:d.mt_motherOccupation||'',
+                tf_parentPrefix:    d.mt_guardianPrefix||'',
+                tf_parentFirstName: d.mt_guardianFirstName||'',
+                tf_parentLastName:  d.mt_guardianLastName||'',
+                tf_parentRelation:  d.mt_guardianRelation||'',
+                tf_parentPhone:     d.mt_guardianPhone||'',
+            };
+            syncFields.data = newTfData;
+            Object.assign(tfRec, { studentName: newStudentName, data: newTfData });
+        }
+        await window._fs.updateDoc(window._fs.doc(window._db, 'transfers', transferId), syncFields);
+        renderTransfers();
+        console.log('syncTransferMobtuaToTransfer: synced to transfer', transferId);
+    } catch(e) {
+        console.warn('syncTransferMobtuaToTransfer error:', e.message);
+    }
+}
+window.syncTransferMobtuaToTransfer = syncTransferMobtuaToTransfer;
 
 function printTransferById(id) {
   const rec = allTransfers.find(r => r.id === id);
@@ -7709,7 +8543,7 @@ function printTransferById(id) {
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>ใบคำขอย้ายเข้าเรียน — ${rec.studentName||''}</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Kanit:wght@700&display=swap" rel="stylesheet">
-    <style>body{font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.7;color:#333;margin:0;padding:20mm 15mm;} h1{font-size:17px;text-align:center;margin-bottom:3px;} .sub{text-align:center;font-size:13px;margin-bottom:14px;} .code{text-align:right;font-size:11px;color:#555;} .sec{font-weight:700;border-bottom:1px solid #ccc;margin:12px 0 6px;padding-bottom:3px;} table{width:100%;border-collapse:collapse;margin-bottom:8px;} td{padding:3px 6px;font-size:13px;} .lab{width:38%;color:#555;font-weight:600;} .sig{text-align:right;margin-top:20px;} .checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;} @media print{@page{margin:15mm 12mm;}}</style>
+    <style>${A4_PRINT_CSS}body{font-family:'Sarabun',sans-serif;font-size:14px;line-height:1.7;color:#333;margin:0;padding:20mm 15mm;} h1{font-size:17px;text-align:center;margin-bottom:3px;} .sub{text-align:center;font-size:13px;margin-bottom:14px;} .code{text-align:right;font-size:11px;color:#555;} .sec{font-weight:700;border-bottom:1px solid #ccc;margin:12px 0 6px;padding-bottom:3px;} table{width:100%;border-collapse:collapse;margin-bottom:8px;} td{padding:3px 6px;font-size:13px;} .lab{width:38%;color:#555;font-weight:600;} .sig{text-align:right;margin-top:20px;} .checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;} @media print{@page{margin:15mm 12mm;}}</style>
     </head><body>
     <div class="code">วก.กทว.207</div>
     <h1>ใบคำขอย้ายเข้าเรียนชั้น${gradeLabel} ปีการศึกษา ${rec.academicYear||d.tf_academicYear||'—'}</h1>
@@ -7795,18 +8629,28 @@ document.addEventListener('keydown', e => {
     }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  // Dismiss loader — fast timeout fallback (Firebase will also hide it when connected)
-  setTimeout(() => {
-    document.getElementById('pageLoader').classList.add('done');
-  }, 1200); // increased slightly to allow Firebase to respond first
+/* ─────────────────────────────────────────────────
+   BOOT
+───────────────────────────────────────────────── */
+// Hide loader — runs immediately since module scripts are deferred (DOM is ready)
+// Multiple fallback layers to ensure loader always hides
+function _hideLoader() {
+  const loader = document.getElementById('pageLoader');
+  if (loader) loader.classList.add('done');
+}
+// Layer 1: immediate (50ms)
+setTimeout(_hideLoader, 50);
+// Layer 2: fallback (800ms)
+setTimeout(_hideLoader, 800);
+// Layer 3: hard fallback (3000ms)
+setTimeout(_hideLoader, 3000);
 
-  // Auto-login if session exists
-  if (sessionStorage.getItem('staffAuth') === '1') {
-    document.getElementById('authOverlay').classList.add('hidden');
-    showStaffLanding();
-  }
-});
+// Auto-login if session exists
+if (sessionStorage.getItem('staffAuth') === '1') {
+  const overlay = document.getElementById('authOverlay');
+  if (overlay) overlay.classList.add('hidden');
+  if (typeof showStaffLanding === 'function') showStaffLanding();
+}
 </script>
 
 </body>

@@ -2315,6 +2315,9 @@
                 <a href="staff.html" target="_blank" class="report-btn" style="text-decoration:none; color:white;">
                     🖥️ ระบบครู
                 </a>
+                <button class="report-btn" onclick="openMobtuaDataModal()" style="background:linear-gradient(135deg,#7b3f9e,#9333ea);" title="ระบบบันทึกข้อมูลวันมอบตัว">
+                    📊 บันทึกข้อมูลมอบตัว
+                </button>
                 <button class="report-btn" onclick="openBlankPrintModal()" title="พิมพ์เอกสารกระดาษ (ไม่มีข้อมูล)">
                     🖨️ พิมพ์เอกสารกระดาษ
                 </button>
@@ -2585,6 +2588,7 @@
     <!-- Landing Page -->
     <div class="landing-page" id="landingPage">
         <h2>📝 ระบบรับสมัครนักเรียนออนไลน์</h2>
+
 
         <!-- Step 1: เลือกประเภทเอกสาร -->
         <div class="doc-type-grid" id="landingStep1">
@@ -7710,6 +7714,8 @@
                     );
                     // ── Sync กลับไปยังใบสมัคร ──
                     await syncMobtuaToAdmission(_editingMobtuaId, d, d.mt_studentFullName || '');
+                    // ถ้าเป็น transfer mobtua ให้ sync กลับไป transfer ด้วย
+                    await syncTransferMobtuaToTransfer(_editingMobtuaId, d, d.mt_studentFullName || '');
                     // toast handled by success modal
                 } else {
                     // สร้างรายการใหม่ (กรณีไม่ผ่านระบบสมัครออนไลน์ หรือย้ายเข้า)
@@ -9302,7 +9308,12 @@ ${lines}
             const form = document.getElementById('transferForm');
             if (!form) return;
             const data = {};
-            new FormData(form).forEach((v, k) => { data[k] = v; });
+            new FormData(form).forEach((v, k) => {
+                if (k === 'tf_talent') {
+                    if (!data[k]) data[k] = [];
+                    data[k].push(v);
+                } else { data[k] = v; }
+            });
             const reqFields = ['tf_gradeLevel','tf_academicYear','tf_applicationDate','tf_prefix',
                 'tf_firstName','tf_lastName','tf_nationalId','tf_phone','tf_houseNumber',
                 'tf_subdistrict','tf_district','tf_province','tf_previousSchool','tf_prevProvince',
@@ -9337,6 +9348,8 @@ ${lines}
                             docChecks: { ..._transferDocChecks }, data,
                             updatedAt: window.firestore.serverTimestamp(),
                         });
+                    // Sync เปลี่ยนข้อมูลไปยัง linked mobtua
+                    await syncTransferEditToMobtua(_editingTransferId, data, studentName);
                     showToast(`✅ อัปเดตข้อมูล ${studentName} สำเร็จ`);
                     _editingTransferId = '';
                 } else {
@@ -9352,8 +9365,10 @@ ${lines}
                         createdAt: window.firestore.serverTimestamp(),
                         updatedAt: window.firestore.serverTimestamp(),
                     };
-                    await window.firestore.addDoc(
+                    const tfDocRef = await window.firestore.addDoc(
                         window.firestore.collection(window.db, 'transfers'), record);
+                    // Auto-create pending mobtua linked to this transfer
+                    await createPendingTransferMobtua(data, tfDocRef.id, record.docChecks);
                     showToast(`✅ บันทึกใบคำขอย้ายเข้าเรียนของ ${studentName} สำเร็จ`);
                     sendEmailNotify(
                         `🔄 ใบคำขอย้ายเข้าเรียนใหม่ — ${studentName}`,
@@ -9381,7 +9396,151 @@ ${lines}
                 console.error('saveTransferDocument error:', e);
             } finally { showLoading(false); }
         }
+
         window.saveTransferDocument = saveTransferDocument;
+
+        // ── Map transfer (tf_*) → mobtua (mt_*) fields ──
+        function transferDataToMobtuaFields(d) {
+            const gl = d.tf_gradeLevel || '';
+            return {
+                mt_studentPrefix:     d.tf_prefix||'',
+                mt_studentFirstName:  d.tf_firstName||'',
+                mt_studentLastName:   d.tf_lastName||'',
+                mt_studentNickname:   d.tf_nickname||'',
+                mt_birthDay:          d.tf_birthDay||'',
+                mt_birthMonth:        d.tf_birthMonth||'',
+                mt_birthYear:         d.tf_birthYear||'',
+                mt_studentNationalId: (d.tf_nationalId||'').replace(/-/g,''),
+                mt_height:            d.tf_height||'',
+                mt_weight:            d.tf_weight||'',
+                mt_bloodType:         d.tf_bloodType||'',
+                mt_houseNo:           d.tf_houseNumber||'',
+                mt_moo:               d.tf_moo||'',
+                mt_subdistrict:       d.tf_subdistrict||'',
+                mt_district:          d.tf_district||'',
+                mt_province:          d.tf_province||'',
+                mt_postalCode:        d.tf_postalCode||'',
+                mt_fatherPrefix:      d.tf_fatherPrefix||'',
+                mt_fatherFirstName:   d.tf_fatherFirstName||'',
+                mt_fatherLastName:    d.tf_fatherLastName||'',
+                mt_fatherOccupation:  d.tf_fatherOccupation||'',
+                mt_motherPrefix:      d.tf_motherPrefix||'',
+                mt_motherFirstName:   d.tf_motherFirstName||'',
+                mt_motherLastName:    d.tf_motherLastName||'',
+                mt_motherOccupation:  d.tf_motherOccupation||'',
+                mt_guardianPrefix:    d.tf_parentPrefix||'',
+                mt_guardianFirstName: d.tf_parentFirstName||'',
+                mt_guardianLastName:  d.tf_parentLastName||'',
+                mt_guardianRelation:  d.tf_parentRelation||'ผู้ปกครอง',
+                mt_guardianPhone:     d.tf_parentPhone||'',
+                mt_academicYear:      d.tf_academicYear||'',
+                mt_classRoom:         gl === 'm4' ? 'ม.4/' : gl === 'm1' ? 'ม.1/' : (gl ? gl+'/' : ''),
+                mt_nationality: 'ไทย', mt_ethnicity: 'ไทย', mt_religion: 'พุทธ',
+                previousSchool: d.tf_previousSchool||'',
+            };
+        }
+
+        // ── Auto-create pending mobtua when transfer is saved ──
+        async function createPendingTransferMobtua(tfData, transferId, docChecks) {
+            try {
+                const mapped = transferDataToMobtuaFields(tfData);
+                const studentName = `${tfData.tf_prefix||''}${tfData.tf_firstName||''} ${tfData.tf_lastName||''}`.trim();
+                const gradeMap = {m1:'ม.1',m2:'ม.2',m3:'ม.3',m4:'ม.4',m5:'ม.5',m6:'ม.6'};
+                const record = {
+                    formType:    'ใบมอบตัวย้ายเข้าเรียน',
+                    formCode:    'วก.กทว.206',
+                    studentName,
+                    guardianName: '',
+                    academicYear: tfData.tf_academicYear||'',
+                    classRoom:    gradeMap[tfData.tf_gradeLevel]||'',
+                    gradeLevel:   tfData.tf_gradeLevel||'',
+                    transferId,
+                    previousSchool: tfData.tf_previousSchool||'',
+                    status:      'pending',
+                    docChecks:   docChecks || {},
+                    data:        mapped,
+                    createdAt:   window.firestore.serverTimestamp(),
+                    updatedAt:   window.firestore.serverTimestamp(),
+                };
+                await window.firestore.addDoc(
+                    window.firestore.collection(window.db, 'mobtua'), record);
+                console.log('createPendingTransferMobtua: created for', studentName);
+            } catch(e) { console.warn('createPendingTransferMobtua error:', e.message); }
+        }
+
+        // ── Sync transfer edit → linked mobtua ──
+        async function syncTransferEditToMobtua(transferId, tfData, studentName) {
+            try {
+                const fs = window.firestore; const db = window.db;
+                // Find linked mobtua
+                const q = fs.query(fs.collection(db,'mobtua'), fs.where('transferId','==',transferId));
+                const snap = await fs.getDocs(q);
+                if (snap.empty) return;
+                const mapped = transferDataToMobtuaFields(tfData);
+                const updates = [];
+                snap.forEach(doc => {
+                    const existing = doc.data().data || {};
+                    updates.push(fs.updateDoc(fs.doc(db,'mobtua',doc.id), {
+                        studentName, gradeLevel: tfData.tf_gradeLevel||'',
+                        data: { ...existing, ...mapped },
+                        updatedAt: fs.serverTimestamp(),
+                    }));
+                });
+                await Promise.all(updates);
+                console.log('syncTransferEditToMobtua: synced to', updates.length, 'mobtua records');
+            } catch(e) { console.warn('syncTransferEditToMobtua error:', e.message); }
+        }
+
+        // ── Sync mobtua edit → linked transfer ──
+        async function syncTransferMobtuaToTransfer(mobtuaId, mtData, newStudentName) {
+            try {
+                const fs = window.firestore; const db = window.db;
+                const mobSnap = await fs.getDoc(fs.doc(db,'mobtua',mobtuaId));
+                if (!mobSnap.exists()) return;
+                const transferId = mobSnap.data().transferId;
+                if (!transferId) return;
+                const d = mtData;
+                const newTfData = {
+                    tf_prefix:          d.mt_studentPrefix||'',
+                    tf_firstName:       d.mt_studentFirstName||'',
+                    tf_lastName:        d.mt_studentLastName||'',
+                    tf_nickname:        d.mt_studentNickname||'',
+                    tf_birthDay:        d.mt_birthDay||'',
+                    tf_birthMonth:      d.mt_birthMonth||'',
+                    tf_birthYear:       d.mt_birthYear||'',
+                    tf_nationalId:      d.mt_studentNationalId||'',
+                    tf_height:          d.mt_height||'',
+                    tf_weight:          d.mt_weight||'',
+                    tf_bloodType:       d.mt_bloodType||'',
+                    tf_houseNumber:     d.mt_houseNo||'',
+                    tf_moo:             d.mt_moo||'',
+                    tf_subdistrict:     d.mt_subdistrict||'',
+                    tf_district:        d.mt_district||'',
+                    tf_province:        d.mt_province||'',
+                    tf_fatherPrefix:    d.mt_fatherPrefix||'',
+                    tf_fatherFirstName: d.mt_fatherFirstName||'',
+                    tf_fatherLastName:  d.mt_fatherLastName||'',
+                    tf_fatherOccupation:d.mt_fatherOccupation||'',
+                    tf_motherPrefix:    d.mt_motherPrefix||'',
+                    tf_motherFirstName: d.mt_motherFirstName||'',
+                    tf_motherLastName:  d.mt_motherLastName||'',
+                    tf_motherOccupation:d.mt_motherOccupation||'',
+                    tf_parentPrefix:    d.mt_guardianPrefix||'',
+                    tf_parentFirstName: d.mt_guardianFirstName||'',
+                    tf_parentLastName:  d.mt_guardianLastName||'',
+                    tf_parentRelation:  d.mt_guardianRelation||'',
+                    tf_parentPhone:     d.mt_guardianPhone||'',
+                };
+                const tfSnap = await fs.getDoc(fs.doc(db,'transfers',transferId));
+                const existingTf = tfSnap.exists() ? (tfSnap.data().data||{}) : {};
+                await fs.updateDoc(fs.doc(db,'transfers',transferId), {
+                    studentName: newStudentName,
+                    data: { ...existingTf, ...newTfData },
+                    updatedAt: fs.serverTimestamp()
+                });
+                console.log('syncTransferMobtuaToTransfer: synced to transfer', transferId);
+            } catch(e) { console.warn('syncTransferMobtuaToTransfer error:', e.message); }
+        }
 
         async function loadTransferHistory() {
             const listEl  = document.getElementById('transferHistoryList');
@@ -9635,6 +9794,18 @@ ${lines}
         }
         window.deleteTransferHistoryRecord = deleteTransferHistoryRecord;
 
+
+        // ── Helper: normalize tf_talent to Array ──
+        function normalizeTfTalent(d) {
+            if (Array.isArray(d.tf_talent)) return d.tf_talent;
+            if (typeof d.tf_talent === 'string' && d.tf_talent) return [d.tf_talent];
+            // Fallback: ตรวจจาก tf_sports/tf_music flags
+            const arr = [];
+            if (d.tf_sports === 'on' || d.tf_sports === true) arr.push('sports');
+            if (d.tf_music  === 'on' || d.tf_music  === true) arr.push('music');
+            if (d.tf_other  === 'on' || d.tf_other  === true) arr.push('other');
+            return arr;
+        }
         function generateTransferDocumentHTML(data, studentDocChecks, staffVerified) {
             staffVerified = staffVerified || {};
             studentDocChecks = studentDocChecks || {};
@@ -9770,15 +9941,16 @@ ${lines}
                             <span class="field-value">${d.tf_prevProvince||''}</span>
                         </div>
                         <p style="margin-top:8px;font-weight:600;">4. ความสามารถพิเศษ</p>
+                        ${(() => { const t = normalizeTfTalent(d); return `
                         <div class="checkbox-line">
-                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('sports'):false)} เป็นนักกีฬา(ระบุประเภท) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('sports')&&d.tf_sportsType)?d.tf_sportsType:'...............................................................'}</strong>
+                            ${tfCb(t.includes('sports'))} กีฬา <strong>${t.includes('sports')&&d.tf_sportsType?'('+d.tf_sportsType+')':'......................................................'}</strong>
                         </div>
                         <div class="checkbox-line">
-                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('music'):false)} เป็นนักดนตรีหรือศิลปะ(ระบุประเภท) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('music')&&d.tf_musicType)?d.tf_musicType:'...............................................................'}</strong>
+                            ${tfCb(t.includes('music'))} ดนตรี/ศิลปะ <strong>${t.includes('music')&&d.tf_musicType?'('+d.tf_musicType+')':'......................................................'}</strong>
                         </div>
                         <div class="checkbox-line">
-                            ${tfCb(Array.isArray(d.tf_talent)?d.tf_talent.includes('other'):false)} อื่นๆ(ระบุ) <strong>${(Array.isArray(d.tf_talent)&&d.tf_talent.includes('other')&&d.tf_otherTalent)?d.tf_otherTalent:'...............................................................'}</strong>
-                        </div>
+                            ${tfCb(t.includes('other'))} อื่นๆ <strong>${t.includes('other')&&d.tf_otherTalent?'('+d.tf_otherTalent+')':'......................................................'}</strong>
+                        </div>`; })()}
                         <div class="field-line" style="margin-top:6px;">
                             <span class="field-label">5. ผู้ปกครอง</span>
                             <span class="field-value">${parentName}</span>
@@ -9792,10 +9964,16 @@ ${lines}
                             <span class="field-value">${d.tf_reason||''}</span>
                         </div>
                     </div>
-                    <div class="signature-section" style="text-align:right;margin-top:12px;">
-                        <p>ลงชื่อ..........................................................................ผู้ขอย้ายเข้าเรียน/ผู้ปกครอง</p>
-                        <p style="margin-right:1cm;">( ${parentName||'.......................................................................................'} )</p>
-                        <p>วันที่.................เดือน...............................พ.ศ................</p>
+                    <div class="signature-section" style="margin-top:12px;">
+                        <div style="text-align:right;">
+                            <p>ลงชื่อ..........................................................................ผู้ขอย้ายเข้าเรียน/ผู้ปกครอง</p>
+                        </div>
+                        <div style="text-align:center;margin-top:2px;">
+                            <p>( ${studentName||'...................................'} )</p>
+                        </div>
+                        <div style="text-align:right;padding-right:3cm;">
+                            <p>วันที่.................เดือน...............................พ.ศ................</p>
+                        </div>
                     </div>
                     <div class="approval-section">
                         <p style="font-weight:600;margin-bottom:6px;">ตรวจหลักฐานการย้ายเข้าเรียน (สำหรับเจ้าหน้าที่)</p>
@@ -9936,5 +10114,71 @@ ${lines}
         }
 
     </script>
+
+<!-- ── Modal: ระบบบันทึกข้อมูลวันมอบตัว ── -->
+<div id="mobtuaDataModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeMobtuaDataModal()">
+    <div style="background:#fff;border-radius:18px;padding:0;width:min(380px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7b3f9e,#9333ea);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:10px;">
+            <div style="font-size:2rem;">📊</div>
+            <div>
+                <div style="font-family:'Kanit',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;">ระบบบันทึกข้อมูลวันมอบตัว</div>
+                <div style="font-size:.78rem;color:rgba(255,255,255,.8);">โรงเรียนกระดุมทองวิทยา</div>
+            </div>
+            <button onclick="closeMobtuaDataModal()" style="margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+        <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;">
+            <button onclick="openMobtuaDataSystem()" style="background:linear-gradient(135deg,#7b3f9e,#9333ea);color:#fff;border:none;border-radius:12px;padding:.85rem 1rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;text-align:left;">
+                <span style="font-size:1.4rem;">🚀</span>
+                <span>1. เข้าสู่ระบบ</span>
+                <span style="margin-left:auto;font-size:.78rem;opacity:.8;">เปิดในแท็บใหม่ →</span>
+            </button>
+            <button onclick="copyMobtuaDataLink()" id="copyMobtuaLinkBtn" style="background:#f3e8ff;color:#7b3f9e;border:2px solid #c084fc;border-radius:12px;padding:.85rem 1rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;text-align:left;">
+                <span style="font-size:1.4rem;">🔗</span>
+                <span>2. คัดลอกลิงก์ระบบ</span>
+                <span style="margin-left:auto;font-size:.78rem;opacity:.8;font-family:monospace;">copy</span>
+            </button>
+        </div>
+        <div style="padding:0 1.5rem 1.25rem;font-size:.75rem;color:#94a3b8;text-align:center;">
+            🔗 nonthaphathr.github.io/mobtuadata/
+        </div>
+    </div>
+</div>
+<script>
+const _MOBTUA_DATA_URL = 'https://nonthaphathr.github.io/mobtuadata/';
+function openMobtuaDataModal() {
+    const m = document.getElementById('mobtuaDataModal');
+    if (m) m.style.display = 'flex';
+}
+function closeMobtuaDataModal() {
+    const m = document.getElementById('mobtuaDataModal');
+    if (m) m.style.display = 'none';
+}
+function openMobtuaDataSystem() {
+    window.open(_MOBTUA_DATA_URL, '_blank');
+    closeMobtuaDataModal();
+}
+function copyMobtuaDataLink() {
+    navigator.clipboard.writeText(_MOBTUA_DATA_URL).then(() => {
+        const btn = document.getElementById('copyMobtuaLinkBtn');
+        if (btn) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = btn.innerHTML.replace('คัดลอกลิงก์ระบบ','✅ คัดลอกแล้ว!').replace('copy','✓');
+            btn.style.background = '#f0fdf4';
+            btn.style.borderColor = '#86efac';
+            btn.style.color = '#15803d';
+            setTimeout(() => { btn.innerHTML = orig; btn.style = ''; btn.style.cssText='background:#f3e8ff;color:#7b3f9e;border:2px solid #c084fc;border-radius:12px;padding:.85rem 1rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;text-align:left;'; }, 2000);
+        }
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = _MOBTUA_DATA_URL;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        alert('คัดลอกลิงก์แล้ว: ' + _MOBTUA_DATA_URL);
+    });
+}
+</script>
 </body>
 </html>

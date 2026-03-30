@@ -7580,85 +7580,156 @@ function openTransferDocInfoPrint() {
     const apptDate  = localStorage.getItem('transferApptDate')  || 'วันที่ยังไม่ได้กำหนด';
     const apptTime  = localStorage.getItem('transferApptTime')  || '—';
     const apptPlace = localStorage.getItem('transferApptPlace') || 'โรงเรียนกระดุมทองวิทยา';
-    const baseUrl = window.location.href.replace('staff.html', 'index.html');
-    const qrUrl   = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&qzone=1&color=0e7490&bgcolor=ffffff&data=${encodeURIComponent(baseUrl)}`;
+    const baseUrl   = window.location.href.replace('staff.html', 'index.html');
+
+    // QR ครึ่งบน: ลิงก์ตรงไปหน้ากรอกฟอร์มย้าย (เพิ่ม hash ชี้ transfer section)
+    const transferFormUrl = baseUrl + '#transferCard';
+    const qrApply = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&qzone=1&color=0e7490&bgcolor=ffffff&data=${encodeURIComponent(transferFormUrl)}`;
+
+    // QR ครึ่งล่าง: ลิงก์ไปหน้าใบมอบตัวย้าย
+    const mobtuaUrl = baseUrl + '#mobtuaCard';
+    const qrMobtua = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&qzone=1&color=7b3f9e&bgcolor=ffffff&data=${encodeURIComponent(mobtuaUrl)}`;
+
     const allDocs = TRANSFER_CHECKLIST_KEYS;
-    const docsHtml = allDocs.map((k,i) => `
-        <tr>
-          <td style="padding:7px 10px;font-size:13px;border-bottom:1px solid #e2e8f0;vertical-align:middle;">
-            <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#0891b2;color:#fff;border-radius:50%;font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0;">${i+1}</span>
-            ${k}
-          </td>
-          <td style="padding:7px 10px;text-align:center;border-bottom:1px solid #e2e8f0;width:80px;">
-            <span style="display:inline-block;width:20px;height:20px;border:1.5px solid #0891b2;border-radius:3px;"></span>
-          </td>
-        </tr>`).join('');
+    const half = Math.ceil(allDocs.length / 2);
+    const col1 = allDocs.slice(0, half);
+    const col2 = allDocs.slice(half);
+
+    const docRows = (items) => items.map((k, i) => `
+        <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;background:#0891b2;color:#fff;border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${i+1}</span>
+          <span style="font-size:12px;flex:1;line-height:1.35;">${k}</span>
+          <span style="display:inline-block;width:16px;height:16px;border:1.5px solid #94a3b8;border-radius:3px;flex-shrink:0;"></span>
+        </div>`).join('');
+
+    const today = new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+    const logo  = 'https://nonthaphathr.github.io/uploadimg/logoschool.png';
 
     const html = `<!DOCTYPE html><html lang="th"><head>
     <meta charset="UTF-8">
-    <title>รายการเอกสารย้ายเข้าเรียน — โรงเรียนกระดุมทองวิทยา</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Kanit:wght@700;800&display=swap" rel="stylesheet">
+    <title>ประชาสัมพันธ์การย้ายเข้าเรียน — โรงเรียนกระดุมทองวิทยา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Kanit:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Sarabun', sans-serif; background: #fff; color: #1e293b; padding: 12mm 14mm; font-size: 14px; }
-      @page{size:A4 portrait;margin:10mm 12mm;}
+      *{box-sizing:border-box;margin:0;padding:0;}
+      @page{size:A4 portrait;margin:8mm 10mm;}
+      body{font-family:'Sarabun',sans-serif;background:#fff;color:#1e293b;font-size:13px;}
+      .half{height:calc(50vh - 10mm);min-height:130mm;max-height:140mm;display:flex;gap:0;overflow:hidden;}
+      .divider{border:none;border-top:2px dashed #94a3b8;margin:4mm 0;page-break-inside:avoid;}
+      .qr-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:95px;padding:0 6px;}
+      .section-header{display:flex;align-items:center;gap:10px;padding-bottom:7px;border-bottom:3px solid;}
+      .step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;flex-shrink:0;}
     </style>
     </head><body>
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:3px solid #0891b2;">
-      <img src="https://nonthaphathr.github.io/uploadimg/logoschool.png" style="width:60px;height:60px;object-fit:contain;" alt="โลโก้">
-      <div style="flex:1;">
-        <div style="font-family:'Kanit',sans-serif;font-size:18px;font-weight:800;color:#0e7490;line-height:1.2;">รายการเอกสารที่ต้องใช้ประกอบการย้ายเข้าเรียน</div>
-        <div style="font-size:12px;color:#64748b;margin-top:2px;">โรงเรียนกระดุมทองวิทยา อำเภอกันทรารมย์ จังหวัดศรีสะเกษ</div>
+
+    <!-- ════ ครึ่งบน: สมัครย้ายเข้าเรียน ════ -->
+    <div style="padding:5mm 4mm 3mm;">
+
+      <!-- Header -->
+      <div class="section-header" style="border-color:#0891b2;margin-bottom:8px;">
+        <img src="${logo}" style="width:48px;height:48px;object-fit:contain;">
+        <div style="flex:1;">
+          <div style="font-family:'Kanit',sans-serif;font-size:17px;font-weight:900;color:#0e7490;line-height:1.15;">ขั้นตอนที่ 1 — สมัครย้ายเข้าเรียน</div>
+          <div style="font-size:11.5px;color:#64748b;">โรงเรียนกระดุมทองวิทยา · อ.กันทรารมย์ · จ.ศรีสะเกษ</div>
+        </div>
+        <div class="qr-box" style="background:#f0fdff;border:1.5px solid #a5f3fc;border-radius:10px;padding:6px 8px;">
+          <img src="${qrApply}" width="85" height="85" alt="QR สมัคร" style="border-radius:6px;display:block;">
+          <div style="font-size:9.5px;color:#0891b2;font-weight:700;text-align:center;margin-top:3px;">แสกนเพื่อ<br>กรอกใบสมัครย้าย</div>
+        </div>
       </div>
-      <img src="${qrUrl}" width="75" height="75" alt="QR" style="border-radius:6px;border:2px solid #a5f3fc;">
+
+      <!-- 2 column: steps + docs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+        <!-- ขั้นตอนการสมัคร -->
+        <div>
+          <div style="font-weight:700;color:#0e7490;font-size:12px;margin-bottom:6px;">📱 วิธีกรอกใบคำขอย้ายออนไลน์</div>
+          ${[
+            ['แสกน QR หรือเปิดลิงก์','แสกน QR Code ด้านขวาบน หรือพิมพ์ URL ในช่อง browser'],
+            ['เลือก "ใบคำขอย้ายเข้าเรียน"','กดปุ่มสีฟ้า "ใบคำขอย้ายเข้าเรียน (วก.กทว.207)"'],
+            ['กรอกข้อมูลให้ครบถ้วน','กรอกชื่อ-นามสกุล ที่อยู่ บิดา-มารดา และเหตุผลการย้าย'],
+            ['ยืนยันรายการเอกสาร','ติ๊กรายการหลักฐานที่เตรียมมา แล้วกด "ส่งใบคำขอ"'],
+          ].map(([t,d],i)=>`
+            <div style="display:flex;gap:7px;margin-bottom:5px;align-items:flex-start;">
+              <span class="step-badge" style="background:#0891b2;color:#fff;">${i+1}</span>
+              <div><div style="font-weight:700;font-size:11.5px;color:#0e7490;">${t}</div><div style="font-size:11px;color:#475569;line-height:1.4;">${d}</div></div>
+            </div>`).join('')}
+        </div>
+
+        <!-- รายการเอกสาร -->
+        <div>
+          <div style="font-weight:700;color:#0e7490;font-size:12px;margin-bottom:4px;">📎 เอกสารที่ต้องนำมายื่น (${allDocs.length} รายการ)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;">
+            <div>${docRows(col1)}</div>
+            <div>${docRows(col2.map((k,i)=>k))}</div>
+          </div>
+          <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px;color:#78350f;line-height:1.6;">
+            ⚠️ สำเนาทุกฉบับให้ถ่ายขนาด A4 และเซ็นรับรองสำเนาถูกต้อง · นำเอกสารตัวจริงมาด้วยในวันมอบตัว
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div style="background:#ecfeff;border:2px solid #0891b2;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;gap:20px;align-items:center;">
-      <div style="flex:1;">
-        <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:3px;">📅 วันนัดหมายมอบตัว</div>
-        <div style="font-size:17px;font-weight:900;color:#b91c1c;">${apptDate}</div>
-        <div style="font-size:12px;font-weight:700;color:#b91c1c;margin-top:2px;">⏰ ${apptTime}</div>
-        <div style="font-size:11.5px;color:#0891b2;margin-top:2px;">📍 ${apptPlace}</div>
+    <!-- ════ เส้นแบ่งกลาง ════ -->
+    <hr class="divider">
+
+    <!-- ════ ครึ่งล่าง: มอบตัว ════ -->
+    <div style="padding:3mm 4mm 5mm;">
+
+      <!-- Header -->
+      <div class="section-header" style="border-color:#7b3f9e;margin-bottom:8px;">
+        <img src="${logo}" style="width:48px;height:48px;object-fit:contain;">
+        <div style="flex:1;">
+          <div style="font-family:'Kanit',sans-serif;font-size:17px;font-weight:900;color:#7b3f9e;line-height:1.15;">ขั้นตอนที่ 2 — กรอกใบมอบตัวออนไลน์</div>
+          <div style="font-size:11.5px;color:#64748b;">กรอกก่อนวันมอบตัวเพื่อลดเวลาในวันจริง</div>
+        </div>
+        <div class="qr-box" style="background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:6px 8px;">
+          <img src="${qrMobtua}" width="85" height="85" alt="QR มอบตัว" style="border-radius:6px;display:block;">
+          <div style="font-size:9.5px;color:#7b3f9e;font-weight:700;text-align:center;margin-top:3px;">แสกนเพื่อ<br>กรอกใบมอบตัว</div>
+        </div>
       </div>
-      <div style="text-align:center;font-size:11px;color:#64748b;">
-        <div style="margin-bottom:4px;font-weight:600;color:#0e7490;">กรอกใบมอบตัวออนไลน์</div>
-        <img src="${qrUrl}" width="80" height="80" alt="QR" style="border-radius:6px;border:2px solid #a5f3fc;display:block;margin:0 auto;">
+
+      <!-- วันนัด + วิธีมอบตัว -->
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;">
+
+        <!-- กล่องวันนัด -->
+        <div style="background:#fdf4ff;border:2px solid #7b3f9e;border-radius:10px;padding:10px 14px;text-align:center;min-width:130px;">
+          <div style="font-size:10.5px;font-weight:700;color:#7b3f9e;margin-bottom:3px;">📅 วันนัดหมายมอบตัว</div>
+          <div style="font-size:15px;font-weight:900;color:#b91c1c;line-height:1.2;">${apptDate}</div>
+          <div style="font-size:11px;font-weight:700;color:#b91c1c;margin-top:2px;">⏰ ${apptTime}</div>
+          <div style="font-size:10.5px;color:#7b3f9e;margin-top:2px;">📍 ${apptPlace}</div>
+        </div>
+
+        <!-- วิธีการมอบตัว -->
+        <div>
+          <div style="font-weight:700;color:#7b3f9e;font-size:12px;margin-bottom:5px;">📋 วิธีการกรอกใบมอบตัวออนไลน์ (ทำได้จากบ้าน)</div>
+          ${[
+            ['แสกน QR หรือเปิดลิงก์','แสกน QR Code ด้านขวาบน หรือพิมพ์ URL ใน browser'],
+            ['เลือก "ใบมอบตัว" → "ย้ายเข้าเรียน"','กดปุ่ม "ใบมอบตัว" แล้วเลือก "ย้ายเข้าเรียน"'],
+            ['เลือกระดับชั้นและค้นหาชื่อ','เลือกระดับชั้น กดค้นหาชื่อนักเรียน แล้วคลิกกรอก'],
+            ['กรอกข้อมูลให้ครบและบันทึก','กรอกข้อมูลผู้ปกครองและนักเรียนให้ครบถ้วน กดบันทึก'],
+            ['นำหลักฐานมาในวันมอบตัว','นำเอกสารตัวจริงและสำเนาทุกรายการมายื่นในวัน'],
+          ].map(([t,d],i)=>`
+            <div style="display:flex;gap:7px;margin-bottom:4px;align-items:flex-start;">
+              <span class="step-badge" style="background:#7b3f9e;color:#fff;">${i+1}</span>
+              <div><div style="font-weight:700;font-size:11.5px;color:#7b3f9e;">${t}</div><div style="font-size:11px;color:#475569;line-height:1.35;">${d}</div></div>
+            </div>`).join('')}
+        </div>
+
       </div>
     </div>
 
-    <div style="margin-bottom:10px;">
-      <div style="font-weight:700;color:#0e7490;font-size:14px;margin-bottom:6px;">📎 เอกสารที่ต้องนำมายื่น (จำนวน ${allDocs.length} รายการ)</div>
-      <table style="width:100%;border-collapse:collapse;border:1.5px solid #0891b2;border-radius:8px;overflow:hidden;">
-        <thead>
-          <tr style="background:#0891b2;color:#fff;">
-            <th style="padding:8px 10px;text-align:left;font-size:13px;">รายการเอกสาร</th>
-            <th style="padding:8px 10px;width:80px;font-size:13px;">ติ๊กถูก</th>
-          </tr>
-        </thead>
-        <tbody>${docsHtml}</tbody>
-      </table>
+    <!-- Footer -->
+    <div style="text-align:center;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:4px;margin-top:2px;">
+      พิมพ์เมื่อ ${today} · ระบบรับสมัครนักเรียนออนไลน์ โรงเรียนกระดุมทองวิทยา
     </div>
 
-    <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:10px;">
-      <div style="font-weight:700;color:#854d0e;font-size:13px;margin-bottom:4px;">⚠️ หมายเหตุสำคัญ</div>
-      <div style="font-size:12px;color:#78350f;line-height:1.7;">
-        • เอกสารสำเนาทุกฉบับให้ถ่ายขนาด A4 และลงลายมือชื่อรับรองสำเนาถูกต้อง<br>
-        • นำเอกสารตัวจริงมาด้วยในวันมอบตัวเพื่อให้เจ้าหน้าที่ตรวจสอบ<br>
-        • หากเอกสารไม่ครบอาจทำให้ไม่สามารถดำเนินการย้ายได้ในวันดังกล่าว<br>
-        • สอบถามข้อมูลเพิ่มเติมได้ที่งานทะเบียน โรงเรียนกระดุมทองวิทยา
-      </div>
-    </div>
-
-    <div style="text-align:right;font-size:11px;color:#94a3b8;margin-top:8px;">
-      พิมพ์เมื่อวันที่ ${new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})} · ระบบรับสมัครนักเรียนออนไลน์ โรงเรียนกระดุมทองวิทยา
-    </div>
-    <script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script>
+    <script>window.onload=()=>setTimeout(()=>window.print(),400);<\/script>
     </body></html>`;
 
-    const win = window.open('', '_blank', 'width=800,height=700');
+    const win = window.open('', '_blank', 'width=820,height=900');
     if (win) { win.document.write(html); win.document.close(); }
 }
-window.openTransferDocInfoPrint = openTransferDocInfoPrint;
 window.openTransferDocInfoPrint = openTransferDocInfoPrint;
 
 let _pendingTransferPrintId  = null;

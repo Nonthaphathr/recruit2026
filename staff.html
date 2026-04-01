@@ -2886,13 +2886,27 @@ function subscribeMobtua() {
         }
       });
     }
+    if (isFirstLoadMobtua) {
+      // Force fresh getDocs 2s later to bypass stale IndexedDB cache (iOS Safari)
+      setTimeout(async () => {
+        try {
+          const freshQ = window._fs.query(window._fs.collection(window._db,'mobtua'), window._fs.orderBy('createdAt','desc'));
+          const freshSnap = await window._fs.getDocs(freshQ);
+          const freshRecs = [];
+          freshSnap.forEach(d => { const r = { id: d.id, _collection:'mobtua', ...d.data() }; if (!r.transferId && r.formType !== 'ใบมอบตัวย้ายเข้าเรียน') freshRecs.push(r); });
+          if (freshRecs.length !== allMobtua.length) {
+            allMobtua = freshRecs;
+            try { renderMobtua(); } catch(e) {}
+            try { updateStats(); } catch(e) {}
+            console.log('[Staff] Fresh getDocs updated mobtua:', freshRecs.length);
+          }
+        } catch(e) { console.warn('Fresh mobtua getDocs error:', e.message); }
+      }, 2000);
+    }
     isFirstLoadMobtua = false;
     allMobtua = newRecords;  // already filtered above
     try { renderMobtua(); } catch(e) { console.error('renderMobtua error:', e); }
     try { updateStats(); } catch(e) {}
-  }, err => {
-    console.error('mobtua snapshot error:', err);
-    setConnStatus(false);
   });
 }
 
@@ -7476,6 +7490,9 @@ function showStaffLanding() {
   document.getElementById('staffLanding').classList.remove('hidden');
   document.getElementById('mainContent').style.display = 'none';
   document.getElementById('transferContent').style.display = 'none';
+  // เริ่ม subscribe ทันทีหลัง login — ไม่รอให้กดเข้าเมนูก่อน (แก้ปัญหา iOS ข้อมูล 0)
+  if (!_appInited) { initApp(); _appInited = true; }
+  if (!_transferInited) { subscribeTransfers(); subscribeTransferMobtua(); _transferInited = true; }
 }
 window.showStaffLanding = showStaffLanding;
 

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>ระบบตรวจสอบการสมัคร — ครูผู้รับสมัคร | โรงเรียนกระดุมทองวิทยา</title>
 <link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2772,7 +2775,7 @@ function initApp() {
         const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
         const snap = await window._fs.getDocs(q);
         const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+        snap.forEach(d => { const rec = { id: d.id, _collection:'mobtua', ...d.data() }; if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') records.push(rec); });
         if (records.length > 0 || allMobtua.length === 0) {
           allMobtua = records;
           isFirstLoadMobtua = false;
@@ -2826,7 +2829,13 @@ function subscribeMobtua() {
   );
   unsubMobtua = window._fs.onSnapshot(q, snap => {
     const newRecords = [];
-    snap.forEach(d => newRecords.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+    snap.forEach(d => {
+      const rec = { id: d.id, _collection:'mobtua', ...d.data() };
+      // แยก transfer mobtua ออก ไม่ปนกับ allMobtua ระบบหลัก
+      if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') {
+        newRecords.push(rec);
+      }
+    });
 
     if (!isFirstLoadMobtua) {
       // build old status map: id → status
@@ -2852,7 +2861,7 @@ function subscribeMobtua() {
       });
     }
     isFirstLoadMobtua = false;
-    allMobtua = newRecords;
+    allMobtua = newRecords;  // already filtered above
     try { renderMobtua(); } catch(e) { console.error('renderMobtua error:', e); }
     try { updateStats(); } catch(e) {}
   }, err => {
@@ -2893,7 +2902,7 @@ function loadAll() {
         const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
         const snap = await window._fs.getDocs(q);
         const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+        snap.forEach(d => { const rec = { id: d.id, _collection:'mobtua', ...d.data() }; if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') records.push(rec); });
         allMobtua = records;
         isFirstLoadMobtua = false;
         try { renderMobtua(); } catch(e) {}
@@ -7983,12 +7992,45 @@ function renderTransferMobtuaTab() {
             style="padding:.45rem .65rem;font-size:.85rem;border-radius:8px;${printBtnStyle}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </button>
+          ${!isPending && realMobId ? `<button class="btn-sm btn-delete" onclick="confirmDeleteTransferMobtua('${realMobId}','${r.studentName||''}','${realTfId||''}')" title="ลบใบมอบตัวย้าย">🗑️</button>` : ''}
         </div>
       </td>
     </tr>`;
   }).join('');
 }
+
 window.renderTransferMobtuaTab = renderTransferMobtuaTab;
+
+async function confirmDeleteTransferMobtua(mobtuaId, studentName, transferId) {
+    if (!confirm(`ยืนยันลบใบมอบตัวย้ายเข้าเรียนของ "${studentName}" ?
+
+ข้อมูลใบมอบตัวจะถูกลบถาวร
+(ใบคำขอย้ายจะยังคงอยู่)`)) return;
+    try {
+        await window._fs.deleteDoc(window._fs.doc(window._db, 'mobtua', mobtuaId));
+        // Remove from allTransferMobtua
+        allTransferMobtua = allTransferMobtua.filter(r => r.id !== mobtuaId);
+        // Reset staffPrinted on linked transfer if any
+        if (transferId) {
+            const tf = allTransfers.find(r => r.id === transferId);
+            if (tf && tf.staffPrinted) {
+                await window._fs.updateDoc(
+                    window._fs.doc(window._db, 'transfers', transferId),
+                    { staffPrinted: false, updatedAt: window._fs.serverTimestamp() }
+                ).catch(()=>{});
+                if (tf) tf.staffPrinted = false;
+            }
+        }
+        renderTransferMobtuaTab();
+        renderTransfers();
+        renderTransferDocTracker();
+        showToast(`ลบใบมอบตัว "${studentName}" เรียบร้อยแล้ว`, 'success');
+    } catch(e) {
+        showToast('ลบไม่สำเร็จ: ' + e.message, 'error');
+        console.error('confirmDeleteTransferMobtua error:', e);
+    }
+}
+window.confirmDeleteTransferMobtua = confirmDeleteTransferMobtua;
 
 function filterTransferMobtuaTab() { renderTransferMobtuaTab(); }
 window.filterTransferMobtuaTab = filterTransferMobtuaTab;

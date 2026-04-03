@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, interactive-widget=resizes-content">
     <title>ระบบรับสมัครนักเรียนออนไลน์ - โรงเรียนกระดุมทองวิทยา</title>
     <link rel="icon" type="image/png" href="https://nonthaphathr.github.io/uploadimg/logoschool.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,10 +10,16 @@
     <!-- Firebase preconnect — ลด cold start -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
+    <!-- DNS prefetch แทน preconnect สำหรับ non-critical -->
+    <link rel="dns-prefetch" href="https://www.googleapis.com">
     <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js">
     <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Prompt:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Critical inline font-face fallback — ป้องกัน FOIT บนมือถือ */
+        @font-face { font-family: 'Sarabun'; font-display: swap; src: local('Sarabun'); }
+        @font-face { font-family: 'Prompt'; font-display: swap; src: local('Prompt'); }
+    </style>
     <style>
         :root {
             --primary: #c2185b;
@@ -73,6 +79,41 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        /* ═══ Mobile Performance: ลด animation/transition บน low-end devices ═══ */
+        @media (max-width: 768px) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.1s !important;
+            }
+            /* ยกเว้น spinner ที่จำเป็น */
+            .spinner, .loading-banner-spinner {
+                animation-duration: 1s !important;
+                animation-iteration-count: infinite !important;
+            }
+            /* ปิด backdrop-filter ที่หนักมากบน mobile GPU */
+            .modal-overlay {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            /* ลด box-shadow complexity */
+            .form-section,
+            .history-panel,
+            .mobtua-form-card,
+            .mobtua-history-sidebar,
+            .grade-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+            }
+        }
+
+        /* ═══ Reduce paint on scroll ═══ */
+        .header {
+            will-change: transform;
+        }
+        .mobtua-page-header {
+            will-change: transform;
         }
 
         html {
@@ -145,7 +186,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
             font-size: 1.5rem;
             flex-shrink: 0;
         }
@@ -166,7 +207,7 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
             font-size: var(--text-sm);
             font-weight: 600;
             flex-shrink: 0;
@@ -612,18 +653,20 @@
             border: 2px solid var(--border);
             border-radius: var(--radius-lg);
             font-family: var(--font-body);
-            font-size: var(--text-base);
-            transition: all 0.3s ease;
+            font-size: 16px; /* CRITICAL: ≥16px ป้องกัน iOS zoom-on-focus */
+            transition: border-color 0.2s ease;
             background: white;
             color: var(--text);
             -webkit-appearance: none;
             appearance: none;
+            touch-action: manipulation; /* ป้องกัน double-tap zoom */
+            -webkit-text-size-adjust: 100%;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+            box-shadow: 0 0 0 2px rgba(194, 24, 91, 0.15);
         }
 
         .form-control::placeholder {
@@ -707,7 +750,7 @@
             font-size: var(--text-base);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.15s ease, transform 0.1s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -717,6 +760,7 @@
             text-align: center;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .btn:active {
@@ -815,7 +859,7 @@
             padding: var(--space-md) clamp(1rem, 3vw, 1.5rem);
             border-bottom: 1px solid var(--border);
             cursor: default;
-            transition: all 0.2s ease;
+            transition: background-color 0.15s ease;
         }
 
         .history-item.docs-complete {
@@ -859,7 +903,7 @@
             border: 1px solid #d1d5db;
             background: white;
             user-select: none;
-            transition: all 0.15s;
+            transition: background-color 0.1s ease, border-color 0.1s ease;
             white-space: nowrap;
         }
 
@@ -966,8 +1010,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--overlay-bg);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.55);
             display: none;
             align-items: center;
             justify-content: center;
@@ -1029,7 +1072,7 @@
             cursor: pointer;
             font-size: clamp(1.25rem, 4vw, 1.5rem);
             color: var(--text-light);
-            transition: all 0.3s ease;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1107,7 +1150,7 @@
             gap: 0.75rem;
             transform: translateY(100px);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
             z-index: 2000;
             font-size: var(--text-base);
         }
@@ -1318,11 +1361,13 @@
 
         #printArea {
             display: none;
+            contain: layout style;
         }
 
         /* Blank print area — hidden on screen */
         #blankPrintArea {
             display: none;
+            contain: layout style;
         }
 
         @media print {
@@ -1662,7 +1707,7 @@
             padding: 2rem 1.5rem 1.5rem;
             box-shadow: var(--shadow-lg);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
             text-align: center;
             border: 3px solid transparent;
             position: relative;
@@ -1734,7 +1779,7 @@
             padding: 2rem 1rem;
             box-shadow: var(--shadow-md);
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: background-color 0.15s ease;
             text-align: center;
             border: 3px solid transparent;
         }
@@ -1763,10 +1808,10 @@
         .grade-card {
             background: white; border-radius: var(--radius-2xl);
             padding: var(--space-2xl); box-shadow: var(--shadow-lg);
-            cursor: pointer; transition: all 0.3s ease;
+            cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease;
             text-align: center; border: 3px solid transparent;
         }
-        .grade-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-xl); border-color: var(--primary); }
+        .grade-card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .grade-card-icon { font-size: 4rem; margin-bottom: var(--space-md); }
         .grade-card h3   { font-size: 1.5rem; color: var(--primary); margin-bottom: var(--space-sm); }
         .grade-card p    { color: var(--text-light); font-size: var(--text-base); }
@@ -1774,8 +1819,9 @@
 
         /* ===== Skeleton Loading Animation ===== */
         @keyframes shimmer {
-            0% { background-position: -400px 0; }
-            100% { background-position: 400px 0; }
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
         .skeleton-card {
             background: white;
@@ -1786,24 +1832,21 @@
             align-items: center;
             gap: 14px;
             width: 100%;
-            animation: fadeIn 0.3s ease;
         }
         .skeleton-icon {
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-            background-size: 800px 100%;
-            animation: shimmer 1.5s infinite;
+            background: #e2e8f0;
+            animation: shimmer 1.5s ease-in-out infinite;
             flex-shrink: 0;
         }
         .skeleton-body { flex: 1; }
         .skeleton-line {
             height: 12px;
             border-radius: 6px;
-            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-            background-size: 800px 100%;
-            animation: shimmer 1.5s infinite;
+            background: #e2e8f0;
+            animation: shimmer 1.5s ease-in-out infinite;
             margin-bottom: 8px;
         }
         .skeleton-line:last-child { margin-bottom: 0; }
@@ -1852,6 +1895,22 @@
 
         .hidden {
             display: none !important;
+        }
+
+        /* ═══ Mobile Performance: content-visibility ═══ */
+        /* ลด rendering cost สำหรับ sections ที่ยังไม่แสดง */
+        .mobtua-page:not(.active),
+        #mainContainer.hidden,
+        #transferPage:not(.active),
+        .report-page:not(.active),
+        .modal-overlay:not(.active) {
+            content-visibility: hidden;
+        }
+        /* ฟอร์มที่ซ่อนอยู่ไม่ต้อง layout */
+        .mobtua-form-card-body,
+        .form-body {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 2000px;
         }
 
         .history-locked-badge {
@@ -1913,7 +1972,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.25s ease;
+            transition: background-color 0.15s ease;
             flex-shrink: 0;
             white-space: nowrap;
         }
@@ -1932,14 +1991,14 @@
             align-items: center;
             gap: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: border-color 0.15s ease, transform 0.1s ease;
             text-align: left;
             width: 100%;
             font-family: inherit;
+            touch-action: manipulation;
         }
         .pending-mobtua-card:hover {
             border-color: #7b3f9e;
-            box-shadow: 0 4px 16px rgba(123,63,158,.15);
             transform: translateY(-2px);
         }
         .pending-mobtua-card.done-card { background: #f0fdf4; border-color: #16a34a; }
@@ -5012,7 +5071,7 @@
                 if (e.key === 'Escape') {
                     closeModal();
                 }
-            });
+            }, { passive: true });
 
             // คำนวณอายุอัตโนมัติ
             ['birthDay', 'birthMonth', 'birthYear'].forEach(id => {
@@ -6151,14 +6210,13 @@
                 const el = document.querySelector(`[name="${name}"]`);
                 if (!el) return;
                 el.value = val;
-                // trigger change event so any listeners know
-                el.dispatchEvent(new Event('change', { bubbles: true }));
+                // ไม่ dispatch event ทุก field — ลด DOM reflow
             };
             Object.keys(d).forEach(k => set(k, d[k]));
-            // Show prefilled badges & green tint
-            setTimeout(() => {
+            // Show prefilled badges & green tint — defer
+            requestAnimationFrame(() => {
                 document.querySelectorAll('.prefilled-label-badge').forEach(b => b.classList.add('visible'));
-            }, 120);
+            });
             // force select elements for prefix / month
             const selectNames = ['mt_studentPrefix','mt_fatherPrefix','mt_motherPrefix',
                                  'mt_guardianPrefix','mt_birthMonth','mt_fatherBloodType',
@@ -6192,7 +6250,7 @@
                 const q = window.firestore.query(
                     window.firestore.collection(window.db, 'admissions'),
                     window.firestore.orderBy('createdAt', 'desc'),
-                    window.firestore.limit(50)
+                    window.firestore.limit(25)
                 );
 
                 const querySnapshot = await window.firestore.getDocs(q);
@@ -8296,7 +8354,7 @@
             }
         }
 
-        function setupAutosave(formId, storageKey, debounceMs = 1500) {
+        function setupAutosave(formId, storageKey, debounceMs = 3000) {
             const form = document.getElementById(formId);
             if (!form) return;
             // ป้องกัน register ซ้ำ
@@ -8305,12 +8363,20 @@
             const trigger = () => {
                 clearTimeout(autosaveTimers[storageKey]);
                 autosaveTimers[storageKey] = setTimeout(() => {
-                    autosaveForm(formId, storageKey);
-                    showAutosaveBadge(storageKey);
+                    // ใช้ requestIdleCallback ถ้ามี — ไม่บล็อก main thread
+                    if (window.requestIdleCallback) {
+                        requestIdleCallback(() => {
+                            autosaveForm(formId, storageKey);
+                            showAutosaveBadge(storageKey);
+                        });
+                    } else {
+                        autosaveForm(formId, storageKey);
+                        showAutosaveBadge(storageKey);
+                    }
                 }, debounceMs);
             };
-            form.addEventListener('input', trigger);
-            form.addEventListener('change', trigger);
+            form.addEventListener('input', trigger, { passive: true });
+            form.addEventListener('change', trigger, { passive: true });
         }
 
         function showAutosaveBadge(storageKey) {
@@ -8380,8 +8446,8 @@
                 }
                 // ฟัง event จาก module script
                 window.addEventListener('firebaseReady', () => {
-                    // รอเพิ่ม 100ms ให้ Firestore persistent cache init เสร็จ
-                    setTimeout(resolve, 100);
+                    // รอเพิ่ม 50ms ให้ Firestore persistent cache init เสร็จ
+                    setTimeout(resolve, 50);
                 }, { once: true });
                 // polling fallback — กรณี event fire ก่อน listener register
                 const poll = setInterval(() => {
@@ -8389,32 +8455,36 @@
                         clearInterval(poll);
                         resolve();
                     }
-                }, 200);
-                // safety timeout — ถ้า 12 วินาทียังไม่พร้อม ลองทำต่อเลย
-                setTimeout(() => { clearInterval(poll); resolve(); }, 12000);
+                }, 150);
+                // safety timeout — ถ้า 6 วินาทียังไม่พร้อม ลองทำต่อเลย
+                setTimeout(() => { clearInterval(poll); resolve(); }, 6000);
             });
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // ═══ PHASE 1: ทำ UI interactive ก่อน (ไม่ต้องรอ Firebase) ═══
             setupMobtuaEvents();
 
             // โหลด localStorage settings ก่อน (ไม่ต้องรอ Firebase)
             const testModeEnabled = localStorage.getItem('testModeEnabled') === 'true';
             toggleTestModeButton(testModeEnabled);
             const historyLocked = localStorage.getItem('historyLocked') === 'true';
-            // FIX: ไม่เรียก applyHistoryLockUI ที่จะ trigger loadHistory()
-            // ก่อน Firebase พร้อม — set UI badge อย่างเดียว
             const lockBadge = document.getElementById('historyLockedBadge');
             if (lockBadge) historyLocked ? lockBadge.classList.remove('hidden') : lockBadge.classList.add('hidden');
             const mobtuaLocked = localStorage.getItem('mobtuaLocked') === 'true';
             applyMobtuaLock(mobtuaLocked);
             applyAllCardLocks();
-            setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
-            promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
 
             // FIX: แสดง alert จาก localStorage ก่อน (ครั้งเดียว)
             showAlertIfEnabled();
 
+            // ═══ PHASE 2: autosave setup — defer ไม่ให้บล็อก first paint ═══
+            requestAnimationFrame(() => {
+                setupAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
+                promptRestoreAutosave('admissionForm', AUTOSAVE_KEY_ADMISSION);
+            });
+
+            // ═══ PHASE 3: Firebase data loading — ช้าสุดเพราะต้องรอ network ═══
             // รอ Firebase พร้อมแล้วค่อยดึงข้อมูล
             await waitForFirebase();
 
@@ -8424,9 +8494,17 @@
                 return;
             }
 
-            loadHistory();
-            // FIX: โหลด settings จาก Firestore แต่ ไม่เรียก showAlertIfEnabled ซ้ำ
-            loadSettingsFromFirestore();
+            // ═══ PHASE 4: โหลดข้อมูลแบบ non-blocking ═══
+            // ใช้ requestIdleCallback เพื่อไม่บล็อกการกรอกฟอร์ม
+            const loadDataFn = () => {
+                loadHistory();
+                loadSettingsFromFirestore();
+            };
+            if (window.requestIdleCallback) {
+                requestIdleCallback(loadDataFn, { timeout: 2000 });
+            } else {
+                setTimeout(loadDataFn, 100);
+            }
         });
 
         /* =========================================================
@@ -10189,7 +10267,7 @@ ${lines}
 
         async function testEmailNotify() {
             showToast('⏳ กำลังส่งทดสอบอีเมล...');
-            const wasEnabled = localSindextorage.getItem('lineNotifyEnabled');
+            const wasEnabled = localStorage.getItem('lineNotifyEnabled');
             localStorage.setItem('lineNotifyEnabled', 'true');
             await sendEmailNotify(
                 '🧪 ทดสอบระบบแจ้งเตือน — โรงเรียนกระดุมทองวิทยา',

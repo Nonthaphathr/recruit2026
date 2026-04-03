@@ -1112,43 +1112,23 @@
         .loading {
             display: none;
             position: fixed;
-            inset: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 9999;
-            background: rgba(255,255,255,0.85);
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 14px;
         }
 
         .loading.active {
-            display: flex;
+            display: block;
         }
 
         .spinner {
             border: 4px solid var(--border);
             border-top: 4px solid var(--primary);
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .loading-msg {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--primary);
-            text-align: center;
-            font-family: var(--font-body);
-        }
-
-        /* Page transition — fade in เร็ว */
-        .page-entering {
-            animation: pageEnter 0.25s ease-out;
-        }
-        @keyframes pageEnter {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -2377,7 +2357,6 @@
     <!-- Loading Spinner -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <div class="loading-msg" id="loadingMsg">กำลังโหลด...</div>
     </div>
 
     <!-- Header -->
@@ -5406,35 +5385,19 @@
         window.openTransferMobtuaForm = openTransferMobtuaForm;
 
         function selectGrade(grade) {
-            // ═══ แสดง loading ทันที ก่อนทำงานหนัก ═══
-            showLoading(true, '📝 กำลังเปิดแบบฟอร์ม...');
-
-            // ═══ Defer heavy DOM work → ให้ loading paint ก่อน ═══
-            requestAnimationFrame(() => {
-                // ซ่อน landing, แสดง main container
-                document.getElementById('landingPage').classList.add('hidden');
-                document.getElementById('mobtuaPage').classList.remove('active');
-                document.getElementById('reportPage').classList.remove('active');
-                const main = document.getElementById('mainContainer');
-                main.classList.remove('hidden');
-                main.classList.add('page-entering');
-                // reset step for next time
-                backToStep1();
-
-                const gradeSelect = document.getElementById('gradeLevel');
-                gradeSelect.value = grade;
-                updateFormTitle();
-                // render form checklist
-                _formDocChecks = {};
-
-                // ═══ ปิด loading หลัง browser paint เสร็จ ═══
-                requestAnimationFrame(() => {
-                    renderFormChecklist();
-                    showLoading(false);
-                    // ลบ animation class หลังจบ
-                    setTimeout(() => main.classList.remove('page-entering'), 300);
-                });
-            });
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mobtuaPage').classList.remove('active');
+            document.getElementById('reportPage').classList.remove('active');
+            document.getElementById('mainContainer').classList.remove('hidden');
+            // reset step for next time
+            backToStep1();
+            
+            const gradeSelect = document.getElementById('gradeLevel');
+            gradeSelect.value = grade;
+            updateFormTitle();
+            // render form checklist
+            _formDocChecks = {};
+            setTimeout(renderFormChecklist, 50);
         }
 
         function updateFormTitle() {
@@ -6564,11 +6527,9 @@
             }, 100);
         }
 
-        function showLoading(show, msg) {
+        function showLoading(show) {
             const loading = document.getElementById('loading');
-            const msgEl = document.getElementById('loadingMsg');
             if (show) {
-                if (msgEl) msgEl.textContent = msg || 'กำลังโหลด...';
                 loading.classList.add('active');
             } else {
                 loading.classList.remove('active');
@@ -7576,52 +7537,39 @@
 
         // ========== ระบบใบมอบตัวนักเรียน วก.กทว.205 ==========
         function openMobTuaForm(grade) {
-            // ═══ แสดง loading ทันที ═══
-            showLoading(true, '📄 กำลังเปิดแบบฟอร์มมอบตัว...');
+            // ซ่อนหน้าอื่น แสดงหน้า mobtua full page
+            _editingMobtuaId = ''; // ล้าง editing state — กรอกใหม่เปล่า
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('reportPage').classList.remove('active');
+            document.getElementById('mobtuaPage').classList.add('active');
+            backToStep1();
 
-            requestAnimationFrame(() => {
-                // ซ่อนหน้าอื่น แสดงหน้า mobtua full page
-                _editingMobtuaId = ''; // ล้าง editing state — กรอกใหม่เปล่า
-                document.getElementById('landingPage').classList.add('hidden');
-                document.getElementById('mainContainer').classList.add('hidden');
-                document.getElementById('reportPage').classList.remove('active');
-                const mp = document.getElementById('mobtuaPage');
-                mp.classList.add('active');
-                mp.classList.add('page-entering');
-                backToStep1();
+            const defaultYear = localStorage.getItem('defaultAcademicYear');
+            const yearVal = defaultYear || (new Date().getFullYear() + 543).toString();
+            document.getElementById('mt_academicYear').value = yearVal;
 
-                const defaultYear = localStorage.getItem('defaultAcademicYear');
-                const yearVal = defaultYear || (new Date().getFullYear() + 543).toString();
-                document.getElementById('mt_academicYear').value = yearVal;
-
-                if (grade) {
-                    const classRoomEl = document.querySelector('[name="mt_classRoom"]');
-                    if (classRoomEl) {
-                        classRoomEl.value = grade === 'm1' ? 'ม.1/' : 'ม.4/';
-                        classRoomEl.focus();
-                        const len = classRoomEl.value.length;
-                        classRoomEl.setSelectionRange(len, len);
-                    }
-                    document.getElementById('mobtuaForm').dataset.grade = grade;
+            if (grade) {
+                const classRoomEl = document.querySelector('[name="mt_classRoom"]');
+                if (classRoomEl) {
+                    classRoomEl.value = grade === 'm1' ? 'ม.1/' : 'ม.4/';
+                    classRoomEl.focus();
+                    const len = classRoomEl.value.length;
+                    classRoomEl.setSelectionRange(len, len);
                 }
+                document.getElementById('mobtuaForm').dataset.grade = grade;
+            }
 
-                const isLocked = localStorage.getItem('historyLocked') === 'true';
-                const badge = document.getElementById('mobtuaLockedBadge');
-                if (badge) {
-                    badge.textContent = '🔒 ล็อครายการแล้ว';
-                    badge.style.background = '';
-                    isLocked ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-                }
-
-                // ═══ Defer non-critical work ═══
-                requestAnimationFrame(() => {
-                    showLoading(false);
-                    setTimeout(() => mp.classList.remove('page-entering'), 300);
-                    loadMobtuaHistory();
-                    setupAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
-                    promptRestoreAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
-                });
-            });
+            loadMobtuaHistory();
+            const isLocked = localStorage.getItem('historyLocked') === 'true';
+            const badge = document.getElementById('mobtuaLockedBadge');
+            if (badge) {
+                badge.textContent = '🔒 ล็อครายการแล้ว';
+                badge.style.background = '';
+                isLocked ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+            }
+            setupAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
+            promptRestoreAutosave('mobtuaForm', AUTOSAVE_KEY_MOBTUA);
         }
 
         function closeMobtuaModal() {
@@ -9353,77 +9301,63 @@ ${lines}
                 showToast('ขณะนี้ปิดให้บริการใบคำขอย้ายเข้าเรียนชั่วคราว');
                 return;
             }
-            // ═══ แสดง loading ทันที ═══
-            showLoading(true, '🔄 กำลังเปิดแบบฟอร์มย้ายเข้าเรียน...');
-
-            requestAnimationFrame(() => {
-                document.getElementById('landingPage').classList.add('hidden');
-                document.getElementById('mainContainer').classList.add('hidden');
-                document.getElementById('reportPage').classList.remove('active');
-                const mobtuaPage = document.getElementById('mobtuaPage');
-                if (mobtuaPage) mobtuaPage.classList.remove('active');
-                const transferPage = document.getElementById('transferPage');
-                if (transferPage) {
-                    transferPage.classList.add('active');
-                    transferPage.classList.add('page-entering');
-                }
-                // set today date
-                const dateInput = document.querySelector('[name="tf_applicationDate"]');
-                if (dateInput && !dateInput.value) {
-                    dateInput.value = new Date().toISOString().split('T')[0];
-                }
-                // set academic year
-                const ayInput = document.getElementById('tf_academicYear');
-                if (ayInput && !ayInput.value) {
-                    ayInput.value = new Date().getFullYear() + 543;
-                }
-                // national id formatter
-                const nid = document.getElementById('tf_nationalIdInput');
-                if (nid && !nid._tfFormatted) {
-                    nid._tfFormatted = true;
-                    nid.addEventListener('input', function() {
-                        let v = this.value.replace(/[^0-9]/g, '').slice(0, 13);
-                        if (v.length > 1)  v = v.slice(0,1)+'-'+v.slice(1);
-                        if (v.length > 6)  v = v.slice(0,6)+'-'+v.slice(6);
-                        if (v.length > 12) v = v.slice(0,12)+'-'+v.slice(12);
-                        if (v.length > 17) v = v.slice(0,17);
-                        this.value = v;
-                    });
-                }
-                renderTransferFormChecklist();
-                // auto-calc อายุจากปีเกิด
-                const tfByEl = document.getElementById('tf_birthYear');
-                const tfAgeEl = document.getElementById('tf_ageField');
-                if (tfByEl && tfAgeEl && !tfByEl._ageInited) {
-                    tfByEl._ageInited = true;
-                    const calcAge = () => {
-                        const y = parseInt(tfByEl.value);
-                        if (y >= 2500 && y <= 2570) {
-                            tfAgeEl.value = new Date().getFullYear() - (y - 543);
-                        } else { tfAgeEl.value = ''; }
-                    };
-                    tfByEl.addEventListener('input', calcAge);
-                    calcAge();
-                }
-
-                // ═══ Defer non-critical work ═══
-                requestAnimationFrame(() => {
-                    showLoading(false);
-                    if (transferPage) setTimeout(() => transferPage.classList.remove('page-entering'), 300);
-                    setupAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
-                    promptRestoreAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
-                    // re-calc age after restore
-                    setTimeout(() => {
-                        const byEl = document.getElementById('tf_birthYear');
-                        const aeEl = document.getElementById('tf_ageField');
-                        if (byEl && aeEl && byEl.value) {
-                            const y = parseInt(byEl.value);
-                            if (y >= 2500 && y <= 2570) aeEl.value = new Date().getFullYear() - (y - 543);
-                        }
-                    }, 400);
-                    loadTransferHistory();
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('reportPage').classList.remove('active');
+            const mobtuaPage = document.getElementById('mobtuaPage');
+            if (mobtuaPage) mobtuaPage.classList.remove('active');
+            const transferPage = document.getElementById('transferPage');
+            if (transferPage) transferPage.classList.add('active');
+            // set today date
+            const dateInput = document.querySelector('[name="tf_applicationDate"]');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            // set academic year
+            const ayInput = document.getElementById('tf_academicYear');
+            if (ayInput && !ayInput.value) {
+                ayInput.value = new Date().getFullYear() + 543;
+            }
+            // national id formatter
+            const nid = document.getElementById('tf_nationalIdInput');
+            if (nid && !nid._tfFormatted) {
+                nid._tfFormatted = true;
+                nid.addEventListener('input', function() {
+                    let v = this.value.replace(/[^0-9]/g, '').slice(0, 13);
+                    if (v.length > 1)  v = v.slice(0,1)+'-'+v.slice(1);
+                    if (v.length > 6)  v = v.slice(0,6)+'-'+v.slice(6);
+                    if (v.length > 12) v = v.slice(0,12)+'-'+v.slice(12);
+                    if (v.length > 17) v = v.slice(0,17);
+                    this.value = v;
                 });
-            });
+            }
+            renderTransferFormChecklist();
+            // auto-calc อายุจากปีเกิด
+            const tfByEl = document.getElementById('tf_birthYear');
+            const tfAgeEl = document.getElementById('tf_ageField');
+            if (tfByEl && tfAgeEl && !tfByEl._ageInited) {
+                tfByEl._ageInited = true;
+                const calcAge = () => {
+                    const y = parseInt(tfByEl.value);
+                    if (y >= 2500 && y <= 2570) {
+                        tfAgeEl.value = new Date().getFullYear() - (y - 543);
+                    } else { tfAgeEl.value = ''; }
+                };
+                tfByEl.addEventListener('input', calcAge);
+                calcAge();
+            }
+            setupAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
+            promptRestoreAutosave('transferForm', AUTOSAVE_KEY_TRANSFER);
+            // re-calc age after restore
+            setTimeout(() => {
+                const byEl = document.getElementById('tf_birthYear');
+                const aeEl = document.getElementById('tf_ageField');
+                if (byEl && aeEl && byEl.value) {
+                    const y = parseInt(byEl.value);
+                    if (y >= 2500 && y <= 2570) aeEl.value = new Date().getFullYear() - (y - 543);
+                }
+            }, 400);
+            loadTransferHistory();
         }
         window.handleTransferClick = handleTransferClick;
 

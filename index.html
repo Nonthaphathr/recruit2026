@@ -83,15 +83,22 @@
 
         /* ═══ Mobile Performance: ลด animation/transition บน low-end devices ═══ */
         @media (max-width: 768px) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.1s !important;
+            /* ลด transition duration ลง แต่ไม่ปิดสนิท
+               การ set 0.01ms ทำให้ iOS Safari layout thrashing */
+            .grade-card,
+            .doc-type-card,
+            .grade-sub-card,
+            .pending-mobtua-card,
+            .history-item,
+            .checkbox-item {
+                transition-duration: 0.15s !important;
             }
-            /* ยกเว้น spinner ที่จำเป็น */
-            .spinner, .loading-banner-spinner {
-                animation-duration: 1s !important;
-                animation-iteration-count: infinite !important;
+            /* ปิด animation ที่ไม่จำเป็น */
+            .form-section,
+            .history-panel,
+            .mobtua-form-card,
+            .mobtua-history-sidebar {
+                animation: none !important;
             }
             /* ปิด backdrop-filter ที่หนักมากบน mobile GPU */
             .modal-overlay {
@@ -106,14 +113,23 @@
             .grade-card {
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
             }
+            /* ปิด hover transforms ที่ทำให้ tap ช้า */
+            .doc-type-card:hover,
+            .grade-sub-card:hover,
+            .grade-card:hover,
+            .pending-mobtua-card:hover {
+                transform: none !important;
+            }
         }
 
-        /* ═══ Reduce paint on scroll ═══ */
-        .header {
-            will-change: transform;
-        }
-        .mobtua-page-header {
-            will-change: transform;
+        /* ═══ Reduce paint on scroll — only on desktop ═══ */
+        @media (min-width: 769px) {
+            .header {
+                will-change: transform;
+            }
+            .mobtua-page-header {
+                will-change: transform;
+            }
         }
 
         html {
@@ -1924,17 +1940,10 @@
             display: none !important;
         }
 
-        /* ═══ Mobile Performance: content-visibility ═══ */
-        /* ลด rendering cost สำหรับ sections ที่ยังไม่แสดง */
-        .mobtua-page:not(.active),
-        #mainContainer.hidden,
-        #transferPage:not(.active),
-        .report-page:not(.active),
-        .modal-overlay:not(.active) {
-            content-visibility: hidden;
-        }
-        /* NOTE: ห้ามใช้ content-visibility:auto กับ form-body/mobtua-form-card-body
-           เพราะจะทำให้ input fields ไม่ render บน mobile → แตะไม่ได้ */
+        /* ═══ Mobile Performance: ใช้ display:none แทน content-visibility ═══ */
+        /* content-visibility: hidden ทำให้ iOS Safari render ช้าและ tap ไม่ได้
+           ใช้ .hidden / :not(.active) + display:none จาก existing rules พอ
+           ตัวที่ซ่อนด้วย .active pattern จัดการด้วย display:none/flex อยู่แล้ว */
 
         .history-locked-badge {
             display: inline-flex;
@@ -5016,7 +5025,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, persistentSingleTabManager, collection, addDoc, getDocs, getDocFromServer, getDocsFromServer, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -5030,25 +5039,37 @@
 
         const app = initializeApp(firebaseConfig);
 
-        // ══ เปิด IndexedDB Persistence ══
-        // FIX: import getFirestore ที่ top level — ไม่ใช้ dynamic await import()
-        // เพราะ LINE browser / Incognito mode dynamic import ช้า/fail
+        // ══════════════════════════════════════════════════════════
+        //  iOS/Safari Detection — สำคัญมาก
+        //  persistentMultipleTabManager() crash บน iOS WebKit
+        //  ต้องใช้ getFirestore() ตรงๆ หรือ persistentSingleTabManager()
+        // ══════════════════════════════════════════════════════════
+        const ua = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+        const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+        const isLineApp = /Line\//i.test(ua);
+        const isWebKitMobile = isIOS || (isSafari && /Mobile/.test(ua));
+
         let db;
         try {
-            db = initializeFirestore(app, {
-                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-            });
-            console.log('Firestore initialized with persistent cache ✅');
+            if (isWebKitMobile || isLineApp) {
+                // ══ iOS/Safari/LINE → ไม่ใช้ persistence เลย ══
+                // Network-only mode = ข้อมูลสดเสมอ ไม่มี empty cache issue
+                db = getFirestore(app);
+                console.log('Firestore: iOS/Safari mode (no persistence)', { isIOS, isSafari, isLineApp });
+            } else {
+                // ══ Desktop/Android Chrome → ใช้ persistent cache ได้ ══
+                db = initializeFirestore(app, {
+                    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+                });
+                console.log('Firestore: Desktop mode with persistent cache ✅');
+            }
         } catch(e) {
-            // fallback ถ้า persistence ไม่รองรับ (LINE browser, private browsing, etc.)
-            // ใช้ getFirestore ที่ import ไว้แล้ว — ไม่ต้อง await import() อีก
+            // fallback
             try {
                 db = getFirestore(app);
-                console.log('Firestore initialized without persistence (fallback):', e.message);
+                console.log('Firestore: fallback to basic mode:', e.message);
             } catch(e2) {
-                // กรณี Firestore ถูก init ไปแล้วจาก try block แต่ throw ทีหลัง
-                // getFirestore() จะ return instance ที่มีอยู่
-                console.warn('Firestore fallback also failed, trying getFirestore():', e2.message);
                 try { db = getFirestore(app); } catch(e3) {
                     console.error('All Firestore init methods failed:', e3.message);
                 }
@@ -5057,12 +5078,19 @@
 
         // ══ Set globals ทันที ══
         window.db = db;
-        window.firestore = { collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp };
+        window._isIOS = isIOS;
+        window._isWebKitMobile = isWebKitMobile;
+        window.firestore = {
+            collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc,
+            query, orderBy, limit, where, Timestamp, serverTimestamp,
+            // ══ ใช้ *FromServer บน iOS เพื่อ bypass cache ══
+            getDocsFromServer, getDocFromServer
+        };
         window._firebaseReady = true;
 
         // แจ้งว่า Firebase พร้อมแล้ว
         window.dispatchEvent(new Event('firebaseReady'));
-        console.log('Firebase initialized ✅', db ? 'db OK' : 'db MISSING');
+        console.log('Firebase initialized ✅', db ? 'db OK' : 'db MISSING', 'iOS:', isIOS);
     </script>
 
     <script>
@@ -5242,7 +5270,10 @@
                     window.firestore.collection(window.db, 'transfers'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                const snap = await window.firestore.getDocs(q);
+                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer)
+                    ? window.firestore.getDocsFromServer
+                    : window.firestore.getDocs;
+                const snap = await fetcher(q);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
                 const records = allRecords.filter(r => (r.gradeLevel||'') === grade);
@@ -6132,14 +6163,16 @@
                     throw new Error('Firebase ยังไม่พร้อม กรุณารอสักครู่');
                 }
 
-                // ══ FIX: ALWAYS query Firestore ตรงๆ ทุกครั้ง ══
-                // ไม่ใช้ preloaded cache เพราะอาจ stale/empty จาก
-                // persistent cache หรือ race condition ตอนโหลดหน้า
+                // ══ FIX: บน iOS ใช้ getDocsFromServer เพื่อ bypass cache ══
+                // แก้ปัญหาที่ persistent cache คืน empty snapshot ก่อน server
                 const q = window.firestore.query(
                     window.firestore.collection(window.db, 'mobtua'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                const snap = await window.firestore.getDocs(q);
+                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer)
+                    ? window.firestore.getDocsFromServer
+                    : window.firestore.getDocs;
+                const snap = await fetcher(q);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
 
@@ -6293,7 +6326,11 @@
                     window.firestore.limit(25)
                 );
 
-                const querySnapshot = await window.firestore.getDocs(q);
+                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._historyLoadedOnce)
+                    ? window.firestore.getDocsFromServer
+                    : window.firestore.getDocs;
+                const querySnapshot = await fetcher(q);
+                window._historyLoadedOnce = true;
                 const history = [];
 
                 querySnapshot.forEach((doc) => {
@@ -6814,7 +6851,7 @@
                     'ชื่อเล่น': d.tf_nickname||'', 'ระดับชั้น': TGMAP[rec.gradeLevel]||rec.gradeLevel||'',
                     'ปีการศึกษา': rec.academicYear||'',
                     'วันเกิด': `${d.tf_birthDay||''} ${d.tf_birthMonth||''} ${d.tf_birthYear||''}`.trim(),
-                    'หมู่เลือด': d.tf_bloodType||'', 'เลขบัตรประชาชน': d.tf_nationalId||'',
+                    'หมู่เลือด': d.tf_bloodType||'', 'เลขบัตรประชาชน': (d.tf_nationalId||'').replace(/-/g,''),
                     'โทรศัพท์': d.tf_phone||'', 'โรงเรียนเดิม': rec.previousSchool||'',
                     'จังหวัด(เดิม)': rec.previousSchoolProvince||'',
                     'บ้านเลขที่': d.tf_houseNumber||'', 'ตำบล': d.tf_subdistrict||'',
@@ -6831,7 +6868,22 @@
             });
             if (!rows.length) { showToast('ไม่มีข้อมูลใบคำขอย้าย','warning'); return; }
             const ws = window.XLSX.utils.json_to_sheet(rows);
-            ws['!cols'] = Array(Object.keys(rows[0]).length).fill({wch:14});
+            // ══ บังคับ column ที่เป็นเลขยาวให้เป็น text ══
+            const numericTextCols = ['เลขบัตรประชาชน','โทรศัพท์','โทรศัพท์ผปค','ปีการศึกษา'];
+            const headers = Object.keys(rows[0]);
+            const range = window.XLSX.utils.decode_range(ws['!ref']);
+            headers.forEach((h, colIdx) => {
+                if (numericTextCols.includes(h)) {
+                    for (let r = 1; r <= range.e.r; r++) {
+                        const addr = window.XLSX.utils.encode_cell({ r, c: colIdx });
+                        if (ws[addr]) {
+                            ws[addr].t = 's'; // force string type
+                            ws[addr].z = '@'; // text format
+                        }
+                    }
+                }
+            });
+            ws['!cols'] = Array(headers.length).fill({wch:14});
             const wb = window.XLSX.utils.book_new();
             window.XLSX.utils.book_append_sheet(wb, ws, 'ใบคำขอย้าย');
             window.XLSX.writeFile(wb, `ใบคำขอย้ายเข้าเรียน_${new Date().getFullYear()+543}.xlsx`);
@@ -7510,7 +7562,7 @@
                         'ระดับชั้น': data.gradeLevel === 'm4' ? 'ม.4' : 'ม.1',
                         'ปีการศึกษา': data.academicYear || '-',
                         'ชื่อ-สกุล': data.studentName || '-',
-                        'เลขบัตรประชาชน': data.data?.nationalIdClean || data.data?.nationalId || '-',
+                        'เลขบัตรประชาชน': data.data?.nationalIdClean || (data.data?.nationalId || '').replace(/-/g,'') || '-',
                         'วันเกิด': data.data?.birthDate || '-',
                         'อายุ': data.data?.age || '-',
                         'บิดา': data.data?.fatherName || '-',
@@ -7526,29 +7578,12 @@
                     showToast('ไม่มีข้อมูลให้ส่งออก', 'error');
                     return;
                 }
-                
-                // สร้าง CSV
-                const headers = Object.keys(records[0]);
-                const csvContent = [
-                    '\ufeff' + headers.join(','),
-                    ...records.map(row => headers.map(header => {
-                        const value = row[header] || '';
-                        return `"${value.toString().replace(/"/g, '""')}"`;
-                    }).join(','))
-                ].join('\n');
-                
-                // ดาวน์โหลด
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                const today = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `รายชื่อผู้สมัคร_${today}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+
+                // ══ Fields ที่เป็นตัวเลขยาว — Excel จะแปลงเป็น scientific notation
+                // ต้อง wrap เป็น ="..." เพื่อบังคับเก็บเป็น text
+                const numericTextFields = ['เลขบัตรประชาชน','โทรศัพท์','อายุ','ปีการศึกษา'];
+                const csvContent = buildCSVContent(records, numericTextFields);
+                downloadCSV(csvContent, `รายชื่อผู้สมัคร_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.csv`);
                 
                 showToast('ส่งออกข้อมูลสำเร็จ');
                 
@@ -7558,6 +7593,50 @@
             } finally {
                 showLoading(false);
             }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  CSV Helper — บังคับ Excel เก็บเลขยาวเป็น text
+        //  เลข 13 หลัก (บัตร ปชช.) จะถูก Excel แปลงเป็น 1.23457E+12
+        //  วิธีแก้: prefix ด้วย ="..." จะทำให้ Excel เห็นเป็น formula
+        //  ที่ evaluate เป็น string literal
+        // ══════════════════════════════════════════════════════════
+        function escapeCsvCell(value, isNumericText) {
+            const str = (value === undefined || value === null) ? '' : String(value);
+            if (isNumericText && str && str !== '-') {
+                // ใช้ Excel formula trick: ="1234567890123" → Excel เก็บเป็น text
+                const escaped = str.replace(/"/g, '""');
+                return `"=""${escaped}"""`;
+            }
+            const escaped = str.replace(/"/g, '""');
+            return `"${escaped}"`;
+        }
+
+        function buildCSVContent(records, numericTextFields) {
+            if (!records.length) return '';
+            numericTextFields = numericTextFields || [];
+            const headers = Object.keys(records[0]);
+            const numericSet = new Set(numericTextFields);
+            const lines = [
+                '\ufeff' + headers.map(h => `"${h.replace(/"/g,'""')}"`).join(','),
+                ...records.map(row =>
+                    headers.map(h => escapeCsvCell(row[h], numericSet.has(h))).join(',')
+                )
+            ];
+            return lines.join('\r\n');
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function showAlertIfEnabled() {
@@ -8011,7 +8090,11 @@
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const snap = await window.firestore.getDocs(q);
+                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._mobtuaHistoryLoadedOnce)
+                    ? window.firestore.getDocsFromServer
+                    : window.firestore.getDocs;
+                const snap = await fetcher(q);
+                window._mobtuaHistoryLoadedOnce = true;
                 const records = [];
                 snap.forEach(doc => {
                     const data = doc.data();
@@ -8346,17 +8429,17 @@
                     });
                 });
                 if (rows.length === 0) { showToast('ไม่มีข้อมูลให้ส่งออก', 'error'); return; }
-                const headers = Object.keys(rows[0]);
-                const csv = [
-                    '\ufeff' + headers.join(','),
-                    ...rows.map(row => headers.map(h => `"${(row[h]||'').toString().replace(/"/g,'""')}"`).join(','))
-                ].join('\n');
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                // ══ Fields ที่เป็นเลขยาว — ต้อง wrap เป็น text formula ══
+                const numericTextFields = [
+                    'เลขบัตรนักเรียน','เลขบัตรผู้ปกครอง','เลขบัตรบิดา','เลขบัตรมารดา',
+                    'โทรนักเรียน','โทรปัจจุบัน','โทรบ้านผู้ปกครอง','โทรมือถือผู้ปกครอง',
+                    'โทรบิดา','โทรมารดา','โทรทดแทน',
+                    'รหัสบ้านนักเรียน','รหัสบ้านปัจจุบัน','ไปรษณีย์ผู้ปกครอง','ไปรษณีย์ปัจจุบัน',
+                    'รหัสไปรษณีย์นักเรียน','เลขประจำตัวนักเรียน','ปีการศึกษา'
+                ];
+                const csv = buildCSVContent(rows, numericTextFields);
                 const today = new Date().toLocaleDateString('th-TH').replace(/\//g,'-');
-                a.href = url; a.download = `รายชื่อใบมอบตัว_${today}.csv`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                downloadCSV(csv, `รายชื่อใบมอบตัว_${today}.csv`);
                 showToast('ส่งออกข้อมูลใบมอบตัวสำเร็จ');
             } catch(e) {
                 showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
@@ -9034,23 +9117,10 @@ ${lines}
                     return;
                 }
 
-                const headers = Object.keys(incompleteRows[0]);
-                const csv = [
-                    '\ufeff' + headers.join(','),
-                    ...incompleteRows.map(row =>
-                        headers.map(h => `"${(row[h]||'').toString().replace(/"/g,'""')}"`).join(',')
-                    )
-                ].join('\n');
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const numericTextFields = ['โทรศัพท์'];
+                const csv = buildCSVContent(incompleteRows, numericTextFields);
                 const today = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
-                a.href = url;
-                a.download = `รายการหลักฐานไม่ครบ_${today}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                downloadCSV(csv, `รายการหลักฐานไม่ครบ_${today}.csv`);
 
                 showToast(`ส่งออกรายการหลักฐานไม่ครบสำเร็จ (${incompleteRows.length} ราย)`);
             } catch (e) {
@@ -9793,7 +9863,11 @@ ${lines}
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const snap = await window.firestore.getDocs(q);
+                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._transferHistoryLoadedOnce)
+                    ? window.firestore.getDocsFromServer
+                    : window.firestore.getDocs;
+                const snap = await fetcher(q);
+                window._transferHistoryLoadedOnce = true;
                 const history = [];
                 snap.forEach(d => {
                     const rec = { id: d.id, ...d.data() };

@@ -5025,7 +5025,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, persistentSingleTabManager, collection, addDoc, getDocs, getDocFromServer, getDocsFromServer, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, limit, where, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import * as FS from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -5040,9 +5040,8 @@
         const app = initializeApp(firebaseConfig);
 
         // ══════════════════════════════════════════════════════════
-        //  iOS/Safari Detection — สำคัญมาก
+        //  iOS/Safari Detection
         //  persistentMultipleTabManager() crash บน iOS WebKit
-        //  ต้องใช้ getFirestore() ตรงๆ หรือ persistentSingleTabManager()
         // ══════════════════════════════════════════════════════════
         const ua = navigator.userAgent;
         const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
@@ -5053,44 +5052,52 @@
         let db;
         try {
             if (isWebKitMobile || isLineApp) {
-                // ══ iOS/Safari/LINE → ไม่ใช้ persistence เลย ══
-                // Network-only mode = ข้อมูลสดเสมอ ไม่มี empty cache issue
-                db = getFirestore(app);
+                // iOS/Safari/LINE → ไม่ใช้ persistence เลย (network-only)
+                db = FS.getFirestore(app);
                 console.log('Firestore: iOS/Safari mode (no persistence)', { isIOS, isSafari, isLineApp });
             } else {
-                // ══ Desktop/Android Chrome → ใช้ persistent cache ได้ ══
-                db = initializeFirestore(app, {
-                    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+                // Desktop/Android Chrome → persistent cache
+                db = FS.initializeFirestore(app, {
+                    localCache: FS.persistentLocalCache({ tabManager: FS.persistentMultipleTabManager() })
                 });
                 console.log('Firestore: Desktop mode with persistent cache ✅');
             }
         } catch(e) {
-            // fallback
-            try {
-                db = getFirestore(app);
-                console.log('Firestore: fallback to basic mode:', e.message);
-            } catch(e2) {
-                try { db = getFirestore(app); } catch(e3) {
-                    console.error('All Firestore init methods failed:', e3.message);
-                }
-            }
+            try { db = FS.getFirestore(app); console.log('Firestore: fallback:', e.message); }
+            catch(e2) { console.error('Firestore init failed:', e2.message); }
         }
 
-        // ══ Set globals ทันที ══
+        // ══ Set globals ══
         window.db = db;
         window._isIOS = isIOS;
         window._isWebKitMobile = isWebKitMobile;
+        // Expose ทุก function ที่มีจริงใน SDK — ถ้า getDocsFromServer ไม่มี ก็จะเป็น undefined เฉยๆ ไม่ crash
         window.firestore = {
-            collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc,
-            query, orderBy, limit, where, Timestamp, serverTimestamp,
-            // ══ ใช้ *FromServer บน iOS เพื่อ bypass cache ══
-            getDocsFromServer, getDocFromServer
+            collection: FS.collection,
+            addDoc: FS.addDoc,
+            getDocs: FS.getDocs,
+            getDoc: FS.getDoc,
+            setDoc: FS.setDoc,
+            doc: FS.doc,
+            deleteDoc: FS.deleteDoc,
+            updateDoc: FS.updateDoc,
+            query: FS.query,
+            orderBy: FS.orderBy,
+            limit: FS.limit,
+            where: FS.where,
+            Timestamp: FS.Timestamp,
+            serverTimestamp: FS.serverTimestamp,
+            // Optional — อาจเป็น undefined ถ้า SDK version เก่า
+            getDocsFromServer: FS.getDocsFromServer,
+            getDocFromServer: FS.getDocFromServer
         };
         window._firebaseReady = true;
-
-        // แจ้งว่า Firebase พร้อมแล้ว
         window.dispatchEvent(new Event('firebaseReady'));
-        console.log('Firebase initialized ✅', db ? 'db OK' : 'db MISSING', 'iOS:', isIOS);
+        console.log('Firebase initialized ✅', {
+            db: !!db,
+            isIOS,
+            hasGetDocsFromServer: typeof FS.getDocsFromServer === 'function'
+        });
     </script>
 
     <script>
@@ -5270,10 +5277,8 @@
                     window.firestore.collection(window.db, 'transfers'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer)
-                    ? window.firestore.getDocsFromServer
-                    : window.firestore.getDocs;
-                const snap = await fetcher(q);
+                // iOS: ใช้ server call ข้าม cache | Desktop: ใช้ getDocs ปกติ
+                const snap = await safeGetDocs(q, window._isWebKitMobile);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
                 const records = allRecords.filter(r => (r.gradeLevel||'') === grade);
@@ -6163,16 +6168,12 @@
                     throw new Error('Firebase ยังไม่พร้อม กรุณารอสักครู่');
                 }
 
-                // ══ FIX: บน iOS ใช้ getDocsFromServer เพื่อ bypass cache ══
-                // แก้ปัญหาที่ persistent cache คืน empty snapshot ก่อน server
+                // ══ FIX: บน iOS ใช้ safeGetDocs กับ forceServer=true เพื่อ bypass cache ══
                 const q = window.firestore.query(
                     window.firestore.collection(window.db, 'mobtua'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer)
-                    ? window.firestore.getDocsFromServer
-                    : window.firestore.getDocs;
-                const snap = await fetcher(q);
+                const snap = await safeGetDocs(q, window._isWebKitMobile);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
 
@@ -6326,10 +6327,9 @@
                     window.firestore.limit(25)
                 );
 
-                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._historyLoadedOnce)
-                    ? window.firestore.getDocsFromServer
-                    : window.firestore.getDocs;
-                const querySnapshot = await fetcher(q);
+                // iOS ครั้งแรก: force server | ครั้งถัดไป: cache ก็พอ
+                const useServer = window._isWebKitMobile && !window._historyLoadedOnce;
+                const querySnapshot = await safeGetDocs(q, useServer);
                 window._historyLoadedOnce = true;
                 const history = [];
 
@@ -8090,10 +8090,8 @@
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._mobtuaHistoryLoadedOnce)
-                    ? window.firestore.getDocsFromServer
-                    : window.firestore.getDocs;
-                const snap = await fetcher(q);
+                const useServer = window._isWebKitMobile && !window._mobtuaHistoryLoadedOnce;
+                const snap = await safeGetDocs(q, useServer);
                 window._mobtuaHistoryLoadedOnce = true;
                 const records = [];
                 snap.forEach(doc => {
@@ -8598,6 +8596,25 @@
                 setTimeout(() => { clearInterval(poll); resolve(); }, 6000);
             });
         }
+
+        // ══ Helper: safeGetDocs — ลอง server ก่อน (iOS) แล้ว fallback getDocs ══
+        // ใช้แทน getDocs ทุกที่ที่ต้องการข้อมูลสดๆ
+        // forceServer = true → ลอง getDocsFromServer ก่อน (ถ้ามี)
+        async function safeGetDocs(q, forceServer) {
+            const fs = window.firestore;
+            if (!fs) throw new Error('Firestore ยังไม่พร้อม');
+            // ลอง getDocsFromServer เฉพาะกรณีระบุ forceServer + SDK รองรับ
+            if (forceServer && typeof fs.getDocsFromServer === 'function') {
+                try {
+                    return await fs.getDocsFromServer(q);
+                } catch(e) {
+                    // server call fail — fall back ไป getDocs ธรรมดา
+                    console.warn('[safeGetDocs] getDocsFromServer failed, fallback to getDocs:', e.message);
+                }
+            }
+            return await fs.getDocs(q);
+        }
+        window.safeGetDocs = safeGetDocs;
 
         window.addEventListener('DOMContentLoaded', async () => {
             // ═══ PHASE 1: ทำ UI interactive ก่อน (ไม่ต้องรอ Firebase) ═══
@@ -9863,10 +9880,8 @@ ${lines}
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const fetcher = (window._isWebKitMobile && window.firestore.getDocsFromServer && !window._transferHistoryLoadedOnce)
-                    ? window.firestore.getDocsFromServer
-                    : window.firestore.getDocs;
-                const snap = await fetcher(q);
+                const useServer = window._isWebKitMobile && !window._transferHistoryLoadedOnce;
+                const snap = await safeGetDocs(q, useServer);
                 window._transferHistoryLoadedOnce = true;
                 const history = [];
                 snap.forEach(d => {

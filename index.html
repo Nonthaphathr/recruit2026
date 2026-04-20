@@ -5277,8 +5277,9 @@
                     window.firestore.collection(window.db, 'transfers'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                // iOS: ใช้ server call ข้าม cache | Desktop: ใช้ getDocs ปกติ
-                const snap = await safeGetDocs(q, window._isWebKitMobile);
+                // ครั้งแรก: getDocs (เร็ว จาก cache) | retry: force server bypass cache
+                const forceServer = _retryCount >= 1;
+                const snap = await safeGetDocs(q, forceServer);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
                 const records = allRecords.filter(r => (r.gradeLevel||'') === grade);
@@ -6168,12 +6169,14 @@
                     throw new Error('Firebase ยังไม่พร้อม กรุณารอสักครู่');
                 }
 
-                // ══ FIX: บน iOS ใช้ safeGetDocs กับ forceServer=true เพื่อ bypass cache ══
+                // ══ STRATEGY: ครั้งแรกใช้ getDocs (เร็ว จาก cache)
+                //   ถ้าว่างเปล่า → retry รอบถัดไปค่อย force server
                 const q = window.firestore.query(
                     window.firestore.collection(window.db, 'mobtua'),
                     window.firestore.orderBy('createdAt', 'asc')
                 );
-                const snap = await safeGetDocs(q, window._isWebKitMobile);
+                const forceServer = _retryCount >= 1; // ครั้งแรกเร็ว ครั้งถัดไปค่อย bypass cache
+                const snap = await safeGetDocs(q, forceServer);
                 const allRecords = [];
                 snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
 
@@ -6327,9 +6330,9 @@
                     window.firestore.limit(25)
                 );
 
-                // iOS ครั้งแรก: force server | ครั้งถัดไป: cache ก็พอ
-                const useServer = window._isWebKitMobile && !window._historyLoadedOnce;
-                const querySnapshot = await safeGetDocs(q, useServer);
+                // ไม่ force server — history panel accept cache ได้
+                // (ถ้าจะเห็น record ล่าสุดหลัง save เรา call loadHistory() ใหม่อยู่แล้ว)
+                const querySnapshot = await safeGetDocs(q, false);
                 window._historyLoadedOnce = true;
                 const history = [];
 
@@ -8090,8 +8093,8 @@
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const useServer = window._isWebKitMobile && !window._mobtuaHistoryLoadedOnce;
-                const snap = await safeGetDocs(q, useServer);
+                // ไม่ force server — history panel accept cache ได้
+                const snap = await safeGetDocs(q, false);
                 window._mobtuaHistoryLoadedOnce = true;
                 const records = [];
                 snap.forEach(doc => {
@@ -8581,35 +8584,38 @@
                     return;
                 }
                 // ฟัง event จาก module script
-                window.addEventListener('firebaseReady', () => {
-                    // รอเพิ่ม 50ms ให้ Firestore persistent cache init เสร็จ
-                    setTimeout(resolve, 50);
-                }, { once: true });
-                // polling fallback — กรณี event fire ก่อน listener register
+                window.addEventListener('firebaseReady', () => resolve(), { once: true });
+                // polling fallback — เช็คบ่อยขึ้น (50ms) ช่วยให้เริ่มทำงานเร็วกว่า
                 const poll = setInterval(() => {
                     if (window._firebaseReady && window.firestore && window.db) {
                         clearInterval(poll);
                         resolve();
                     }
-                }, 150);
-                // safety timeout — ถ้า 6 วินาทียังไม่พร้อม ลองทำต่อเลย
-                setTimeout(() => { clearInterval(poll); resolve(); }, 6000);
+                }, 50);
+                // safety timeout — ลดจาก 6s → 3s
+                setTimeout(() => { clearInterval(poll); resolve(); }, 3000);
             });
         }
 
         // ══ Helper: safeGetDocs — ลอง server ก่อน (iOS) แล้ว fallback getDocs ══
         // ใช้แทน getDocs ทุกที่ที่ต้องการข้อมูลสดๆ
-        // forceServer = true → ลอง getDocsFromServer ก่อน (ถ้ามี)
-        async function safeGetDocs(q, forceServer) {
+        // forceServer = true → ลอง getDocsFromServer ก่อน (ถ้ามี) พร้อม timeout 4s
+        async function safeGetDocs(q, forceServer, timeoutMs) {
             const fs = window.firestore;
             if (!fs) throw new Error('Firestore ยังไม่พร้อม');
+            timeoutMs = timeoutMs || 4000;
             // ลอง getDocsFromServer เฉพาะกรณีระบุ forceServer + SDK รองรับ
             if (forceServer && typeof fs.getDocsFromServer === 'function') {
                 try {
-                    return await fs.getDocsFromServer(q);
+                    // race ระหว่าง server call กับ timeout
+                    const serverCall = fs.getDocsFromServer(q);
+                    const timeout = new Promise((_, rej) =>
+                        setTimeout(() => rej(new Error('server call timeout')), timeoutMs)
+                    );
+                    return await Promise.race([serverCall, timeout]);
                 } catch(e) {
-                    // server call fail — fall back ไป getDocs ธรรมดา
-                    console.warn('[safeGetDocs] getDocsFromServer failed, fallback to getDocs:', e.message);
+                    // timeout หรือ network fail → fall back getDocs ทันที
+                    console.warn('[safeGetDocs] server call failed/timeout, fallback to getDocs:', e.message);
                 }
             }
             return await fs.getDocs(q);
@@ -9880,8 +9886,7 @@ ${lines}
                     window.firestore.orderBy('createdAt', 'desc'),
                     window.firestore.limit(50)
                 );
-                const useServer = window._isWebKitMobile && !window._transferHistoryLoadedOnce;
-                const snap = await safeGetDocs(q, useServer);
+                const snap = await safeGetDocs(q, false);
                 window._transferHistoryLoadedOnce = true;
                 const history = [];
                 snap.forEach(d => {

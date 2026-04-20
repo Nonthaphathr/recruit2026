@@ -5273,26 +5273,18 @@
             try {
                 await waitForFirebase();
                 if (!window.firestore || !window.db) throw new Error('Firebase ยังไม่พร้อม');
-                const q = window.firestore.query(
-                    window.firestore.collection(window.db, 'transfers'),
-                    window.firestore.orderBy('createdAt', 'asc')
-                );
-                // ครั้งแรก: getDocs (เร็ว จาก cache) | retry: force server bypass cache
-                const forceServer = _retryCount >= 1;
-                const snap = await safeGetDocs(q, forceServer);
-                const allRecords = [];
-                snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
+                // ใช้ loadCollectionSmart — SDK ก่อน, REST fallback
+                const allRecords = await loadCollectionSmart('transfers', {
+                    sdkOrderBy: 'createdAt',
+                    sdkOrderDir: 'asc'
+                });
                 const records = allRecords.filter(r => (r.gradeLevel||'') === grade);
                 if (records.length === 0) {
-                    if (_retryCount < 1 && allRecords.length === 0) {
-                        setTimeout(() => showTransferMobtuaList(grade, _retryCount + 1), 2000);
-                        return;
-                    }
                     _pendingTransferRecordsAll = [];
                     listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
                         <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
                         <p style="font-weight:600;margin-bottom:.5rem;">ไม่พบรายการคำขอย้ายเข้า ${gradeLabel}</p>
-                        <p style="font-size:.82rem;">ผู้ปกครองต้องยื่นใบคำขอย้ายเข้าเรียนก่อน<br>จึงจะปรากฏในรายการนี้</p>
+                        <p style="font-size:.82rem;">รวมทั้งหมดในระบบ: ${allRecords.length} รายการ<br>${allRecords.length > 0 ? '(ไม่ตรงกับระดับชั้นที่เลือก)' : 'ผู้ปกครองต้องยื่นใบคำขอย้ายเข้าเรียนก่อน<br>จึงจะปรากฏในรายการนี้'}</p>
                         <button onclick="showTransferMobtuaList('${grade}')" style="margin-top:1rem;background:#0891b2;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 โหลดใหม่</button>
                     </div>`;
                     return;
@@ -6169,16 +6161,14 @@
                     throw new Error('Firebase ยังไม่พร้อม กรุณารอสักครู่');
                 }
 
-                // ══ STRATEGY: ครั้งแรกใช้ getDocs (เร็ว จาก cache)
-                //   ถ้าว่างเปล่า → retry รอบถัดไปค่อย force server
-                const q = window.firestore.query(
-                    window.firestore.collection(window.db, 'mobtua'),
-                    window.firestore.orderBy('createdAt', 'asc')
-                );
-                const forceServer = _retryCount >= 1; // ครั้งแรกเร็ว ครั้งถัดไปค่อย bypass cache
-                const snap = await safeGetDocs(q, forceServer);
-                const allRecords = [];
-                snap.forEach(d => allRecords.push({ id: d.id, ...d.data() }));
+                // ══ STRATEGY ใหม่: ใช้ loadCollectionSmart 
+                //   1. ลอง SDK getDocs ก่อน
+                //   2. ถ้า empty บน mobile → auto fallback REST API
+                //   3. ถ้า SDK throw → auto fallback REST API
+                const allRecords = await loadCollectionSmart('mobtua', {
+                    sdkOrderBy: 'createdAt',
+                    sdkOrderDir: 'asc'
+                });
 
                 // อัปเดต preload cache ให้หน้าอื่นๆ ใช้ได้
                 window._preloadedMobtua = Promise.resolve(allRecords);
@@ -6191,18 +6181,12 @@
                 });
 
                 if (records.length === 0) {
-                    // ══ FIX: ถ้าผลว่าง + ยังไม่เคย retry → auto-retry 1 ครั้งหลัง 2 วินาที ══
-                    // กรณี persistent cache คืนข้อมูลเก่าก่อน server response
-                    if (_retryCount < 1 && allRecords.length === 0) {
-                        console.log('[PendingList] empty result, auto-retrying in 2s...');
-                        setTimeout(() => showPendingMobtuaList(grade, _retryCount + 1), 2000);
-                        return;
-                    }
+                    // ถ้าทั้ง SDK และ REST ได้ empty → ไม่มีข้อมูลในระดับชั้นนี้จริงๆ
                     _pendingRecordsAll = [];
                     listEl.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:#64748b;">
                         <div style="font-size:3.5rem;margin-bottom:.75rem;">📭</div>
-                        <p style="font-weight:600;margin-bottom:.5rem;">ยังไม่มีรายการรอมอบตัว</p>
-                        <p style="font-size:.82rem;">เมื่อผู้สมัครบันทึกใบสมัครออนไลน์แล้ว<br>ระบบจะสร้างรายการที่นี่โดยอัตโนมัติ</p>
+                        <p style="font-weight:600;margin-bottom:.5rem;">ยังไม่มีรายการรอมอบตัว ${grade === 'm4' ? 'ม.4' : 'ม.1'}</p>
+                        <p style="font-size:.82rem;">รวมทั้งหมดในระบบ: ${allRecords.length} รายการ<br>${allRecords.length > 0 ? '(ไม่ตรงกับระดับชั้นที่เลือก)' : 'เมื่อผู้สมัครบันทึกใบสมัครออนไลน์แล้ว<br>ระบบจะสร้างรายการที่นี่โดยอัตโนมัติ'}</p>
                         <button onclick="showPendingMobtuaList('${grade}')" style="margin-top:1rem;background:#7b3f9e;color:white;border:none;padding:.6rem 1.5rem;border-radius:10px;font-family:inherit;font-size:.88rem;cursor:pointer;font-weight:600;">🔄 โหลดใหม่</button>
                     </div>`;
                     return;
@@ -8607,20 +8591,153 @@
             // ลอง getDocsFromServer เฉพาะกรณีระบุ forceServer + SDK รองรับ
             if (forceServer && typeof fs.getDocsFromServer === 'function') {
                 try {
-                    // race ระหว่าง server call กับ timeout
                     const serverCall = fs.getDocsFromServer(q);
                     const timeout = new Promise((_, rej) =>
                         setTimeout(() => rej(new Error('server call timeout')), timeoutMs)
                     );
                     return await Promise.race([serverCall, timeout]);
                 } catch(e) {
-                    // timeout หรือ network fail → fall back getDocs ทันที
                     console.warn('[safeGetDocs] server call failed/timeout, fallback to getDocs:', e.message);
                 }
             }
             return await fs.getDocs(q);
         }
         window.safeGetDocs = safeGetDocs;
+
+        // ══════════════════════════════════════════════════════════
+        //  REST API Fallback — สำหรับกรณี SDK มีปัญหาบนมือถือ
+        //  ใช้ HTTP fetch ตรงๆ ไปยัง Firestore REST endpoint
+        //  เหมาะเป็น fallback เมื่อ getDocs() return empty snapshot
+        // ══════════════════════════════════════════════════════════
+        const REST_PROJECT_ID = 'recruitstudents2026';
+        const REST_API_KEY = 'AIzaSyAZruE6dHfH2uFjE0TAet7Yys8H5soATVY';
+
+        function parseFirestoreValue(v) {
+            if (v === null || v === undefined) return null;
+            if ('stringValue' in v) return v.stringValue;
+            if ('integerValue' in v) return parseInt(v.integerValue, 10);
+            if ('doubleValue' in v) return v.doubleValue;
+            if ('booleanValue' in v) return v.booleanValue;
+            if ('nullValue' in v) return null;
+            if ('timestampValue' in v) {
+                const d = new Date(v.timestampValue);
+                // mimic Firestore Timestamp API ที่โค้ดที่มีอยู่เรียกใช้ .toDate()
+                return { toDate: () => d, _fromREST: true };
+            }
+            if ('mapValue' in v) return parseFirestoreFields(v.mapValue.fields || {});
+            if ('arrayValue' in v) return (v.arrayValue.values || []).map(parseFirestoreValue);
+            if ('referenceValue' in v) return v.referenceValue;
+            if ('geoPointValue' in v) return v.geoPointValue;
+            if ('bytesValue' in v) return v.bytesValue;
+            return null;
+        }
+
+        function parseFirestoreFields(fields) {
+            const out = {};
+            for (const k in fields) {
+                if (Object.prototype.hasOwnProperty.call(fields, k)) {
+                    out[k] = parseFirestoreValue(fields[k]);
+                }
+            }
+            return out;
+        }
+
+        // Fetch a collection via REST API → array of { id, ...fields }
+        async function fetchCollectionREST(collectionName, opts) {
+            opts = opts || {};
+            const pageSize = opts.pageSize || 300;
+            const url = `https://firestore.googleapis.com/v1/projects/${REST_PROJECT_ID}/databases/(default)/documents/${collectionName}?pageSize=${pageSize}&key=${REST_API_KEY}`;
+            console.log('[REST] GET', url.replace(REST_API_KEY, '***'));
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), opts.timeoutMs || 8000);
+            let res;
+            try {
+                res = await fetch(url, {
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    signal: controller.signal
+                });
+            } finally {
+                clearTimeout(timer);
+            }
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`REST ${res.status}: ${text.substring(0,200)}`);
+            }
+            const json = await res.json();
+            const docs = json.documents || [];
+            const results = docs.map(doc => {
+                const id = doc.name.split('/').pop();
+                const fields = parseFirestoreFields(doc.fields || {});
+                return { id, ...fields };
+            });
+            // Sort by createdAt ถ้ามี field นี้
+            if (opts.orderBy === 'createdAt') {
+                const dir = opts.orderDir === 'desc' ? -1 : 1;
+                results.sort((a, b) => {
+                    const at = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+                    const bt = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+                    return (at - bt) * dir;
+                });
+            }
+            console.log(`[REST] ${collectionName}: ${results.length} records`);
+            return results;
+        }
+        window.fetchCollectionREST = fetchCollectionREST;
+
+        // ══ Helper: loadCollectionSmart — SDK ก่อน, REST เป็น fallback ══
+        // ใช้ใน list pages ที่ SDK อาจ return empty บนมือถือ
+        async function loadCollectionSmart(collectionName, opts) {
+            opts = opts || {};
+            const fs = window.firestore;
+            const sdkStrategy = opts.sdkOrderBy || 'createdAt';
+            const sdkDir = opts.sdkOrderDir || 'asc';
+
+            // ลำดับการพยายาม:
+            // 1. Firestore SDK (getDocs) — เร็วเพราะมี cache
+            // 2. ถ้า empty บน mobile → ลอง REST API
+            // 3. ถ้า SDK throw → ลอง REST API
+            let records = null;
+            try {
+                const q = fs.query(
+                    fs.collection(window.db, collectionName),
+                    fs.orderBy(sdkStrategy, sdkDir)
+                );
+                const snap = await safeGetDocs(q, false);
+                const arr = [];
+                snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+                records = arr;
+                console.log(`[loadCollectionSmart] SDK ${collectionName}: ${arr.length} records`);
+            } catch(e) {
+                console.warn(`[loadCollectionSmart] SDK failed for ${collectionName}:`, e.message);
+                records = null;
+            }
+
+            // ถ้า SDK ได้ empty + mobile → fallback REST
+            // ถ้า SDK throw → ก็ fallback REST
+            if (records === null || (records.length === 0 && window._isWebKitMobile)) {
+                try {
+                    const restRecords = await fetchCollectionREST(collectionName, {
+                        orderBy: sdkStrategy,
+                        orderDir: sdkDir
+                    });
+                    // ใช้ REST result ถ้ามีข้อมูล (แม้ SDK ก็ได้แต่ว่าง)
+                    if (restRecords.length > 0) {
+                        console.log(`[loadCollectionSmart] REST WIN for ${collectionName}: ${restRecords.length} records`);
+                        return restRecords;
+                    }
+                    // REST ก็ว่าง → return เหมือน SDK (อาจว่างจริงๆ)
+                    return records || [];
+                } catch(restErr) {
+                    console.error(`[loadCollectionSmart] REST also failed:`, restErr.message);
+                    // ถ้า SDK ได้ผล (แต่ว่าง) return ผลนั้น ถ้า throw ทั้งคู่ ก็ throw
+                    if (records !== null) return records;
+                    throw restErr;
+                }
+            }
+            return records;
+        }
+        window.loadCollectionSmart = loadCollectionSmart;
 
         window.addEventListener('DOMContentLoaded', async () => {
             // ═══ PHASE 1: ทำ UI interactive ก่อน (ไม่ต้องรอ Firebase) ═══

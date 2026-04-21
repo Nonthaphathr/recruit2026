@@ -2658,7 +2658,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
 import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
-  collection, getDocs, getDoc, doc,
+  collection, getDocs, getDocsFromServer, getDoc, doc,
   deleteDoc, updateDoc, query, orderBy, where, onSnapshot,
   serverTimestamp, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -2674,27 +2674,60 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 
-/* ── FIX: เปิด persistent cache เพื่อโหลดเร็วขึ้น (เหมือน index.html) ── */
+/* ─────────────────────────────────────────────────
+   FIX: Detect iOS / Safari / LINE Browser (WebKit)
+   WebKit ไม่รองรับ persistentMultipleTabManager()
+   ถ้าใช้จะ init ล้มเหลวเงียบ ๆ → ข้อมูลไม่โหลดบนมือถือ
+───────────────────────────────────────────────── */
+const _ua = navigator.userAgent || '';
+const _isIOS     = /iPad|iPhone|iPod/.test(_ua) && !window.MSStream;
+const _isSafari  = /^((?!chrome|android).)*safari/i.test(_ua);
+const _isLine    = /Line/i.test(_ua);
+const _isWebKit  = _isIOS || _isSafari || _isLine;
+console.log('[Staff] Platform detect:', { iOS:_isIOS, Safari:_isSafari, LINE:_isLine, WebKit:_isWebKit });
+
+/* ── Firestore init — เลือก config ตาม platform ── */
 let db;
 try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-  });
-  console.log('[Staff] Firestore with persistent cache ✅');
+  if (_isWebKit) {
+    // WebKit: ใช้ persistent cache แบบ single-tab (ไม่มี multi-tab manager)
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({})
+    });
+    console.log('[Staff] WebKit detected → persistent cache (single-tab) ✅');
+  } else {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+    console.log('[Staff] Firestore with multi-tab persistent cache ✅');
+  }
 } catch(e) {
+  console.warn('[Staff] initializeFirestore failed, fallback to getFirestore:', e.message);
   try {
     db = getFirestore(app);
-    console.log('[Staff] Firestore fallback (no cache):', e.message);
   } catch(e2) {
-    try { db = getFirestore(app); } catch(e3) {
-      console.error('[Staff] All Firestore init failed:', e3.message);
-    }
+    console.error('[Staff] All Firestore init failed:', e2.message);
+  }
+}
+
+/* ─────────────────────────────────────────────────
+   FIX: safeGetDocs — ดึงจาก server ก่อนเสมอ
+   ถ้า server ล้มเหลว → fallback ไป cache
+   แก้ race condition ของ cache ว่างบน iOS
+───────────────────────────────────────────────── */
+async function safeGetDocs(q) {
+  try {
+    return await getDocsFromServer(q);
+  } catch(e) {
+    console.warn('[safeGetDocs] server fetch failed, falling back to cache:', e.message);
+    return await getDocs(q);
   }
 }
 
 /* ── Expose helpers ── */
 window._db = db;
-window._fs = { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, query, orderBy, where, onSnapshot, serverTimestamp, Timestamp };
+window._fs = { collection, getDocs, getDocsFromServer, getDoc, doc, deleteDoc, updateDoc, query, orderBy, where, onSnapshot, serverTimestamp, Timestamp };
+window._safeGetDocs = safeGetDocs;
 
 /* ── Password ── */
 const STAFF_PASS = 'admin1234';
@@ -2742,53 +2775,65 @@ window.doLogout = doLogout;
 /* ─────────────────────────────────────────────────
    INIT
 ───────────────────────────────────────────────── */
-function initApp() {
+/* ─────────────────────────────────────────────────
+   INIT — โหลดข้อมูลทันทีจาก server แล้วค่อย subscribe
+   แก้ปัญหาเดิม: onSnapshot ยิง empty snapshot จาก cache ว่าง
+   ทำให้ต้องรอ server 2-3 นาทีถึงจะเห็นข้อมูล
+───────────────────────────────────────────────── */
+async function initApp() {
+  // ── Immediate server fetch (bypass empty cache race) ──
+  try {
+    const qAdm = window._fs.query(
+      window._fs.collection(window._db, 'admissions'),
+      window._fs.orderBy('createdAt', 'desc')
+    );
+    const admSnap = await safeGetDocs(qAdm);
+    const admRecs = [];
+    admSnap.forEach(d => admRecs.push({ id: d.id, _collection:'admissions', ...d.data() }));
+    allAdmissions = admRecs;
+    isFirstLoadAdmission = false;
+    setConnStatus(true);
+    try { renderAdmissions(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    try { renderPp1Tracker(); } catch(e) {}
+    console.log('[Staff] Initial load: admissions =', admRecs.length);
+  } catch(e) {
+    console.error('[Staff] Initial admission load error:', e.message);
+  }
+
+  try {
+    const qMt = window._fs.query(
+      window._fs.collection(window._db, 'mobtua'),
+      window._fs.orderBy('createdAt', 'desc')
+    );
+    const mtSnap = await safeGetDocs(qMt);
+    const mtRecs = [];
+    // ══ FILTER: ไม่เอาใบมอบตัวย้ายเข้าปนกับใบมอบตัวสมัครใหม่ ══
+    mtSnap.forEach(d => {
+      const rec = { id: d.id, _collection:'mobtua', ...d.data() };
+      if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') {
+        mtRecs.push(rec);
+      }
+    });
+    allMobtua = mtRecs;
+    isFirstLoadMobtua = false;
+    try { renderMobtua(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    console.log('[Staff] Initial load: mobtua (สมัครใหม่เท่านั้น) =', mtRecs.length);
+  } catch(e) {
+    console.error('[Staff] Initial mobtua load error:', e.message);
+  }
+
+  // ── Now subscribe for real-time updates ──
   subscribeAdmissions();
   subscribeMobtua();
-
-  // ══ FIX: Fallback — ถ้า onSnapshot ไม่ fire ภายใน 6 วินาที ใช้ getDocs ตรง ══
-  setTimeout(async () => {
-    if (isFirstLoadAdmission || allAdmissions.length === 0) {
-      console.warn('[Staff] onSnapshot admission timeout — using getDocs fallback');
-      try {
-        const q = window._fs.query(window._fs.collection(window._db, 'admissions'), window._fs.orderBy('createdAt', 'desc'));
-        const snap = await window._fs.getDocs(q);
-        const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'admissions', ...d.data() }));
-        if (records.length > 0 || allAdmissions.length === 0) {
-          allAdmissions = records;
-          isFirstLoadAdmission = false;
-          setConnStatus(true);
-          try { renderAdmissions(); } catch(e) {}
-          try { updateStats(); } catch(e) {}
-          try { renderPp1Tracker(); } catch(e) {}
-          console.log('[Staff] getDocs fallback loaded', records.length, 'admissions');
-        }
-      } catch(e) { console.error('[Staff] getDocs admission fallback error:', e.message); }
-    }
-    if (isFirstLoadMobtua || allMobtua.length === 0) {
-      console.warn('[Staff] onSnapshot mobtua timeout — using getDocs fallback');
-      try {
-        const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
-        const snap = await window._fs.getDocs(q);
-        const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
-        if (records.length > 0 || allMobtua.length === 0) {
-          allMobtua = records;
-          isFirstLoadMobtua = false;
-          try { renderMobtua(); } catch(e) {}
-          try { updateStats(); } catch(e) {}
-          console.log('[Staff] getDocs fallback loaded', records.length, 'mobtua');
-        }
-      } catch(e) { console.error('[Staff] getDocs mobtua fallback error:', e.message); }
-    }
-  }, 6000);
 }
 
 /* ─────────────────────────────────────────────────
    REAL-TIME LISTENERS
 ───────────────────────────────────────────────── */
 function subscribeAdmissions() {
+  if (unsubAdmission) unsubAdmission();
   const q = window._fs.query(
     window._fs.collection(window._db, 'admissions'),
     window._fs.orderBy('createdAt', 'desc')
@@ -2796,6 +2841,14 @@ function subscribeAdmissions() {
   unsubAdmission = window._fs.onSnapshot(q, snap => {
     const newRecords = [];
     snap.forEach(d => newRecords.push({ id: d.id, _collection:'admissions', ...d.data() }));
+
+    // ══ FIX: Empty-snapshot guard ══
+    // ถ้า snapshot ว่าง แต่เรามีข้อมูลอยู่แล้ว → ignore
+    // (initial snapshot จาก cache ว่างจะ fire ก่อน server ตอบ)
+    if (newRecords.length === 0 && allAdmissions.length > 0) {
+      console.log('[Staff] Ignoring empty admission snapshot (cache race)');
+      return;
+    }
 
     if (!isFirstLoadAdmission) {
       // ตรวจหา record ใหม่
@@ -2807,7 +2860,7 @@ function subscribeAdmissions() {
         highlightRowLater(r.id, 'admission');
       });
     }
-    if (isFirstLoadAdmission) setConnStatus(true);
+    setConnStatus(true);
     isFirstLoadAdmission = false;
     allAdmissions = newRecords;
     try { renderAdmissions(); } catch(e) { console.error('renderAdmissions error:', e); }
@@ -2820,13 +2873,26 @@ function subscribeAdmissions() {
 }
 
 function subscribeMobtua() {
+  if (unsubMobtua) unsubMobtua();
   const q = window._fs.query(
     window._fs.collection(window._db, 'mobtua'),
     window._fs.orderBy('createdAt', 'desc')
   );
   unsubMobtua = window._fs.onSnapshot(q, snap => {
     const newRecords = [];
-    snap.forEach(d => newRecords.push({ id: d.id, _collection:'mobtua', ...d.data() }));
+    // ══ FIX: Filter ใบมอบตัวย้ายออก ไม่ให้ปะปนกับใบมอบตัวสมัครใหม่ ══
+    snap.forEach(d => {
+      const rec = { id: d.id, _collection:'mobtua', ...d.data() };
+      if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') {
+        newRecords.push(rec);
+      }
+    });
+
+    // ══ FIX: Empty-snapshot guard ══
+    if (newRecords.length === 0 && allMobtua.length > 0) {
+      console.log('[Staff] Ignoring empty mobtua snapshot (cache race)');
+      return;
+    }
 
     if (!isFirstLoadMobtua) {
       // build old status map: id → status
@@ -2861,48 +2927,53 @@ function subscribeMobtua() {
   });
 }
 
-function loadAll() {
+async function loadAll() {
+  showToast('กำลังรีเฟรชข้อมูล...', 'info');
   isFirstLoadAdmission = true;
   isFirstLoadMobtua    = true;
-  if (unsubAdmission) unsubAdmission();
-  if (unsubMobtua)    unsubMobtua();
+  if (unsubAdmission) { unsubAdmission(); unsubAdmission = null; }
+  if (unsubMobtua)    { unsubMobtua();    unsubMobtua    = null; }
+
+  // ── Immediate server fetch before re-subscribing ──
+  try {
+    const qA = window._fs.query(
+      window._fs.collection(window._db, 'admissions'),
+      window._fs.orderBy('createdAt', 'desc')
+    );
+    const sA = await safeGetDocs(qA);
+    const rA = [];
+    sA.forEach(d => rA.push({ id: d.id, _collection:'admissions', ...d.data() }));
+    allAdmissions = rA;
+    isFirstLoadAdmission = false;
+    setConnStatus(true);
+    try { renderAdmissions(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    try { renderPp1Tracker(); } catch(e) {}
+    console.log('[loadAll] admissions =', rA.length);
+  } catch(e) { console.error('[loadAll] admission error:', e.message); }
+
+  try {
+    const qM = window._fs.query(
+      window._fs.collection(window._db, 'mobtua'),
+      window._fs.orderBy('createdAt', 'desc')
+    );
+    const sM = await safeGetDocs(qM);
+    const rM = [];
+    // ══ Filter ใบมอบตัวย้ายออก ══
+    sM.forEach(d => {
+      const rec = { id: d.id, _collection:'mobtua', ...d.data() };
+      if (!rec.transferId && rec.formType !== 'ใบมอบตัวย้ายเข้าเรียน') rM.push(rec);
+    });
+    allMobtua = rM;
+    isFirstLoadMobtua = false;
+    try { renderMobtua(); } catch(e) {}
+    try { updateStats(); } catch(e) {}
+    console.log('[loadAll] mobtua (สมัครใหม่) =', rM.length);
+  } catch(e) { console.error('[loadAll] mobtua error:', e.message); }
+
   subscribeAdmissions();
   subscribeMobtua();
-  showToast('กำลังรีเฟรชข้อมูล...', 'info');
-
-  // ══ FIX: Fallback ถ้า onSnapshot ช้า — getDocs ตรงหลัง 4 วินาที ══
-  setTimeout(async () => {
-    let refreshed = false;
-    if (isFirstLoadAdmission || allAdmissions.length === 0) {
-      try {
-        const q = window._fs.query(window._fs.collection(window._db, 'admissions'), window._fs.orderBy('createdAt', 'desc'));
-        const snap = await window._fs.getDocs(q);
-        const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'admissions', ...d.data() }));
-        allAdmissions = records;
-        isFirstLoadAdmission = false;
-        setConnStatus(true);
-        try { renderAdmissions(); } catch(e) {}
-        try { updateStats(); } catch(e) {}
-        try { renderPp1Tracker(); } catch(e) {}
-        refreshed = true;
-      } catch(e) { console.error('[loadAll] getDocs admission error:', e.message); }
-    }
-    if (isFirstLoadMobtua || allMobtua.length === 0) {
-      try {
-        const q = window._fs.query(window._fs.collection(window._db, 'mobtua'), window._fs.orderBy('createdAt', 'desc'));
-        const snap = await window._fs.getDocs(q);
-        const records = [];
-        snap.forEach(d => records.push({ id: d.id, _collection:'mobtua', ...d.data() }));
-        allMobtua = records;
-        isFirstLoadMobtua = false;
-        try { renderMobtua(); } catch(e) {}
-        try { updateStats(); } catch(e) {}
-        refreshed = true;
-      } catch(e) { console.error('[loadAll] getDocs mobtua error:', e.message); }
-    }
-    if (refreshed) showToast('โหลดข้อมูลสำเร็จ (fallback)', 'success');
-  }, 4000);
+  showToast('โหลดข้อมูลสำเร็จ', 'success');
 }
 window.loadAll = loadAll;
 
@@ -7452,6 +7523,11 @@ function subscribeTransfers() {
   unsubTransfer = window._fs.onSnapshot(q, snap => {
     const records = [];
     snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+    // ══ Empty-snapshot guard ══
+    if (records.length === 0 && allTransfers.length > 0) {
+      console.log('[Staff] Ignoring empty transfers snapshot');
+      return;
+    }
     if (!_firstLoad) {
       records.forEach(r => {
         if (!_notifiedTransferIds.has(r.id)) {
@@ -7469,20 +7545,20 @@ function subscribeTransfers() {
     updateTransferStats();
     renderTransferDocTracker();
   }, err => console.error('transfers snapshot error:', err));
-  // fallback
-  setTimeout(async () => {
-    if (allTransfers.length === 0) {
-      try {
-        const snap = await window._fs.getDocs(window._fs.query(
-          window._fs.collection(window._db,'transfers'), window._fs.orderBy('createdAt','desc')
-        ));
-        const records = [];
-        snap.forEach(d => { records.push({ id: d.id, ...d.data() }); _notifiedTransferIds.add(d.id); });
-        allTransfers = records;
-        renderTransfers(); updateTransferStats(); renderTransferDocTracker();
-      } catch(e) { console.error('transfers fallback:', e.message); }
-    }
-  }, 6000);
+
+  // ── Immediate server fetch to avoid 2-3 minute wait on iOS/mobile ──
+  (async () => {
+    try {
+      const snap = await safeGetDocs(window._fs.query(
+        window._fs.collection(window._db,'transfers'), window._fs.orderBy('createdAt','desc')
+      ));
+      const records = [];
+      snap.forEach(d => { records.push({ id: d.id, ...d.data() }); _notifiedTransferIds.add(d.id); });
+      allTransfers = records;
+      renderTransfers(); updateTransferStats(); renderTransferDocTracker();
+      console.log('[Staff] transfers loaded =', records.length);
+    } catch(e) { console.error('[Staff] transfers initial load error:', e.message); }
+  })();
 }
 window.subscribeTransfers = subscribeTransfers;
 
@@ -7502,6 +7578,11 @@ function subscribeTransferMobtua() {
       // filter: มี transferId หรือ formType = ใบมอบตัวย้ายเข้าเรียน
       if (rec.transferId || rec.formType === 'ใบมอบตัวย้ายเข้าเรียน') records.push(rec);
     });
+    // ══ Empty-snapshot guard ══
+    if (records.length === 0 && allTransferMobtua.length > 0) {
+      console.log('[Staff] Ignoring empty transfer-mobtua snapshot');
+      return;
+    }
     if (!_firstLoad) {
       records.forEach(r => {
         if (!_notifiedTransferMobtuaIds.has(r.id)) {
@@ -7521,11 +7602,13 @@ function subscribeTransferMobtua() {
     console.warn('transferMobtua snapshot error:', err.message);
     loadTransferMobtuaFallback();
   });
+  // ── Immediate server fetch to avoid 2-3 minute wait ──
+  loadTransferMobtuaFallback();
 }
 
 async function loadTransferMobtuaFallback() {
   try {
-    const snap = await window._fs.getDocs(window._fs.query(
+    const snap = await safeGetDocs(window._fs.query(
       window._fs.collection(window._db,'mobtua'),
       window._fs.orderBy('createdAt','desc')
     ));
@@ -7539,6 +7622,7 @@ async function loadTransferMobtuaFallback() {
     });
     allTransferMobtua = records;
     renderTransferMobtuaTab(); updateTransferStats();
+    console.log('[Staff] transfer-mobtua loaded =', records.length);
   } catch(e) { console.error('loadTransferMobtuaFallback:', e.message); }
 }
 

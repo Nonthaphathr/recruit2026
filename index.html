@@ -2496,6 +2496,278 @@
     </style>
 </head>
 <body>
+    <!-- ════════════════════════════════════════════════════════
+         IN-APP BROWSER DETECTION
+         ตรวจจับว่าเปิดใน LINE/Facebook/IG/Messenger หรือไม่
+         ถ้าใช่ → แสดง overlay เตือนให้เปิดใน Safari/Chrome
+    ════════════════════════════════════════════════════════════ -->
+    <style>
+        #inAppBrowserOverlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            font-family: 'Sarabun', sans-serif;
+        }
+        #inAppBrowserOverlay.show {
+            display: flex;
+        }
+        .inapp-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: inappSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes inappSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .inapp-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+        .inapp-title {
+            font-family: 'Prompt', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #c2185b;
+            margin-bottom: 0.75rem;
+        }
+        .inapp-desc {
+            font-size: 0.92rem;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .inapp-desc strong { color: #1e293b; }
+        .inapp-app-name {
+            display: inline-block;
+            background: #fce4ec;
+            color: #c2185b;
+            padding: 2px 12px;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin: 0 4px;
+        }
+        .inapp-steps {
+            background: #fff7e6;
+            border: 1.5px solid #fcd34d;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .inapp-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: #78350f;
+            margin-bottom: 8px;
+        }
+        .inapp-step:last-child { margin-bottom: 0; }
+        .inapp-step-num {
+            background: #d97706;
+            color: white;
+            border-radius: 99px;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .inapp-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #c2185b 0%, #e91e63 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 14px rgba(194,24,91,0.35);
+            transition: transform 0.15s;
+        }
+        .inapp-btn:active { transform: scale(0.98); }
+        .inapp-btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: none;
+        }
+        .inapp-copy-area {
+            background: #f1f5f9;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.78rem;
+            color: #334155;
+            word-break: break-all;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .inapp-help {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 12px;
+        }
+    </style>
+
+    <div id="inAppBrowserOverlay">
+        <div class="inapp-card">
+            <div class="inapp-icon">🌐</div>
+            <h2 class="inapp-title">กรุณาเปิดในเบราว์เซอร์</h2>
+            <p class="inapp-desc">
+                คุณกำลังเปิดเว็บไซต์ผ่าน<span class="inapp-app-name" id="inappAppName">แอป</span><br>
+                เพื่อให้ระบบทำงาน<strong>เต็มประสิทธิภาพ</strong><br>
+                กรุณาเปิดใน Safari หรือ Chrome
+            </p>
+
+            <div class="inapp-steps" id="inappSteps">
+                <!-- จะถูก fill ด้วย JS ตามแอปที่ตรวจจับได้ -->
+            </div>
+
+            <button class="inapp-btn" onclick="copyInAppURL()">
+                📋 คัดลอกลิงก์
+            </button>
+            <div class="inapp-copy-area" id="inappCopyURL"></div>
+
+            <button class="inapp-btn inapp-btn-secondary" onclick="dismissInAppOverlay()">
+                ดำเนินการต่อในแอปนี้ (ไม่แนะนำ)
+            </button>
+
+            <p class="inapp-help">
+                💡 หลังคัดลอก ให้ไปวางใน Safari/Chrome แล้วเปิด
+            </p>
+        </div>
+    </div>
+
+    <script>
+        (function detectInAppBrowser() {
+            var ua = navigator.userAgent || '';
+            var isAndroid = /Android/i.test(ua);
+            var isIOS = /iPad|iPhone|iPod/.test(ua);
+
+            // ตรวจจับ in-app browser แต่ละแอป
+            var detected = null;
+            if (/Line\//i.test(ua)) detected = { name: 'LINE', icon: '💬' };
+            else if (/FBAN|FBAV|FB_IAB|FB4A|FBIOS/i.test(ua)) detected = { name: 'Facebook', icon: '📘' };
+            else if (/Instagram/i.test(ua)) detected = { name: 'Instagram', icon: '📷' };
+            else if (/Messenger|FB_Mssgr/i.test(ua)) detected = { name: 'Messenger', icon: '💬' };
+            else if (/TikTok|musical_ly|Bytedance/i.test(ua)) detected = { name: 'TikTok', icon: '🎵' };
+            else if (/Twitter|TwitterAndroid/i.test(ua)) detected = { name: 'Twitter/X', icon: '🐦' };
+            else if (/MicroMessenger|WeChat/i.test(ua)) detected = { name: 'WeChat', icon: '💬' };
+
+            if (!detected) return; // ไม่ใช่ in-app browser → ไม่ทำอะไร
+
+            // ถ้าผู้ใช้กด "ข้าม" แล้ว → จำไว้ใน sessionStorage
+            try {
+                if (sessionStorage.getItem('inapp_dismissed') === '1') return;
+            } catch(e) {}
+
+            // ── LINE มีวิธีพิเศษ: ใส่ ?openExternalBrowser=1 ──
+            if (detected.name === 'LINE') {
+                var url = window.location.href;
+                if (!/[?&]openExternalBrowser=1/.test(url)) {
+                    // ลอง redirect อัตโนมัติให้ก่อน
+                    var sep = url.indexOf('?') === -1 ? '?' : '&';
+                    var newUrl = url + sep + 'openExternalBrowser=1';
+                    // เก็บ url ไว้ใช้แสดงในกล่อง
+                    window._inappTargetURL = newUrl;
+                }
+            }
+
+            // แสดง overlay
+            window.addEventListener('DOMContentLoaded', function() {
+                showInAppOverlay(detected, isIOS, isAndroid);
+            });
+            // กรณี DOMContentLoaded ผ่านไปแล้ว
+            if (document.readyState !== 'loading') {
+                showInAppOverlay(detected, isIOS, isAndroid);
+            }
+        })();
+
+        function showInAppOverlay(app, isIOS, isAndroid) {
+            var overlay = document.getElementById('inAppBrowserOverlay');
+            if (!overlay) return;
+            document.getElementById('inappAppName').textContent = app.icon + ' ' + app.name;
+
+            var url = window._inappTargetURL || window.location.href;
+            document.getElementById('inappCopyURL').textContent = url;
+
+            // คำแนะนำเฉพาะแต่ละแอป
+            var steps = '';
+            if (app.name === 'LINE') {
+                steps = '<div class="inapp-step"><span class="inapp-step-num">1</span><span>กดจุด <strong>3 จุด</strong> มุมขวาบน (︙)</span></div>' +
+                        '<div class="inapp-step"><span class="inapp-step-num">2</span><span>เลือก <strong>"เปิดด้วยเบราว์เซอร์"</strong> หรือ <strong>"Open in browser"</strong></span></div>';
+            } else if (app.name === 'Facebook' || app.name === 'Messenger') {
+                steps = '<div class="inapp-step"><span class="inapp-step-num">1</span><span>กดจุด <strong>3 จุด</strong> มุมขวาบน</span></div>' +
+                        '<div class="inapp-step"><span class="inapp-step-num">2</span><span>เลือก <strong>"เปิดในเบราว์เซอร์"</strong> หรือ <strong>"Open in External Browser"</strong></span></div>';
+            } else if (app.name === 'Instagram') {
+                steps = '<div class="inapp-step"><span class="inapp-step-num">1</span><span>กดจุด <strong>3 จุด</strong> มุมขวาบน (︙)</span></div>' +
+                        '<div class="inapp-step"><span class="inapp-step-num">2</span><span>เลือก <strong>"Open in browser"</strong> หรือ <strong>"เปิดในเบราว์เซอร์"</strong></span></div>';
+            } else {
+                steps = '<div class="inapp-step"><span class="inapp-step-num">1</span><span>กดเมนู <strong>(︙ หรือ ⋯)</strong> มุมบน</span></div>' +
+                        '<div class="inapp-step"><span class="inapp-step-num">2</span><span>เลือก <strong>"เปิดในเบราว์เซอร์"</strong></span></div>' +
+                        '<div class="inapp-step"><span class="inapp-step-num">3</span><span>หรือคัดลอกลิงก์ ไปวางใน ' + (isIOS ? 'Safari' : 'Chrome') + '</span></div>';
+            }
+            document.getElementById('inappSteps').innerHTML = steps;
+            overlay.classList.add('show');
+        }
+
+        function copyInAppURL() {
+            var url = window._inappTargetURL || window.location.href;
+            try {
+                navigator.clipboard.writeText(url).then(function() {
+                    var btn = event.target.closest('.inapp-btn');
+                    if (btn) {
+                        var orig = btn.innerHTML;
+                        btn.innerHTML = '✅ คัดลอกแล้ว — ไปเปิดใน Safari/Chrome';
+                        btn.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
+                        setTimeout(function() {
+                            btn.innerHTML = orig;
+                            btn.style.background = '';
+                        }, 2500);
+                    }
+                });
+            } catch(e) {
+                // fallback for older browsers
+                var ta = document.createElement('textarea');
+                ta.value = url;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch(e2) {}
+                document.body.removeChild(ta);
+                alert('คัดลอกลิงก์แล้ว:\n' + url);
+            }
+        }
+
+        function dismissInAppOverlay() {
+            try { sessionStorage.setItem('inapp_dismissed', '1'); } catch(e) {}
+            var overlay = document.getElementById('inAppBrowserOverlay');
+            if (overlay) overlay.classList.remove('show');
+        }
+    </script>
     <!-- Loading Spinner -->
     <div class="loading" id="loading">
         <div class="spinner"></div>

@@ -8845,14 +8845,18 @@
                     if (aid) admIdSet.add(aid);
                 });
 
-                // batch-fetch admission docs (สูงสุด 30 รายการต่อ getDocs)
-                const villageMap = {};   // { admissionId: village }
+                // batch-fetch admission docs — ข้อมูลฟอร์มซ้อนอยู่ใน .data sub-object
+                const admDataMap = {};   // { admissionId: { village, previousSchool } }
                 const admIds = Array.from(admIdSet);
                 for (const aid of admIds) {
                     try {
                         const admSnap = await fs.getDoc(fs.doc(db, 'admissions', aid));
                         if (admSnap.exists()) {
-                            villageMap[aid] = admSnap.data().village || '';
+                            const inner = admSnap.data().data || {};
+                            admDataMap[aid] = {
+                                village:        inner.village        || '',
+                                previousSchool: inner.previousSchool || '',
+                            };
                         }
                     } catch (e) { /* ignore individual fetch errors */ }
                 }
@@ -8863,7 +8867,8 @@
                     const r   = doc.data();
                     const d   = r.data || {};
                     const aid = r.admissionId || '';
-                    const village = (aid && villageMap[aid]) ? villageMap[aid] : '';
+                    const admInfo = (aid && admDataMap[aid]) ? admDataMap[aid] : {};
+                    const village = admInfo.village || '';
                     const transports = Array.isArray(d.mt_transport)
                         ? d.mt_transport.join(', ')
                         : (d.mt_transport || '-');
@@ -8890,7 +8895,7 @@
                         'ศาสนานักเรียน':         d.mt_religion || '-',
                         'โรคประจำตัว':           d.mt_disease || '-',
                         'ข้อด้อยโอกาส':          d.mt_disadvantaged || '-',
-                        'โรงเรียนเดิม':          d.mt_previousSchool || '-',
+                        'โรงเรียนเดิม':          admInfo.previousSchool || d.mt_previousSchool || '-',
                         'จำนวนพี่น้องทั้งหมด':   d.mt_siblings || '-',
                         'พี่ชาย':                d.mt_olderBrothers || '-',
                         'พี่สาว':                d.mt_olderSisters || '-',

@@ -244,7 +244,7 @@
             /* navbar buttons: row scrollable + compact */
             .header-actions {
                 display: grid;
-                grid-template-columns: repeat(5, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
                 gap: 6px;
                 width: 100%;
                 justify-content: stretch;
@@ -2795,9 +2795,6 @@
                 <button class="report-btn" onclick="openBlankPrintModal()" title="พิมพ์เอกสารกระดาษ (ไม่มีข้อมูล)">
                     🖨️ <span class="btn-label">พิมพ์เอกสารกระดาษ</span><span class="btn-label-mobile">พิมพ์</span>
                 </button>
-                 <button class="report-btn" onclick="openInfoSystemModal()" title="ระบบสารสนเทศ">
-                    🖥️ <span class="btn-label">ระบบสารสนเทศ</span><span class="btn-label-mobile">สารสนเทศ</span>
-                </button>
                 <button class="report-btn" onclick="openReportPage()" title="รายงานประจำวัน">
                     📊 <span class="btn-label">รายงาน</span><span class="btn-label-mobile">รายงาน</span>
                 </button>
@@ -5166,6 +5163,9 @@
                     </button>
                     <button class="btn btn-success" onclick="exportMobtuaToExcel()" style="width: 100%; background: linear-gradient(135deg,#7b3f9e,#9c4dcc);">
                         📥 ดาวน์โหลดข้อมูลใบมอบตัว (Excel)
+                    </button>
+                    <button class="btn btn-success" onclick="exportMobtuaForClassroomInfo()" style="width: 100%; background: linear-gradient(135deg,#065f46,#047857); margin-top:0.75rem;">
+                        🏫 ดาวน์โหลดข้อมูลสำหรับระบบสารสนเทศ (Excel)
                     </button>
                     <button class="btn btn-success" onclick="exportTransfersToExcel()" style="width: 100%; background: linear-gradient(135deg,#0e7490,#0891b2); margin-top:0.75rem;">
                         📥 ดาวน์โหลดข้อมูลใบคำขอย้าย (Excel)
@@ -8818,6 +8818,188 @@
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // EXPORT — ข้อมูลสำหรับระบบสารสนเทศชั้นเรียน
+        // เหมือน exportMobtuaToExcel แต่เพิ่ม:
+        //   หมู่เลือด  (d.mt_bloodType)
+        //   หมู่บ้านนักเรียน  (admission.village ผ่าน admissionId)
+        //   โรงเรียนเดิม  (d.mt_previousSchool — มีอยู่แล้ว)
+        // ═══════════════════════════════════════════════════════════
+        async function exportMobtuaForClassroomInfo() {
+            try {
+                showLoading(true, 'กำลังโหลดข้อมูล...');
+                const fs = window.firestore;
+                const db = window.db;
+
+                // ─── ดึง mobtua ทั้งหมด ───
+                const q = fs.query(
+                    fs.collection(db, 'mobtua'),
+                    fs.orderBy('createdAt', 'desc')
+                );
+                const snap = await fs.getDocs(q);
+
+                // ─── รวบรวม admissionId ที่ไม่ซ้ำกัน เพื่อดึง village ───
+                const admIdSet = new Set();
+                snap.forEach(doc => {
+                    const aid = doc.data().admissionId;
+                    if (aid) admIdSet.add(aid);
+                });
+
+                // batch-fetch admission docs (สูงสุด 30 รายการต่อ getDocs)
+                const villageMap = {};   // { admissionId: village }
+                const admIds = Array.from(admIdSet);
+                for (const aid of admIds) {
+                    try {
+                        const admSnap = await fs.getDoc(fs.doc(db, 'admissions', aid));
+                        if (admSnap.exists()) {
+                            villageMap[aid] = admSnap.data().village || '';
+                        }
+                    } catch (e) { /* ignore individual fetch errors */ }
+                }
+
+                // ─── สร้างแถวข้อมูล ───
+                const rows = [];
+                snap.forEach(doc => {
+                    const r   = doc.data();
+                    const d   = r.data || {};
+                    const aid = r.admissionId || '';
+                    const village = (aid && villageMap[aid]) ? villageMap[aid] : '';
+                    const transports = Array.isArray(d.mt_transport)
+                        ? d.mt_transport.join(', ')
+                        : (d.mt_transport || '-');
+
+                    rows.push({
+                        // ─── ข้อมูลทั่วไป ───
+                        'วันที่บันทึก':          r.createdAt ? new Date(r.createdAt.toDate()).toLocaleDateString('th-TH') : '-',
+                        'ปีการศึกษา':            d.mt_academicYear || '-',
+                        'ชั้น/ห้อง':             d.mt_classRoom || '-',
+                        'เลขประจำตัวนักเรียน':   d.mt_studentId || '-',
+                        // ─── นักเรียน ───
+                        'ชื่อ-สกุลนักเรียน':    r.studentName || '-',
+                        'ชื่อเล่น':              d.mt_studentNickname || '-',
+                        'เลขบัตรนักเรียน':       (d.mt_studentNationalId || '').replace(/-/g, ''),
+                        'วันเกิด(วัน)':          d.mt_birthDay || '-',
+                        'วันเกิด(เดือน)':        d.mt_birthMonth || '-',
+                        'วันเกิด(ปีพ.ศ.)':      d.mt_birthYear || '-',
+                        'อายุ':                  d.mt_age || '-',
+                        'น้ำหนัก(กก.)':          d.mt_weight || '-',
+                        'ส่วนสูง(ซม.)':          d.mt_height || '-',
+                        'หมู่เลือด':             d.mt_bloodType || '-',       // ← เพิ่มใหม่
+                        'สัญชาตินักเรียน':       d.mt_nationality || '-',
+                        'เชื้อชาตินักเรียน':     d.mt_ethnicity || '-',
+                        'ศาสนานักเรียน':         d.mt_religion || '-',
+                        'โรคประจำตัว':           d.mt_disease || '-',
+                        'ข้อด้อยโอกาส':          d.mt_disadvantaged || '-',
+                        'โรงเรียนเดิม':          d.mt_previousSchool || '-',
+                        'จำนวนพี่น้องทั้งหมด':   d.mt_siblings || '-',
+                        'พี่ชาย':                d.mt_olderBrothers || '-',
+                        'พี่สาว':                d.mt_olderSisters || '-',
+                        'น้องชาย':               d.mt_youngerBrothers || '-',
+                        'น้องสาว':               d.mt_youngerSisters || '-',
+                        'พี่น้องกำลังศึกษา':     d.mt_siblingsStudying || '-',
+                        'เป็นบุตรคนที่':         d.mt_birthOrder || '-',
+                        'ที่พัก':                d.mt_sleeping === 'อื่นๆ' ? (d.mt_sleepingOther || 'อื่นๆ') : (d.mt_sleeping || '-'),
+                        'การเดินทาง':            transports + (d.mt_transportOther ? ` (${d.mt_transportOther})` : ''),
+                        'ระยะทาง(กม.)':          d.mt_travelDistance || '-',
+                        'เวลาเดินทาง(นาที)':     d.mt_travelTime || '-',
+                        // ─── ที่อยู่นักเรียน ───
+                        'รหัสบ้านนักเรียน':      d.mt_houseCode || '-',
+                        'บ้านเลขที่นักเรียน':    d.mt_houseNo || '-',
+                        'หมู่นักเรียน':          d.mt_moo || '-',
+                        'หมู่บ้านนักเรียน':      village,                     // ← เพิ่มใหม่ (จากใบสมัคร)
+                        'ตำบลนักเรียน':          d.mt_subdistrict || '-',
+                        'อำเภอนักเรียน':         d.mt_district || '-',
+                        'จังหวัดนักเรียน':       d.mt_province || '-',
+                        'รหัสไปรษณีย์นักเรียน':  d.mt_postal || '-',
+                        'โทรนักเรียน':           d.mt_mobile || '-',
+                        // ─── ที่อยู่ปัจจุบัน ───
+                        'รหัสบ้านปัจจุบัน':      d.mt_curHouseCode || '-',
+                        'บ้านเลขที่ปัจจุบัน':    d.mt_curHouseNo || '-',
+                        'หมู่ปัจจุบัน':          d.mt_curMoo || '-',
+                        'ตำบลปัจจุบัน':          d.mt_curSubdistrict || '-',
+                        'อำเภอปัจจุบัน':         d.mt_curDistrict || '-',
+                        'จังหวัดปัจจุบัน':       d.mt_curProvince || '-',
+                        'ไปรษณีย์ปัจจุบัน':      d.mt_curPostal || '-',
+                        'โทรปัจจุบัน':           d.mt_curMobile || '-',
+                        // ─── ผู้ปกครอง ───
+                        'ชื่อผู้ปกครอง':         r.guardianName || '-',
+                        'เลขบัตรผู้ปกครอง':      (d.mt_guardianNationalId || '').replace(/-/g, ''),
+                        'ความสัมพันธ์ผู้ปกครอง': d.mt_guardianRelation === 'อื่นๆ' ? (d.mt_guardianRelationOther || 'อื่นๆ') : (d.mt_guardianRelation || '-'),
+                        'อาชีพผู้ปกครอง':        d.mt_guardianOccupation || '-',
+                        'ที่ทำงานผู้ปกครอง':     d.mt_guardianWorkplace || '-',
+                        'รายได้ผู้ปกครอง':       d.mt_guardianIncome || '-',
+                        'โทรบ้านผู้ปกครอง':      d.mt_guardianHomePhone || '-',
+                        'โทรมือถือผู้ปกครอง':    d.mt_guardianMobile || '-',
+                        'บ้านเลขที่ผู้ปกครอง':   d.mt_guardianHouseNo || '-',
+                        'หมู่ผู้ปกครอง':         d.mt_guardianMoo || '-',
+                        'ตำบลผู้ปกครอง':         d.mt_guardianSubdistrict || '-',
+                        'อำเภอผู้ปกครอง':        d.mt_guardianDistrict || '-',
+                        'จังหวัดผู้ปกครอง':      d.mt_guardianProvince || '-',
+                        'ไปรษณีย์ผู้ปกครอง':     d.mt_guardianPostal || '-',
+                        // ─── บิดา ───
+                        'ชื่อ-สกุลบิดา':         d.mt_fatherFullName || '-',
+                        'เลขบัตรบิดา':           (d.mt_fatherNationalId || '').replace(/-/g, ''),
+                        'สัญชาติบิดา':           d.mt_fatherNationality || '-',
+                        'เชื้อชาติบิดา':         d.mt_fatherEthnicity || '-',
+                        'ศาสนาบิดา':             d.mt_fatherReligion || '-',
+                        'สถานะบิดา':             d.mt_fatherAlive || '-',
+                        'การศึกษาบิดา':          d.mt_fatherEducation || '-',
+                        'อาชีพบิดา':             d.mt_fatherOccupation || '-',
+                        'ที่ทำงานบิดา':          d.mt_fatherWorkplace || '-',
+                        'รายได้บิดา':            d.mt_fatherIncome || '-',
+                        'โทรบิดา':               d.mt_fatherMobile || '-',
+                        'ตำบลบิดา':              d.mt_fatherSubdistrict || '-',
+                        'อำเภอบิดา':             d.mt_fatherDistrict || '-',
+                        'จังหวัดบิดา':           d.mt_fatherProvince || '-',
+                        // ─── มารดา ───
+                        'ชื่อ-สกุลมารดา':        d.mt_motherFullName || '-',
+                        'เลขบัตรมารดา':          (d.mt_motherNationalId || '').replace(/-/g, ''),
+                        'สัญชาติมารดา':          d.mt_motherNationality || '-',
+                        'เชื้อชาติมารดา':        d.mt_motherEthnicity || '-',
+                        'ศาสนามารดา':            d.mt_motherReligion || '-',
+                        'สถานะมารดา':            d.mt_motherAlive || '-',
+                        'การศึกษามารดา':         d.mt_motherEducation || '-',
+                        'อาชีพมารดา':            d.mt_motherOccupation || '-',
+                        'ที่ทำงานมารดา':         d.mt_motherWorkplace || '-',
+                        'รายได้มารดา':           d.mt_motherIncome || '-',
+                        'โทรมารดา':              d.mt_motherMobile || '-',
+                        'ตำบลมารดา':             d.mt_motherSubdistrict || '-',
+                        'อำเภอมารดา':            d.mt_motherDistrict || '-',
+                        'จังหวัดมารดา':          d.mt_motherProvince || '-',
+                        // ─── สถานภาพ / ผู้ปกครองทดแทน ───
+                        'สถานภาพบิดา-มารดา':     d.mt_parentStatus === 'อื่นๆ' ? (d.mt_parentStatusOther || 'อื่นๆ') : (d.mt_parentStatus || '-'),
+                        'ชื่อผู้ปกครองทดแทน':    d.mt_altGuardianName || '-',
+                        'ความสัมพันธ์ทดแทน':     d.mt_altGuardianRelation || '-',
+                        'สัญชาติทดแทน':          d.mt_altGuardianNationality || '-',
+                        'เชื้อชาติทดแทน':        d.mt_altGuardianEthnicity || '-',
+                        'ศาสนาทดแทน':            d.mt_altGuardianReligion || '-',
+                        'อาชีพทดแทน':            d.mt_altGuardianOccupation || '-',
+                        'รายได้ทดแทน':           d.mt_altGuardianIncome || '-',
+                        'โทรทดแทน':              d.mt_altGuardianMobile || '-',
+                        'ที่อยู่ทดแทน':          [d.mt_altGuardianHouseNo, d.mt_altGuardianMoo && `หมู่${d.mt_altGuardianMoo}`, d.mt_altGuardianRoad && `ถ.${d.mt_altGuardianRoad}`, d.mt_altGuardianSubdistrict && `ต.${d.mt_altGuardianSubdistrict}`, d.mt_altGuardianDistrict && `อ.${d.mt_altGuardianDistrict}`, d.mt_altGuardianProvince && `จ.${d.mt_altGuardianProvince}`].filter(Boolean).join(' ') || '-',
+                    });
+                });
+
+                if (rows.length === 0) { showToast('ไม่มีข้อมูลให้ส่งออก', 'error'); return; }
+
+                const numericTextFields = [
+                    'เลขบัตรนักเรียน', 'เลขบัตรผู้ปกครอง', 'เลขบัตรบิดา', 'เลขบัตรมารดา',
+                    'โทรนักเรียน', 'โทรปัจจุบัน', 'โทรบ้านผู้ปกครอง', 'โทรมือถือผู้ปกครอง',
+                    'โทรบิดา', 'โทรมารดา', 'โทรทดแทน',
+                    'รหัสบ้านนักเรียน', 'รหัสบ้านปัจจุบัน', 'ไปรษณีย์ผู้ปกครอง', 'ไปรษณีย์ปัจจุบัน',
+                    'รหัสไปรษณีย์นักเรียน', 'เลขประจำตัวนักเรียน', 'ปีการศึกษา'
+                ];
+                const csv = buildCSVContent(rows, numericTextFields);
+                const today = new Date().toLocaleDateString('th-TH').replace(/\//g, '-');
+                downloadCSV(csv, `ข้อมูลสารสนเทศ_ใบมอบตัว_${today}.csv`);
+                showToast(`✅ Export แล้ว ${rows.length} รายการ (พร้อม Import ระบบสารสนเทศ)`, 'success');
+            } catch (e) {
+                showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
         // ========== AUTOSAVE SYSTEM ==========
         const AUTOSAVE_KEY_MOBTUA    = 'autosave_mobtua';
         const AUTOSAVE_KEY_ADMISSION = 'autosave_admission';
@@ -11013,63 +11195,6 @@ function copyMobtuaDataLink() {
         ta.remove();
         alert('คัดลอกลิงก์แล้ว: ' + _MOBTUA_DATA_URL);
     });
-}
-</script>
-    <!-- ── Modal: ระบบสารสนเทศ ── -->
-<div id="infoSystemModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeInfoSystemModal()">
-    <div style="background:#fff;border-radius:18px;padding:0;width:min(340px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
-        <div style="background:linear-gradient(135deg,#0369a1,#0284c7);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:10px;">
-            <div style="font-size:2rem;">🖥️</div>
-            <div>
-                <div style="font-family:'Prompt',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;">ระบบสารสนเทศ</div>
-                <div style="font-size:.78rem;color:rgba(255,255,255,.8);">ใส่รหัสผ่านเพื่อเข้าสู่ระบบ</div>
-            </div>
-            <button onclick="closeInfoSystemModal()" style="margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
-        </div>
-        <div style="padding:1.5rem;">
-            <div style="margin-bottom:10px;font-size:.85rem;color:#374151;font-weight:600;">รหัสผ่าน</div>
-            <input id="infoSystemPwd" type="password" inputmode="numeric" maxlength="10"
-                style="width:100%;border:2px solid #e0e0e0;border-radius:10px;padding:.75rem 1rem;font-size:1.1rem;letter-spacing:6px;text-align:center;font-family:'Sarabun',sans-serif;outline:none;transition:border-color .2s;"
-                placeholder="••••"
-                onfocus="this.style.borderColor='#0284c7'"
-                onblur="this.style.borderColor='#e0e0e0'"
-                onkeydown="if(event.key==='Enter')confirmInfoSystem()">
-            <div id="infoSystemErr" style="min-height:18px;font-size:.8rem;color:#dc2626;margin-top:6px;text-align:center;"></div>
-            <div style="display:flex;gap:10px;margin-top:14px;">
-                <button onclick="closeInfoSystemModal()" style="flex:1;padding:.75rem;border-radius:10px;border:1.5px solid #e0e0e0;background:#fff;color:#6b7280;font-family:inherit;font-size:.9rem;cursor:pointer;">ยกเลิก</button>
-                <button onclick="confirmInfoSystem()" style="flex:1;padding:.75rem;border-radius:10px;border:none;background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;">เข้าสู่ระบบ</button>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-const _INFO_SYSTEM_URL = 'https://nonthaphathr.github.io/studentdatasmanage1/';
-const _INFO_SYSTEM_PWD = '1111';
-function openInfoSystemModal() {
-    const m = document.getElementById('infoSystemModal');
-    if (m) { m.style.display = 'flex'; }
-    const inp = document.getElementById('infoSystemPwd');
-    if (inp) { inp.value = ''; inp.focus(); }
-    const err = document.getElementById('infoSystemErr');
-    if (err) err.textContent = '';
-}
-function closeInfoSystemModal() {
-    const m = document.getElementById('infoSystemModal');
-    if (m) m.style.display = 'none';
-}
-function confirmInfoSystem() {
-    const inp = document.getElementById('infoSystemPwd');
-    const err = document.getElementById('infoSystemErr');
-    if (!inp) return;
-    if (inp.value === _INFO_SYSTEM_PWD) {
-        window.open(_INFO_SYSTEM_URL, '_blank');
-        closeInfoSystemModal();
-    } else {
-        if (err) err.textContent = '❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่';
-        inp.value = '';
-        inp.style.borderColor = '#dc2626';
-        setTimeout(() => { inp.style.borderColor = '#e0e0e0'; inp.focus(); }, 1000);
-    }
 }
 </script>
 </body>

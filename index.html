@@ -8698,10 +8698,24 @@
                     window.firestore.orderBy('createdAt', 'desc')
                 );
                 const snap = await window.firestore.getDocs(q);
+
+                // ─── รวบรวม admissionId เพื่อ fallback birthMonth ───
+                const admIdSet1 = new Set();
+                snap.forEach(doc => { const aid = doc.data().admissionId; if (aid) admIdSet1.add(aid); });
+                const admBirthMap = {}; // { admissionId: birthMonth string (number "5" or Thai name) }
+                for (const aid of Array.from(admIdSet1)) {
+                    try {
+                        const as = await window.firestore.getDoc(window.firestore.doc(window.db, 'admissions', aid));
+                        if (as.exists()) admBirthMap[aid] = (as.data().data || {}).birthMonth || '';
+                    } catch(e) { /* ignore */ }
+                }
+
                 const rows = [];
                 snap.forEach(doc => {
                     const r = doc.data();
                     const d = r.data || {};
+                    const aid1 = r.admissionId || '';
+                    const resolvedMonth = normalizeBirthMonth(d.mt_birthMonth) || normalizeBirthMonth(admBirthMap[aid1]) || '-';
                     const transports = Array.isArray(d.mt_transport) ? d.mt_transport.join(', ') : (d.mt_transport || '-');
                     rows.push({
                         // ทั่วไป
@@ -8714,7 +8728,7 @@
                         'ชื่อเล่น':             d.mt_studentNickname || '-',
                         'เลขบัตรนักเรียน':      (d.mt_studentNationalId || '').replace(/-/g,''),
                         'วันเกิด(วัน)':         d.mt_birthDay || '-',
-                        'วันเกิด(เดือน)':       normalizeBirthMonth(d.mt_birthMonth) || '-',
+                        'วันเกิด(เดือน)':       resolvedMonth,
                         'วันเกิด(ปีพ.ศ.)':     d.mt_birthYear || '-',
                         'อายุ':                 d.mt_age || '-',
                         'น้ำหนัก(กก.)':         d.mt_weight || '-',
@@ -8861,7 +8875,7 @@
                 });
 
                 // batch-fetch admission docs — ข้อมูลฟอร์มซ้อนอยู่ใน .data sub-object
-                const admDataMap = {};   // { admissionId: { village, previousSchool } }
+                const admDataMap = {};   // { admissionId: { village, previousSchool, birthMonth } }
                 const admIds = Array.from(admIdSet);
                 for (const aid of admIds) {
                     try {
@@ -8871,6 +8885,7 @@
                             admDataMap[aid] = {
                                 village:        inner.village        || '',
                                 previousSchool: inner.previousSchool || '',
+                                birthMonth:     inner.birthMonth     || '',
                             };
                         }
                     } catch (e) { /* ignore individual fetch errors */ }
@@ -8899,7 +8914,7 @@
                         'ชื่อเล่น':              d.mt_studentNickname || '-',
                         'เลขบัตรนักเรียน':       (d.mt_studentNationalId || '').replace(/-/g, ''),
                         'วันเกิด(วัน)':          d.mt_birthDay || '-',
-                        'วันเกิด(เดือน)':        normalizeBirthMonth(d.mt_birthMonth) || '-',
+                        'วันเกิด(เดือน)':        normalizeBirthMonth(d.mt_birthMonth) || normalizeBirthMonth(admInfo.birthMonth) || '-',
                         'วันเกิด(ปีพ.ศ.)':      d.mt_birthYear || '-',
                         'อายุ':                  d.mt_age || '-',
                         'น้ำหนัก(กก.)':          d.mt_weight || '-',

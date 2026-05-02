@@ -244,7 +244,7 @@
             /* navbar buttons: row scrollable + compact */
             .header-actions {
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(5, minmax(0, 1fr));
                 gap: 6px;
                 width: 100%;
                 justify-content: stretch;
@@ -284,7 +284,7 @@
         /* ════════════════ Extra small (≤380px) ════════════════ */
         @media (max-width: 380px) {
             .header-actions {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(5, minmax(0, 1fr));
                 gap: 4px;
             }
             .report-btn {
@@ -2797,6 +2797,9 @@
                 </button>
                 <button class="report-btn" onclick="openReportPage()" title="รายงานประจำวัน">
                     📊 <span class="btn-label">รายงาน</span><span class="btn-label-mobile">รายงาน</span>
+                </button>
+                <button class="report-btn" onclick="openSISModal()" title="ระบบสารสนเทศ">
+                    🗂️ <span class="btn-label">ระบบสารสนเทศ</span><span class="btn-label-mobile">สารสนเทศ</span>
                 </button>
                 <button class="settings-btn" onclick="openAdminSettings()" title="ตั้งค่าแอดมิน">
                     ⚙️
@@ -11136,6 +11139,60 @@ ${lines}
         }
 
     </script>
+
+<!-- ── Modal: ระบบสารสนเทศ ── -->
+<div id="sisModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeSISModal()">
+    <div style="background:#fff;border-radius:18px;padding:0;width:min(360px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#0369a1,#0ea5e9);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:10px;">
+            <div style="font-size:2rem;">🗂️</div>
+            <div>
+                <div style="font-family:'Kanit',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;">ระบบสารสนเทศ</div>
+                <div style="font-size:.78rem;color:rgba(255,255,255,.8);">โรงเรียนกระดุมทองวิทยา</div>
+            </div>
+            <button onclick="closeSISModal()" style="margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+        <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;">
+            <label style="font-size:.85rem;font-weight:600;color:#374151;">🔑 กรอกรหัสเข้าใช้งาน</label>
+            <input id="sisPassInput" type="password" placeholder="ใส่รหัส..." maxlength="10"
+                style="width:100%;border:2px solid #e0f2fe;border-radius:10px;padding:.7rem 1rem;font-family:inherit;font-size:1rem;outline:none;transition:border-color .2s;"
+                onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e0f2fe'"
+                onkeydown="if(event.key==='Enter')submitSISPass()">
+            <div id="sisPassErr" style="display:none;color:#dc2626;font-size:.78rem;">❌ รหัสไม่ถูกต้อง กรุณาลองใหม่</div>
+            <button onclick="submitSISPass()" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;border:none;border-radius:12px;padding:.85rem 1rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;width:100%;">
+                🚀 เข้าสู่ระบบ
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+const _SIS_URL = 'https://nonthaphathr.github.io/studentdatasmanage1/';
+const _SIS_PASS = '1111';
+function openSISModal() {
+    const m = document.getElementById('sisModal');
+    const inp = document.getElementById('sisPassInput');
+    const err = document.getElementById('sisPassErr');
+    if (inp) inp.value = '';
+    if (err) err.style.display = 'none';
+    if (m) { m.style.display = 'flex'; setTimeout(() => inp && inp.focus(), 100); }
+}
+function closeSISModal() {
+    const m = document.getElementById('sisModal');
+    if (m) m.style.display = 'none';
+}
+function submitSISPass() {
+    const inp = document.getElementById('sisPassInput');
+    const err = document.getElementById('sisPassErr');
+    if (!inp) return;
+    if (inp.value === _SIS_PASS) {
+        closeSISModal();
+        window.open(_SIS_URL, '_blank');
+    } else {
+        if (err) err.style.display = 'block';
+        inp.value = '';
+        inp.focus();
+    }
+}
+<\/script>
 
 <!-- ── Modal: ระบบบันทึกข้อมูลวันมอบตัว ── -->
 <div id="mobtuaDataModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeMobtuaDataModal()">

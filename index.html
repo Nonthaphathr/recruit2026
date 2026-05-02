@@ -5943,6 +5943,18 @@
             return missing;
         }
 
+        // แปลงเลขเดือน (1-12 หรือ "01"-"12") → ชื่อเดือนภาษาไทย
+        // ถ้าเป็นชื่อเดือนไทยอยู่แล้วก็คืนค่าเดิม
+        const _THAI_MONTHS_MAP = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+            'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+        function normalizeBirthMonth(val) {
+            if (!val) return '';
+            const s = String(val).trim();
+            const n = parseInt(s, 10);
+            if (!isNaN(n) && n >= 1 && n <= 12) return _THAI_MONTHS_MAP[n];
+            return s; // ชื่อเดือนไทยแล้ว
+        }
+
         function formatThaiDate(dateString) {
             if (!dateString) return '....................';
             const date = new Date(dateString);
@@ -6296,7 +6308,7 @@
                 mt_studentLastName:     d.lastName  || (d.fullName || '').split(' ').slice(1).join(' ') || '',
                 mt_studentNickname:     d.nickname || '',
                 mt_birthDay:            d.birthDay || '',
-                mt_birthMonth:          d.birthMonth || '',
+                mt_birthMonth:          normalizeBirthMonth(d.birthMonth),
                 mt_birthYear:           d.birthYear || '',
                 mt_studentNationalId:   d.nationalId || '',
                 mt_height:              d.height || '',
@@ -8702,7 +8714,7 @@
                         'ชื่อเล่น':             d.mt_studentNickname || '-',
                         'เลขบัตรนักเรียน':      (d.mt_studentNationalId || '').replace(/-/g,''),
                         'วันเกิด(วัน)':         d.mt_birthDay || '-',
-                        'วันเกิด(เดือน)':       d.mt_birthMonth || '-',
+                        'วันเกิด(เดือน)':       normalizeBirthMonth(d.mt_birthMonth) || '-',
                         'วันเกิด(ปีพ.ศ.)':     d.mt_birthYear || '-',
                         'อายุ':                 d.mt_age || '-',
                         'น้ำหนัก(กก.)':         d.mt_weight || '-',
@@ -8887,7 +8899,7 @@
                         'ชื่อเล่น':              d.mt_studentNickname || '-',
                         'เลขบัตรนักเรียน':       (d.mt_studentNationalId || '').replace(/-/g, ''),
                         'วันเกิด(วัน)':          d.mt_birthDay || '-',
-                        'วันเกิด(เดือน)':        d.mt_birthMonth || '-',
+                        'วันเกิด(เดือน)':        normalizeBirthMonth(d.mt_birthMonth) || '-',
                         'วันเกิด(ปีพ.ศ.)':      d.mt_birthYear || '-',
                         'อายุ':                  d.mt_age || '-',
                         'น้ำหนัก(กก.)':          d.mt_weight || '-',
@@ -11192,7 +11204,7 @@ function submitSISPass() {
         inp.focus();
     }
 }
-<\/script>
+</script>
 
 <!-- ── Modal: ระบบบันทึกข้อมูลวันมอบตัว ── -->
 <div id="mobtuaDataModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeMobtuaDataModal()">

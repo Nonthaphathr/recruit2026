@@ -7990,10 +7990,17 @@
         // ══════════════════════════════════════════════════════════
         function escapeCsvCell(value, isNumericText) {
             const str = (value === undefined || value === null) ? '' : String(value);
-            if (isNumericText && str && str !== '-') {
-                // ใช้ Excel formula trick: ="1234567890123" → Excel เก็บเป็น text
-                const escaped = str.replace(/"/g, '""');
-                return `"=""${escaped}"""`;
+            if (str && str !== '-') {
+                // Force text ถ้าระบุไว้ใน numericTextFields
+                // หรือ auto-detect pattern ที่ Excel ตีเป็น date/number ผิด:
+                //   - ตัวเลขล้วน → Excel ตัด 0 นำหน้า / แสดงเป็น number
+                //   - ขึ้นต้นด้วยตัวเลข + "-" หรือ "/" → Excel ตีเป็นวันที่ (เช่น 1-12 → 1-Dec)
+                const looksLikeDate = /^\d+[\-\/]\d/.test(str);
+                const pureNumber    = /^\d+$/.test(str);
+                if (isNumericText || looksLikeDate || pureNumber) {
+                    const escaped = str.replace(/"/g, '""');
+                    return `"=""${escaped}"""`;
+                }
             }
             const escaped = str.replace(/"/g, '""');
             return `"${escaped}"`;

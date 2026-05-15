@@ -1177,6 +1177,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--surface);color:var(--text
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="12" y1="9" x2="12" y2="9"/></svg>
         <span class="btn-label">Export LEC</span>
       </button>
+      <button class="btn-icon" style="background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border:none;gap:5px;" onclick="exportRegisterExcel()" title="ส่งออกข้อมูลสำหรับเล่มทะเบียนนักเรียน">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <span class="btn-label">Excel ทะเบียน</span>
+      </button>
       <button class="btn-icon btn-refresh" onclick="loadAll()">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
         <span class="btn-label">รีเฟรช</span>
@@ -4599,6 +4603,221 @@ function exportLecExcel() {
     }
 }
 window.exportLecExcel = exportLecExcel;
+
+/* ─────────────────────────────────────────────────
+   EXPORT เล่มทะเบียนนักเรียน
+───────────────────────────────────────────────── */
+function exportRegisterExcel() {
+    if (!allAdmissions.length) {
+        showToast('ไม่มีข้อมูลใบสมัครให้ส่งออก', 'info');
+        return;
+    }
+
+    const mobtuaByAdmId = {};
+    const mobtuaByName  = {};
+    allMobtua.forEach(m => {
+        if (m.admissionId) mobtuaByAdmId[m.admissionId] = m;
+        if (m.studentName) mobtuaByName[m.studentName]  = m;
+    });
+
+    const THAI_MONTHS = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                         'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const toThaiMonth = (val) => {
+        if (!val) return '';
+        const n = parseInt(val, 10);
+        if (!isNaN(n) && n >= 1 && n <= 12) return THAI_MONTHS[n];
+        return val;
+    };
+
+    const gradeLabel = s => s === 'm1' ? 'ม.1' : s === 'm4' ? 'ม.4' : (s || '');
+    const completedGrade = s => s === 'm1' ? 'ประถมศึกษาปีที่ 6' : s === 'm4' ? 'มัธยมศึกษาปีที่ 3' : '';
+
+    const buildRows = (grade) => {
+        const list = allAdmissions.filter(r => r.gradeLevel === grade);
+        return list.map((rec, idx) => {
+            const d  = rec.data || {};
+            const mt = mobtuaByAdmId[rec.id] || mobtuaByName[rec.studentName] || null;
+            const md = mt?.data || {};
+
+            // ── นักเรียน ──
+            const prefix    = (md.mt_studentPrefix    || d.prefix    || '').trim();
+            const firstName = (md.mt_studentFirstName || d.firstName || '').trim();
+            const lastName  = (md.mt_studentLastName  || d.lastName  || '').trim();
+            const studentId = md.mt_studentId || '';
+
+            // ── วันเดือนปีเกิด ──
+            const bDay   = md.mt_birthDay   || d.birthDay   || '';
+            const bMonth = md.mt_birthMonth || d.birthMonth || '';
+            const bYear  = md.mt_birthYear  || d.birthYear  || '';
+            const birthDate = bDay && bMonth
+                ? `${bDay} ${toThaiMonth(bMonth)} ${bYear || ''}`.trim()
+                : '';
+
+            // ── สถานที่เกิด: ดึง อำเภอ ตำบล จังหวัด จากที่อยู่ ──
+            const birthSubdistrict = (md.mt_subdistrict || d.subdistrict || '').trim();
+            const birthDistrict    = (md.mt_district    || d.district    || '').trim();
+            const birthProvince    = (md.mt_province    || d.province    || '').trim();
+            const birthPlace = [
+                birthSubdistrict ? `ต.${birthSubdistrict}` : '',
+                birthDistrict    ? `อ.${birthDistrict}`    : '',
+                birthProvince    ? `จ.${birthProvince}`    : '',
+            ].filter(Boolean).join(' ');
+
+            // ── บิดา ──
+            const fatherPrefix = (md.mt_fatherPrefix    || d.fatherPrefix    || '').trim();
+            const fatherFirst  = (md.mt_fatherFirstName || d.fatherFirstName || '').trim();
+            const fatherLast   = (md.mt_fatherLastName  || d.fatherLastName  || '').trim();
+            const fatherName   = `${fatherFirst} ${fatherLast}`.trim();
+            const fatherOcc    = (md.mt_fatherOccupation || d.fatherOccupation || '').trim();
+
+            // ── มารดา ──
+            const motherPrefix = (md.mt_motherPrefix    || d.motherPrefix    || '').trim();
+            const motherFirst  = (md.mt_motherFirstName || d.motherFirstName || '').trim();
+            const motherLast   = (md.mt_motherLastName  || d.motherLastName  || '').trim();
+            const motherName   = `${motherFirst} ${motherLast}`.trim();
+            const motherOcc    = (md.mt_motherOccupation || d.motherOccupation || '').trim();
+
+            // ── สถานศึกษาเดิม ──
+            const prevSchool = d.previousSchool || '';
+
+            // ── ที่อยู่ปัจจุบัน ──
+            const houseNo     = (md.mt_houseNo     || d.houseNumber || '').trim();
+            const moo         = (md.mt_moo         || d.moo         || '').trim();
+            const road        = (md.mt_road        || d.road        || '').trim();
+            const subdistrict = (md.mt_subdistrict || d.subdistrict || '').trim();
+            const district    = (md.mt_district    || d.district    || '').trim();
+            const province    = (md.mt_province    || d.province    || '').trim();
+            const currentAddress = [
+                houseNo,
+                moo         ? `ม.${moo}`        : '',
+                road        ? `ถ.${road}`        : '',
+                subdistrict ? `ต.${subdistrict}` : '',
+                district    ? `อ.${district}`    : '',
+                province    ? `จ.${province}`    : '',
+            ].filter(Boolean).join(' ');
+
+            return {
+                'ลำดับ':           idx + 1,
+                'ระดับชั้น':       gradeLabel(rec.gradeLevel),
+                'เลขประจำตัว':     studentId,
+                'คำนำหน้า':       prefix,
+                'ชื่อ-สกุลนักเรียน': `${firstName} ${lastName}`.trim(),
+                'วันเดือนปีเกิด':  birthDate,
+                'สถานที่เกิด':     birthPlace,
+                'คำนำหน้าบิดา':   fatherPrefix,
+                'ชื่อ-สกุลบิดา':  fatherName,
+                'อาชีพบิดา':      fatherOcc,
+                'คำนำหน้ามารดา':  motherPrefix,
+                'ชื่อ-สกุลมารดา': motherName,
+                'อาชีพมารดา':     motherOcc,
+                'สถานศึกษาเดิม':  prevSchool,
+                'ที่อยู่ปัจจุบัน': currentAddress,
+                'ชั้นที่จบมา':    completedGrade(rec.gradeLevel),
+            };
+        });
+    };
+
+    const m1Rows = buildRows('m1');
+    const m4Rows = buildRows('m4');
+
+    if (!m1Rows.length && !m4Rows.length) {
+        showToast('ไม่มีข้อมูลให้ส่งออก', 'info');
+        return;
+    }
+
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('no XLSX');
+
+        // สีแต่ละกลุ่มคอลัมน์
+        const colColors = [
+            'D9D9D9', // 0  ลำดับ
+            'D9D9D9', // 1  ระดับชั้น
+            'BDD7EE', // 2  เลขประจำตัว
+            'D9E1F2', // 3  คำนำหน้า
+            'BDD7EE', // 4  ชื่อ-สกุล
+            'D9E1F2', // 5  วันเกิด
+            'D9E1F2', // 6  สถานที่เกิด
+            'E2EFDA', // 7  คำนำหน้าบิดา
+            'C6EFCE', // 8  ชื่อ-สกุลบิดา
+            'E2EFDA', // 9  อาชีพบิดา
+            'FCE4D6', // 10 คำนำหน้ามารดา
+            'F4CCCC', // 11 ชื่อ-สกุลมารดา
+            'FCE4D6', // 12 อาชีพมารดา
+            'FFF2CC', // 13 สถานศึกษาเดิม
+            'FFF2CC', // 14 ที่อยู่ปัจจุบัน
+            'FFF2CC', // 15 ชั้นที่จบมา
+        ];
+
+        const applyStyle = (ws, rows) => {
+            if (!rows.length) return;
+            const headers = Object.keys(rows[0]);
+            const range   = XLSX.utils.decode_range(ws['!ref']);
+
+            // header row
+            headers.forEach((h, c) => {
+                const ref = XLSX.utils.encode_cell({ r: 0, c });
+                if (!ws[ref]) return;
+                ws[ref].s = {
+                    fill: { patternType: 'solid', fgColor: { rgb: colColors[c] || 'D9D9D9' } },
+                    font: { bold: true, name: 'TH Sarabun New', sz: 14 },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                    border: {
+                        top:    { style: 'thin', color: { rgb: '9E9E9E' } },
+                        bottom: { style: 'thin', color: { rgb: '9E9E9E' } },
+                        left:   { style: 'thin', color: { rgb: '9E9E9E' } },
+                        right:  { style: 'thin', color: { rgb: '9E9E9E' } },
+                    }
+                };
+            });
+
+            // data rows
+            for (let r = 1; r <= range.e.r; r++) {
+                const isOdd = r % 2 === 1;
+                headers.forEach((h, c) => {
+                    const ref = XLSX.utils.encode_cell({ r, c });
+                    if (!ws[ref]) ws[ref] = { t: 's', v: '' };
+                    ws[ref].s = {
+                        fill: { patternType: 'solid', fgColor: { rgb: isOdd ? (colColors[c] || 'FFFFFF') : 'FFFFFF' } },
+                        font: { name: 'TH Sarabun New', sz: 14 },
+                        alignment: { vertical: 'center', wrapText: true },
+                        border: {
+                            top:    { style: 'hair', color: { rgb: 'CCCCCC' } },
+                            bottom: { style: 'hair', color: { rgb: 'CCCCCC' } },
+                            left:   { style: 'hair', color: { rgb: 'CCCCCC' } },
+                            right:  { style: 'hair', color: { rgb: 'CCCCCC' } },
+                        }
+                    };
+                });
+            }
+
+            // column widths: ลำดับ ระดับ เลขประจำตัว คำนำหน้า ชื่อ-สกุล วันเกิด สถานที่เกิด คำนำหน้าบิดา ชื่อ-สกุลบิดา อาชีพบิดา คำนำหน้ามารดา ชื่อ-สกุลมารดา อาชีพมารดา สถานศึกษาเดิม ที่อยู่ ชั้นที่จบ
+            const colW = [7, 9, 13, 10, 24, 18, 28, 12, 24, 18, 12, 24, 18, 28, 36, 20];
+            ws['!cols'] = colW.map(w => ({ wch: w }));
+            ws['!rows'] = [{ hpt: 34 }];
+        };
+
+        const wb = XLSX.utils.book_new();
+        if (m1Rows.length) {
+            const ws = XLSX.utils.json_to_sheet(m1Rows);
+            applyStyle(ws, m1Rows);
+            XLSX.utils.book_append_sheet(wb, ws, `ม.1 (${m1Rows.length} คน)`);
+        }
+        if (m4Rows.length) {
+            const ws = XLSX.utils.json_to_sheet(m4Rows);
+            applyStyle(ws, m4Rows);
+            XLSX.utils.book_append_sheet(wb, ws, `ม.4 (${m4Rows.length} คน)`);
+        }
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `ข้อมูลทะเบียน_${dateStr}.xlsx`);
+        showToast(`ดาวน์โหลดเล่มทะเบียน Excel สำเร็จ — ม.1: ${m1Rows.length} คน, ม.4: ${m4Rows.length} คน`, 'success');
+
+    } catch (e) {
+        console.error('exportRegisterExcel error:', e);
+        showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ Excel', 'error');
+    }
+}
+window.exportRegisterExcel = exportRegisterExcel;
 
 /* ─────────────────────────────────────────────────
    VERIFY DOCS SYSTEM
